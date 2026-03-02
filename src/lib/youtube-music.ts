@@ -225,6 +225,75 @@ export async function getVideoDetails(
   }
 }
 
+/**
+ * Extract a YouTube playlist ID from a URL.
+ * Handles youtube.com/playlist?list=, music.youtube.com/playlist?list=,
+ * and watch URLs with &list= parameter.
+ * Returns null if no playlist ID found, or if it's the special "LM" (Liked Music) private playlist.
+ */
+export function extractYouTubePlaylistId(input: string): string | null {
+  const match = input.match(
+    /(?:youtube\.com|music\.youtube\.com)\/(?:playlist\?|watch\?.*&)list=([\w-]+)/
+  );
+  if (!match) return null;
+  const listId = match[1];
+  // "LM" is the private Liked Music playlist — requires OAuth, can't access via API
+  if (listId === "LM") return null;
+  return listId;
+}
+
+/**
+ * Fetch all items from a YouTube playlist using the Data API.
+ * Falls back to oEmbed for individual videos if the API quota is exceeded.
+ * Returns up to `max` items (default 10 to match seed limit).
+ */
+export async function getPlaylistItems(
+  playlistId: string,
+  max: number = 10
+): Promise<{ title: string; channelTitle: string }[]> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return [];
+
+  try {
+    const params = new URLSearchParams({
+      part: "snippet",
+      playlistId,
+      maxResults: String(Math.min(max, 50)),
+      key: apiKey,
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlistItems?${params}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      console.error("YouTube playlistItems API error:", res.status);
+      return [];
+    }
+
+    const data = await res.json();
+    if (data.error) {
+      console.error("YouTube API error:", data.error.message);
+      return [];
+    }
+
+    return (data.items ?? [])
+      .slice(0, max)
+      .map((item: { snippet: { title: string; videoOwnerChannelTitle?: string; channelTitle?: string } }) => ({
+        title: item.snippet.title,
+        channelTitle: item.snippet.videoOwnerChannelTitle || item.snippet.channelTitle || "",
+      }));
+  } catch (e) {
+    console.error("Playlist fetch failed:", e);
+    return [];
+  }
+}
+
 export async function startDeviceFlow() {
   return fetchService("/api/oauth/device-code", { method: "POST" });
 }

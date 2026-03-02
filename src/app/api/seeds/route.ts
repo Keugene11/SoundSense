@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { getRouteUser } from "@/lib/auth";
-import { insertSeedSong, deleteSeedSong } from "@/lib/store";
-import { lookupSeedSong, extractYouTubeVideoId, getVideoDetails } from "@/lib/youtube-music";
+import { insertSeedSong, deleteSeedSong, getSeedSongs } from "@/lib/store";
+import {
+  lookupSeedSong,
+  extractYouTubeVideoId,
+  extractYouTubePlaylistId,
+  getVideoDetails,
+  getPlaylistItems,
+} from "@/lib/youtube-music";
 
 function parseYouTubeTitle(rawTitle: string, rawArtist: string) {
   const ytTitle = rawTitle
@@ -34,20 +40,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Search query is required" }, { status: 400 });
     }
 
-    let title: string;
-    let artist: string;
     const input = query.trim();
 
-    // Check if the input is a YouTube link
+    // Check if it's a playlist URL
+    const playlistId = extractYouTubePlaylistId(input);
+    if (playlistId) {
+      // Check how many seeds the user already has
+      const existing = await getSeedSongs(user.id);
+      const slotsLeft = 10 - existing.length;
+      if (slotsLeft <= 0) {
+        return NextResponse.json({ error: "Maximum 10 seed songs" }, { status: 400 });
+      }
+
+      const items = await getPlaylistItems(playlistId, slotsLeft);
+      if (items.length === 0) {
+        return NextResponse.json(
+          { error: "Could not load playlist. It may be private or the API quota is exceeded." },
+          { status: 400 }
+        );
+      }
+
+      const seeds = [];
+      for (const item of items) {
+        const { title, artist } = parseYouTubeTitle(item.title, item.channelTitle);
+        const seed = await insertSeedSong(user.id, title, artist);
+        seeds.push(seed);
+      }
+
+      return NextResponse.json({ seeds });
+    }
+
+    // Check if the input is a single YouTube link
+    let title: string;
+    let artist: string;
     const videoId = extractYouTubeVideoId(input);
 
     if (videoId) {
-      // Resolve directly from video ID — no search needed
       const details = await getVideoDetails(videoId);
       if (details) {
         ({ title, artist } = parseYouTubeTitle(details.title, details.channelTitle));
       } else {
-        // API quota exceeded or unavailable — try scraping the oEmbed endpoint
+        // API quota exceeded — try oEmbed endpoint (no quota cost)
         try {
           const oembed = await fetch(
             `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,

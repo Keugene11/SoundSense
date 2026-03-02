@@ -54,7 +54,13 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setSeeds((prev) => [...prev, data.seed]);
+      if (data.seeds) {
+        // Playlist — multiple seeds returned
+        setSeeds((prev) => [...prev, ...data.seeds]);
+        toast.success(`Added ${data.seeds.length} songs from playlist`);
+      } else {
+        setSeeds((prev) => [...prev, data.seed]);
+      }
     } catch {
       toast.error("Failed to save seed song");
     } finally {
@@ -230,7 +236,7 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
       <div className="space-y-3">
         <div className="flex gap-2">
           <Input
-            placeholder="Song name or YouTube link"
+            placeholder="Song name, YouTube link, or playlist URL"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
