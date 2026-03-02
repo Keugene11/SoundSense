@@ -1,6 +1,6 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateFromSeeds } from "@/lib/dedalus/recommendations";
-import { searchYTMusicPublic, searchYouTubeDirect, lookupSeedSong } from "@/lib/youtube-music";
+import { searchYTMusicPublic, searchYouTubeDirect, searchYouTubeScrape, lookupSeedSong } from "@/lib/youtube-music";
 import {
   getSubscription,
   getTodayRecommendationCount,
@@ -130,6 +130,19 @@ export async function POST(req: NextRequest) {
         if (!video_id) {
           try {
             const result = await searchYouTubeDirect(searchQuery);
+            if (result) {
+              video_id = result.videoId;
+              thumbnail_url = result.thumbnail;
+            }
+          } catch {
+            // YouTube API failed
+          }
+        }
+
+        // Final fallback: scrape YouTube search (no API quota needed)
+        if (!video_id) {
+          try {
+            const result = await searchYouTubeScrape(searchQuery);
             if (result) {
               video_id = result.videoId;
               thumbnail_url = result.thumbnail;

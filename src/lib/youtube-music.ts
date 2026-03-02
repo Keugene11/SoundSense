@@ -161,6 +161,50 @@ export async function lookupSeedSong(
 }
 
 /**
+ * Search YouTube by scraping the results page — no API key or quota needed.
+ * Returns the first video ID and thumbnail, or null.
+ */
+export async function searchYouTubeScrape(
+  query: string
+): Promise<{ videoId: string; thumbnail: string | null } | null> {
+  try {
+    const q = encodeURIComponent(`${query} official audio`);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(
+      `https://www.youtube.com/results?search_query=${q}`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        },
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    const matches = html.match(/"videoId":"([\w-]{11})"/g);
+    if (!matches) return null;
+
+    // Deduplicate and take the first
+    const ids = [...new Set(matches.map((m) => m.match(/"([\w-]{11})"/)?.[1]))].filter(Boolean) as string[];
+    if (ids.length === 0) return null;
+
+    const videoId = ids[0];
+    return {
+      videoId,
+      thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Extract a YouTube video ID from various URL formats.
  * Returns null if the string isn't a YouTube link.
  */

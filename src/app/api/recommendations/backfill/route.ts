@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRouteUser } from "@/lib/auth";
 import { getRecommendations } from "@/lib/store";
-import { searchYouTubeDirect } from "@/lib/youtube-music";
+import { searchYouTubeDirect, searchYouTubeScrape } from "@/lib/youtube-music";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST() {
@@ -20,7 +20,8 @@ export async function POST() {
   let updated = 0;
 
   for (const rec of missing) {
-    const result = await searchYouTubeDirect(`${rec.title} ${rec.artist}`);
+    const query = `${rec.title} ${rec.artist}`;
+    const result = await searchYouTubeDirect(query) || await searchYouTubeScrape(query);
     if (result) {
       const { error } = await supabase
         .from("recommendations")
