@@ -108,6 +108,58 @@ export async function searchYouTubeDirect(
   }
 }
 
+/**
+ * Look up a seed song on YouTube to get the real title, channel name,
+ * and description. This helps the AI understand what the song actually is
+ * instead of guessing from the user's text input.
+ */
+export async function lookupSeedSong(
+  title: string,
+  artist: string
+): Promise<{
+  resolvedTitle: string;
+  resolvedArtist: string;
+  description: string;
+} | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const query = artist ? `${title} ${artist}` : title;
+    const searchParams = new URLSearchParams({
+      part: "snippet",
+      q: `${query} official audio`,
+      type: "video",
+      videoCategoryId: "10",
+      maxResults: "3",
+      key: apiKey,
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?${searchParams}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const item = data.items?.[0];
+    if (!item) return null;
+
+    return {
+      resolvedTitle: item.snippet.title,
+      resolvedArtist: item.snippet.channelTitle,
+      description: item.snippet.description?.slice(0, 200) || "",
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function startDeviceFlow() {
   return fetchService("/api/oauth/device-code", { method: "POST" });
 }

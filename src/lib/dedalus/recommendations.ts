@@ -109,13 +109,26 @@ Return ONLY the JSON array, no other text.`;
   return callAI(prompt, count);
 }
 
+interface EnrichedSeed {
+  title: string;
+  artist: string;
+  youtubeTitle?: string;
+  youtubeArtist?: string;
+}
+
 export async function generateFromSeeds(
-  seeds: { title: string; artist: string }[],
+  seeds: EnrichedSeed[],
   count: number = 10,
   context?: SeedContext
 ): Promise<AIRecommendation[]> {
   const seedList = seeds
-    .map((s) => `- "${s.title}"${s.artist ? ` by ${s.artist}` : ""}`)
+    .map((s) => {
+      let line = `- "${s.title}"${s.artist ? ` by ${s.artist}` : ""}`;
+      if (s.youtubeTitle) {
+        line += `\n  YouTube match: "${s.youtubeTitle}" by ${s.youtubeArtist || "Unknown"}`;
+      }
+      return line;
+    })
     .join("\n");
 
   // Build context sections
@@ -165,6 +178,8 @@ ${context.previouslyRecommended.map((s) => `- ${s}`).join("\n")}
   const prompt = `A user wants music recommendations based on these seed songs:
 
 ${seedList}
+
+IMPORTANT: Use the "YouTube match" line (if present) to identify the ACTUAL song. The user may have misspelled the title or artist — the YouTube match shows what song they actually mean. Base your recommendations on the REAL song, not a literal interpretation of the user's text.
 ${contextSections}${avoidSection}
 ## Your Analysis Process
 First, analyze the seeds carefully:

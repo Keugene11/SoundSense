@@ -1,6 +1,6 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateFromSeeds } from "@/lib/dedalus/recommendations";
-import { searchYTMusicPublic, searchYouTubeDirect } from "@/lib/youtube-music";
+import { searchYTMusicPublic, searchYouTubeDirect, lookupSeedSong } from "@/lib/youtube-music";
 import {
   getSubscription,
   getTodayRecommendationCount,
@@ -55,6 +55,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Look up each seed on YouTube to resolve the actual song
+    // This prevents the AI from guessing based on literal title words
+    const enrichedSeeds = await Promise.all(
+      seeds.map(async (seed) => {
+        const lookup = await lookupSeedSong(seed.title, seed.artist);
+        if (lookup) {
+          return {
+            title: seed.title,
+            artist: seed.artist,
+            youtubeTitle: lookup.resolvedTitle,
+            youtubeArtist: lookup.resolvedArtist,
+          };
+        }
+        return { title: seed.title, artist: seed.artist };
+      })
+    );
+
     // Build context from user's history
     const likedSongs = allRecs
       .filter((r) => r.status === "liked")
@@ -76,7 +93,7 @@ export async function POST(req: NextRequest) {
     }));
 
     // Generate AI recommendations with full context
-    const aiRecs = await generateFromSeeds(seeds, 10, {
+    const aiRecs = await generateFromSeeds(enrichedSeeds, 10, {
       likedSongs,
       dislikedSongs,
       previouslyRecommended,
