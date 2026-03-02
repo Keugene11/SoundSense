@@ -34,7 +34,8 @@ CRITICAL RULES:
 - Every song you recommend MUST be a real song that actually exists. Never invent songs or artists.
 - If you are not 100% certain a song exists, do NOT include it. It is better to recommend fewer songs than to recommend fake ones.
 - Never recommend a song the user has already heard, liked, or been recommended before.
-- Never recommend the seed songs themselves.`;
+- Never recommend the seed songs themselves.
+- NEVER recommend ANY song by a seed artist. If the user gives you "Toxicity" by System of a Down, do NOT recommend other System of a Down songs. The user already knows that artist — show them something NEW.`;
 
 async function callAI(prompt: string, count: number): Promise<AIRecommendation[]> {
   const response = await dedalus.chat.completions.create({
@@ -128,9 +129,10 @@ ${candidateSection}${similarArtistsSection}
 - Mix familiar artists with new discoveries based on discovery_level
 - Do NOT recommend songs already in their history
 - Do NOT recommend songs by excluded artists
+- Do NOT recommend songs by the user's top artists — they already know those. Show them something NEW.
 - Every song MUST actually exist — use EXACT official title and artist spelling
 - NEVER invent or guess at song titles. If you can't recall the exact title, skip it.
-- For each recommendation, reference specific musical qualities
+- For each recommendation, reference specific musical qualities (e.g., "warm analog synths with a driving beat" not "similar vibe")
 - Assign a confidence score from 0.0 to 1.0
 
 Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences), confidence_score (number 0-1).
@@ -229,12 +231,17 @@ ${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
 `;
   }
 
+  const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
+  const bannedArtistsLine = seedArtists.length > 0
+    ? `\n## BANNED ARTISTS (do NOT recommend any song by these artists):\n${seedArtists.map((a) => `- ${a}`).join("\n")}\nThe user already knows these artists. Recommending their other songs is lazy curation. Show the user something NEW.\n`
+    : "";
+
   const prompt = `A user wants music recommendations based on these seed songs:
 
 ${seedList}
 
 IMPORTANT: Use the "YouTube match" line (if present) to identify the ACTUAL song. The user may have misspelled the title or artist — the YouTube match shows what song they actually mean. Base your recommendations on the REAL song, not a literal interpretation of the user's text.
-${candidateSection}${similarArtistsSection}${contextSections}${avoidSection}
+${bannedArtistsLine}${candidateSection}${similarArtistsSection}${contextSections}${avoidSection}
 ## Your Analysis Process
 First, analyze the seeds carefully:
 1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
@@ -257,9 +264,10 @@ Generate exactly ${requestCount} recommendations.${candidates?.length ? `
 - Every song MUST actually exist — real title, real artist, real release. Use EXACT official spelling.
 - NEVER invent or guess at song titles. If you can't recall the exact title, skip it.
 - NEVER recommend the seed songs themselves
+- NEVER recommend ANY song by ANY of the seed artists. The user already knows those artists. Zero exceptions.
 - NEVER recommend songs from the "already recommended" list above
 - Match the ENERGY and MOOD, not just the genre
-- The reason MUST reference a specific musical quality shared with the seeds
+- The reason MUST reference a specific musical quality shared with the seeds (e.g., "driving 808 bass with falsetto vocals" not "similar vibe")
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
 
 Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences with specific musical qualities), confidence_score (number 0-1).
