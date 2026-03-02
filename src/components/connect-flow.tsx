@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -12,120 +11,61 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 
-/**
- * Parse headers from various formats:
- * - cURL command (from "Copy as cURL" in DevTools)
- * - Raw "key: value" lines (from "Copy request headers" in DevTools)
- * - JSON object
- */
-function parseHeaders(raw: string): Record<string, string> {
-  const trimmed = raw.trim();
-
-  // Try JSON first
-  try {
-    const parsed = JSON.parse(trimmed);
-    if (typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed;
+type FlowState =
+  | { step: "idle" }
+  | {
+      step: "code";
+      userCode: string;
+      verificationUrl: string;
+      deviceCode: string;
     }
-  } catch {
-    // Not JSON, continue
-  }
-
-  // Try cURL format: extract -H 'key: value' or -H "key: value"
-  if (trimmed.startsWith("curl ") || trimmed.includes(" -H ")) {
-    const headers: Record<string, string> = {};
-    // Match -H 'header: value' or -H "header: value" patterns
-    const headerPattern = /-H\s+['"]([^'"]+)['"]/g;
-    let match;
-    while ((match = headerPattern.exec(trimmed)) !== null) {
-      const colonIndex = match[1].indexOf(":");
-      if (colonIndex > 0) {
-        const key = match[1].slice(0, colonIndex).trim().toLowerCase();
-        const value = match[1].slice(colonIndex + 1).trim();
-        if (key && value) headers[key] = value;
-      }
-    }
-    if (Object.keys(headers).length > 0) return headers;
-  }
-
-  // Try raw "key: value" format (one per line)
-  const headers: Record<string, string> = {};
-  for (const line of trimmed.split("\n")) {
-    const colonIndex = line.indexOf(":");
-    if (colonIndex > 0) {
-      const key = line.slice(0, colonIndex).trim().toLowerCase();
-      const value = line.slice(colonIndex + 1).trim();
-      if (key && value) headers[key] = value;
-    }
-  }
-  return headers;
-}
-
-/** Extract only the auth-relevant headers ytmusicapi needs */
-function extractAuthHeaders(
-  headers: Record<string, string>
-): Record<string, string> | null {
-  const authHeaders: Record<string, string> = {};
-
-  for (const [key, value] of Object.entries(headers)) {
-    const k = key.toLowerCase();
-    if (
-      k === "cookie" ||
-      k === "authorization" ||
-      k === "x-goog-authuser" ||
-      k === "x-origin" ||
-      k === "origin" ||
-      k === "user-agent"
-    ) {
-      authHeaders[k] = value;
-    }
-  }
-
-  // Cookie is the minimum required header
-  if (!authHeaders["cookie"]) return null;
-  return authHeaders;
-}
+  | { step: "waiting"; userCode: string }
+  | { step: "success" };
 
 export function ConnectFlow({ onConnected }: { onConnected?: () => void }) {
-  const [headers, setHeaders] = useState("");
-  const [connecting, setConnecting] = useState(false);
-  const [step, setStep] = useState(1);
+  const [state, setState] = useState<FlowState>({ step: "idle" });
 
-  const handleConnect = async () => {
-    if (!headers.trim()) {
-      toast.error("Please paste your request headers");
-      return;
-    }
+  const startFlow = async () => {
+    try {
+      const res = await fetch("/api/youtube-music/device-code", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to start device flow");
 
-    const parsed = parseHeaders(headers);
-    const authHeaders = extractAuthHeaders(parsed);
-
-    if (!authHeaders) {
+      setState({
+        step: "code",
+        userCode: data.user_code,
+        verificationUrl: data.verification_url,
+        deviceCode: data.device_code,
+      });
+    } catch (error) {
       toast.error(
-        "Could not find cookie header. Make sure you copied the full request headers or cURL command."
+        error instanceof Error ? error.message : "Failed to start device flow"
       );
-      return;
     }
+  };
 
-    setConnecting(true);
+  const completeFlow = async (deviceCode: string, userCode: string) => {
+    setState({ step: "waiting", userCode });
+
     try {
       const res = await fetch("/api/youtube-music/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ auth_headers: authHeaders }),
+        body: JSON.stringify({ device_code: deviceCode }),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Connection failed");
 
+      setState({ step: "success" });
       toast.success("YouTube Music connected!");
       onConnected?.();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Connection failed"
       );
-    } finally {
-      setConnecting(false);
+      setState({ step: "idle" });
     }
   };
 
@@ -134,163 +74,106 @@ export function ConnectFlow({ onConnected }: { onConnected?: () => void }) {
       <CardHeader>
         <CardTitle>Connect YouTube Music</CardTitle>
         <CardDescription>
-          Follow these steps to link your YouTube Music account. It only takes a
-          minute.
+          Link your YouTube Music account to get personalized recommendations.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Step 1 */}
-        <button
-          type="button"
-          onClick={() => setStep(step === 1 ? 0 : 1)}
-          className="flex w-full items-start gap-4 text-left"
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-            1
-          </span>
-          <div className="space-y-1 pt-0.5">
-            <p className="font-medium leading-none">
-              Open YouTube Music in your browser
-            </p>
-            {step === 1 && (
+      <CardContent>
+        {state.step === "idle" && (
+          <Button onClick={startFlow} className="w-full" size="lg">
+            Connect YouTube Music
+          </Button>
+        )}
+
+        {state.step === "code" && (
+          <div className="space-y-4">
+            <div className="rounded-lg border p-4 text-center space-y-2">
               <p className="text-sm text-muted-foreground">
-                Go to{" "}
+                Enter this code on Google:
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(state.userCode);
+                  toast.success("Code copied!");
+                }}
+                className="inline-block rounded-md bg-muted px-6 py-3 font-mono text-2xl font-bold tracking-widest transition-colors hover:bg-muted/80"
+              >
+                {state.userCode}
+              </button>
+              <p className="text-xs text-muted-foreground">Click to copy</p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button asChild variant="outline" className="flex-1">
                 <a
-                  href="https://music.youtube.com"
+                  href={state.verificationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-primary underline underline-offset-4"
-                  onClick={(e) => e.stopPropagation()}
                 >
-                  music.youtube.com
-                </a>{" "}
-                and make sure you&apos;re signed in to your Google account.
-              </p>
-            )}
-          </div>
-        </button>
+                  Open Google
+                </a>
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() =>
+                  completeFlow(state.deviceCode, state.userCode)
+                }
+              >
+                I&apos;ve entered the code
+              </Button>
+            </div>
 
-        {/* Step 2 */}
-        <button
-          type="button"
-          onClick={() => setStep(step === 2 ? 0 : 2)}
-          className="flex w-full items-start gap-4 text-left"
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-            2
-          </span>
-          <div className="space-y-1 pt-0.5">
-            <p className="font-medium leading-none">
-              Open DevTools &rarr; Network tab
-            </p>
-            {step === 2 && (
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>
-                  Press{" "}
-                  <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">
-                    F12
-                  </kbd>{" "}
-                  (or{" "}
-                  <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">
-                    Ctrl+Shift+I
-                  </kbd>
-                  ) to open Developer Tools, then click the{" "}
-                  <span className="font-medium text-foreground">Network</span>{" "}
-                  tab at the top.
-                </p>
-                <p>
-                  If the Network tab is empty, refresh the page while it&apos;s
-                  open.
-                </p>
-              </div>
-            )}
-          </div>
-        </button>
-
-        {/* Step 3 */}
-        <button
-          type="button"
-          onClick={() => setStep(step === 3 ? 0 : 3)}
-          className="flex w-full items-start gap-4 text-left"
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-            3
-          </span>
-          <div className="space-y-2 pt-0.5">
-            <p className="font-medium leading-none">
-              Copy request headers or cURL
-            </p>
-            {step === 3 && (
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p>
-                  In the Network tab, find any request to{" "}
-                  <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
-                    music.youtube.com
-                  </code>{" "}
-                  and right-click it. Then either:
-                </p>
-                <div className="space-y-2 rounded-lg border p-3">
-                  <p className="font-medium text-foreground">
-                    Option A &mdash; Copy as cURL (easiest)
-                  </p>
-                  <p>
-                    Right-click the request &rarr;{" "}
-                    <span className="font-medium text-foreground">Copy</span>{" "}
-                    &rarr;{" "}
-                    <span className="font-medium text-foreground">
-                      Copy as cURL
-                    </span>
-                  </p>
-                </div>
-                <div className="space-y-2 rounded-lg border p-3">
-                  <p className="font-medium text-foreground">
-                    Option B &mdash; Copy request headers
-                  </p>
-                  <p>
-                    Click the request &rarr; go to the{" "}
-                    <span className="font-medium text-foreground">Headers</span>{" "}
-                    tab &rarr; find{" "}
-                    <span className="font-medium text-foreground">
-                      Request Headers
-                    </span>{" "}
-                    &rarr; click{" "}
-                    <span className="font-medium text-foreground">
-                      view source
-                    </span>{" "}
-                    &rarr; copy all the text
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </button>
-
-        {/* Step 4 - Paste area */}
-        <div className="flex items-start gap-4">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-            4
-          </span>
-          <div className="w-full space-y-3 pt-0.5">
-            <p className="font-medium leading-none">
-              Paste everything below
-            </p>
-            <Textarea
-              placeholder="Paste your copied cURL command or request headers here..."
-              value={headers}
-              onChange={(e) => setHeaders(e.target.value)}
-              rows={6}
-              className="font-mono text-xs"
-            />
             <Button
-              onClick={handleConnect}
-              disabled={connecting || !headers.trim()}
+              variant="ghost"
+              size="sm"
               className="w-full"
-              size="lg"
+              onClick={() => setState({ step: "idle" })}
             >
-              {connecting ? "Validating & connecting..." : "Connect YouTube Music"}
+              Cancel
             </Button>
           </div>
-        </div>
+        )}
+
+        {state.step === "waiting" && (
+          <div className="space-y-4 text-center py-4">
+            <div className="flex items-center justify-center gap-2">
+              <svg
+                className="h-5 w-5 animate-spin text-muted-foreground"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              <p className="text-sm text-muted-foreground">
+                Waiting for authorization...
+              </p>
+            </div>
+            <p className="font-mono text-lg font-bold tracking-widest">
+              {state.userCode}
+            </p>
+          </div>
+        )}
+
+        {state.step === "success" && (
+          <div className="text-center py-4">
+            <p className="text-sm font-medium text-green-600 dark:text-green-400">
+              YouTube Music connected successfully!
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

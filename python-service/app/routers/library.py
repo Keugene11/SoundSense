@@ -11,15 +11,15 @@ async def get_library_songs(user_id: str, limit: int = Query(default=100, ge=1))
     """Fetch songs from a user's YouTube Music library."""
     credential_service = CredentialService()
 
-    auth_headers = credential_service.get_credentials(user_id)
-    if not auth_headers:
+    oauth_tokens = credential_service.get_credentials(user_id)
+    if not oauth_tokens:
         raise HTTPException(
             status_code=404,
             detail="No YouTube Music credentials found for this user",
         )
 
     try:
-        ytmusic_service = YTMusicService(auth_headers)
+        ytmusic_service = YTMusicService(oauth_tokens)
         songs = ytmusic_service.get_library_songs(limit=limit)
         return {"songs": songs}
     except Exception as e:

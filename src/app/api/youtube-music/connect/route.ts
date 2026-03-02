@@ -1,5 +1,5 @@
 import { getRouteUser } from "@/lib/auth";
-import { validateCredentials } from "@/lib/youtube-music";
+import { completeDeviceFlow } from "@/lib/youtube-music";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -8,28 +8,22 @@ export async function POST(request: Request) {
   const { user, supabase } = auth;
 
   try {
-    const { auth_headers } = await request.json();
+    const { device_code } = await request.json();
 
-    if (!auth_headers || typeof auth_headers !== "object") {
+    if (!device_code || typeof device_code !== "string") {
       return NextResponse.json(
-        { error: "Invalid auth headers" },
+        { error: "Missing device_code" },
         { status: 400 }
       );
     }
 
-    // Validate credentials via Python service
-    const validation = await validateCredentials(auth_headers);
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: "Invalid YouTube Music credentials" },
-        { status: 400 }
-      );
-    }
+    // Exchange device code for OAuth tokens via Python service
+    const { oauth_tokens } = await completeDeviceFlow(device_code);
 
-    // Store credentials
+    // Store tokens
     const { error: credError } = await supabase
       .from("yt_music_credentials")
-      .upsert({ user_id: user.id, auth_headers });
+      .upsert({ user_id: user.id, oauth_tokens });
     if (credError) throw credError;
 
     // Update profile

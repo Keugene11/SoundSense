@@ -11,15 +11,15 @@ async def get_history(user_id: str):
     """Fetch a user's YouTube Music listening history."""
     credential_service = CredentialService()
 
-    auth_headers = credential_service.get_credentials(user_id)
-    if not auth_headers:
+    oauth_tokens = credential_service.get_credentials(user_id)
+    if not oauth_tokens:
         raise HTTPException(
             status_code=404,
             detail="No YouTube Music credentials found for this user",
         )
 
     try:
-        ytmusic_service = YTMusicService(auth_headers)
+        ytmusic_service = YTMusicService(oauth_tokens)
         history = ytmusic_service.get_history()
         return {"history": history}
     except Exception as e:

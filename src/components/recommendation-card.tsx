@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,14 +12,20 @@ import type { Recommendation } from "@/types/database";
 interface RecommendationCardProps {
   rec: Recommendation;
   onStatusChange: (id: string, status: Recommendation["status"]) => void;
+  isActive?: boolean;
+  onPlay?: () => void;
 }
 
 export function RecommendationCard({
   rec,
   onStatusChange,
+  isActive,
+  onPlay,
 }: RecommendationCardProps) {
+  const [playing, setPlaying] = useState(false);
+
   return (
-    <Card>
+    <Card className={isActive ? "ring-2 ring-primary" : ""}>
       <CardContent className="flex flex-col gap-3 p-4">
         <div className="flex items-start gap-4">
           {rec.thumbnail_url ? (
@@ -70,17 +77,17 @@ export function RecommendationCard({
         <div className="flex gap-2">
           {rec.video_id && (
             <Button
-              variant="outline"
+              variant={playing || isActive ? "default" : "outline"}
               size="sm"
-              asChild
+              onClick={() => {
+                if (onPlay) {
+                  onPlay();
+                } else {
+                  setPlaying(!playing);
+                }
+              }}
             >
-              <a
-                href={`https://music.youtube.com/watch?v=${rec.video_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Play
-              </a>
+              {playing || isActive ? "Playing" : "Play"}
             </Button>
           )}
           <Button
@@ -114,6 +121,17 @@ export function RecommendationCard({
             &#128278; Save
           </Button>
         </div>
+
+        {(playing || isActive) && rec.video_id && (
+          <div className="aspect-video w-full overflow-hidden rounded-md">
+            <iframe
+              src={`https://www.youtube.com/embed/${rec.video_id}?autoplay=1&enablejsapi=1`}
+              className="h-full w-full"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

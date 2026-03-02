@@ -11,7 +11,7 @@ export interface Profile {
 export interface YTMusicCredentials {
   id: string;
   user_id: string;
-  auth_headers: Record<string, string>;
+  oauth_tokens: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -64,6 +64,14 @@ export interface Subscription {
   current_period_end: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface SeedSong {
+  id: string;
+  user_id: string;
+  title: string;
+  artist: string;
+  created_at: string;
 }
 
 export interface SyncLog {

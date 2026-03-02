@@ -6,7 +6,7 @@ export function getDedalusClient() {
   if (!_client) {
     _client = new OpenAI({
       apiKey: process.env.DEDALUS_API_KEY!,
-      baseURL: process.env.DEDALUS_BASE_URL || "https://api.dedalus-labs.com/v1",
+      baseURL: process.env.DEDALUS_BASE_URL || "https://api.dedaluslabs.ai/v1",
     });
   }
   return _client;

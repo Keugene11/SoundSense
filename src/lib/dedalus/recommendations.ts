@@ -77,3 +77,49 @@ Return ONLY the JSON array, no other text.`;
 
   return recommendations.slice(0, count);
 }
+
+export async function generateFromSeeds(
+  seeds: { title: string; artist: string }[],
+  count: number = 10
+): Promise<AIRecommendation[]> {
+  const seedList = seeds
+    .map((s) => `- "${s.title}" by ${s.artist}`)
+    .join("\n");
+
+  const prompt = `You are a music recommendation engine. The user likes these songs:
+
+${seedList}
+
+Based on these songs, recommend ${count} similar songs they would enjoy.
+
+## Instructions
+- Suggest ${count} songs the user would likely enjoy based on the provided seeds
+- Mix similar styles with some variety
+- Do NOT recommend songs already listed above
+- For each recommendation, provide a brief reason why they'd enjoy it
+- Assign a confidence score from 0.0 to 1.0
+
+Respond with a JSON array of objects with these fields:
+- title (string)
+- artist (string)
+- album (string, optional)
+- reason (string, 1-2 sentences)
+- confidence_score (number 0-1)
+
+Return ONLY the JSON array, no other text.`;
+
+  const response = await dedalus.chat.completions.create({
+    model: "gpt-4o",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.8,
+    max_tokens: 2000,
+  });
+
+  const content = response.choices[0]?.message?.content?.trim();
+  if (!content) throw new Error("No response from AI");
+
+  const cleaned = content.replace(/^```json?\n?/, "").replace(/\n?```$/, "");
+  const recommendations: AIRecommendation[] = JSON.parse(cleaned);
+
+  return recommendations.slice(0, count);
+}

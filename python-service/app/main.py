@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import history, library, search, validate
+from app.routers import history, library, oauth, search
 
 app = FastAPI(
     title="SoundSense Python Service",
@@ -20,7 +20,7 @@ app.add_middleware(
 app.include_router(history.router, prefix="/api")
 app.include_router(library.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
-app.include_router(validate.router, prefix="/api")
+app.include_router(oauth.router, prefix="/api")
 
 
 @app.get("/health")

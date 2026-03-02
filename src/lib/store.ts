@@ -5,6 +5,7 @@ import type {
   Recommendation,
   UserPreferences,
   Subscription,
+  SeedSong,
   SyncLog,
 } from "@/types/database";
 
@@ -183,6 +184,47 @@ export async function getSubscription(
     .eq("user_id", userId)
     .single();
   return data;
+}
+
+// --- Seed Songs ---
+
+export async function getSeedSongs(userId: string): Promise<SeedSong[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("seed_songs")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function insertSeedSong(
+  userId: string,
+  title: string,
+  artist: string
+): Promise<SeedSong> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("seed_songs")
+    .insert({ user_id: userId, title, artist })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteSeedSong(
+  id: string,
+  userId: string
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("seed_songs")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) throw error;
 }
 
 // --- Sync Log ---
