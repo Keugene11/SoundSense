@@ -23,11 +23,13 @@ export default async function DashboardPage() {
       getLatestSync(user.id),
     ]);
 
+  const connected = profile?.youtube_music_connected ?? false;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <DashboardClient connected={profile?.youtube_music_connected ?? false} />
+        {connected && <DashboardClient />}
       </div>
 
       {/* Stats */}
@@ -39,8 +41,8 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant={profile?.youtube_music_connected ? "default" : "secondary"}>
-              {profile?.youtube_music_connected ? "Connected" : "Not connected"}
+            <Badge variant={connected ? "default" : "secondary"}>
+              {connected ? "Connected" : "Not connected"}
             </Badge>
           </CardContent>
         </Card>
@@ -82,10 +84,7 @@ export default async function DashboardPage() {
 
       {/* Top Artists Chart */}
       {topArtists.length > 0 && (
-        <DashboardClient
-          connected={profile?.youtube_music_connected ?? false}
-          topArtists={topArtists}
-        />
+        <DashboardClient topArtists={topArtists} />
       )}
 
       {/* Recent Tracks */}
@@ -100,15 +99,20 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {!profile?.youtube_music_connected && (
+      {!connected && (
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12">
-            <p className="text-lg font-medium">Get started by connecting YouTube Music</p>
+            <p className="text-lg font-medium">
+              Get started by connecting YouTube Music
+            </p>
             <p className="text-muted-foreground">
               Connect your account to start getting AI-powered recommendations
             </p>
             <a href="/connect">
-              <Badge variant="default" className="cursor-pointer px-4 py-2 text-sm">
+              <Badge
+                variant="default"
+                className="cursor-pointer px-4 py-2 text-sm"
+              >
                 Connect Now
               </Badge>
             </a>

@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth";
+import { getRouteUser } from "@/lib/auth";
 import {
   getRecommendations,
   updateRecommendationStatus,
@@ -7,27 +7,51 @@ import { NextResponse } from "next/server";
 import type { Recommendation } from "@/types/database";
 
 export async function GET(request: Request) {
-  const user = await getAuthUser();
-  const { searchParams } = new URL(request.url);
-  const status = searchParams.get("status") as Recommendation["status"] | null;
+  const auth = await getRouteUser();
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
-  const recommendations = await getRecommendations(
-    user.id,
-    status || undefined
-  );
+  try {
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status") as
+      | Recommendation["status"]
+      | null;
 
-  return NextResponse.json({ recommendations });
+    const recommendations = await getRecommendations(
+      user.id,
+      status || undefined
+    );
+
+    return NextResponse.json({ recommendations });
+  } catch (error) {
+    console.error("Get recommendations error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch recommendations" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(request: Request) {
-  const user = await getAuthUser();
-  const { id, status } = await request.json();
+  const auth = await getRouteUser();
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
-  if (!id || !["liked", "disliked", "saved", "pending"].includes(status)) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  try {
+    const { id, status } = await request.json();
+
+    if (!id || !["liked", "disliked", "saved", "pending"].includes(status)) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    await updateRecommendationStatus(id, user.id, status);
+
+    return NextResponse.json({ updated: true });
+  } catch (error) {
+    console.error("Update recommendation error:", error);
+    return NextResponse.json(
+      { error: "Failed to update recommendation" },
+      { status: 500 }
+    );
   }
-
-  await updateRecommendationStatus(id, user.id, status);
-
-  return NextResponse.json({ updated: true });
 }

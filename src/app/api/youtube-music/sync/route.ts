@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth";
+import { getRouteUser } from "@/lib/auth";
 import { getHistory } from "@/lib/youtube-music";
 import {
   createSyncLog,
@@ -8,7 +8,10 @@ import {
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const user = await getAuthUser();
+  const auth = await getRouteUser();
+  if (auth.error) return auth.error;
+  const { user } = auth;
+
   const syncLog = await createSyncLog(user.id);
 
   try {

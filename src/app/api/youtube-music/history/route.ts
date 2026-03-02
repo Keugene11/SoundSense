@@ -1,17 +1,28 @@
-import { getAuthUser } from "@/lib/auth";
+import { getRouteUser } from "@/lib/auth";
 import { getListeningHistory, getTopArtists } from "@/lib/store";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const user = await getAuthUser();
-  const { searchParams } = new URL(request.url);
-  const limit = parseInt(searchParams.get("limit") || "50");
-  const offset = parseInt(searchParams.get("offset") || "0");
+  const auth = await getRouteUser();
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
-  const [history, topArtists] = await Promise.all([
-    getListeningHistory(user.id, limit, offset),
-    getTopArtists(user.id),
-  ]);
+  try {
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const offset = parseInt(searchParams.get("offset") || "0");
 
-  return NextResponse.json({ history, topArtists });
+    const [history, topArtists] = await Promise.all([
+      getListeningHistory(user.id, limit, offset),
+      getTopArtists(user.id),
+    ]);
+
+    return NextResponse.json({ history, topArtists });
+  } catch (error) {
+    console.error("History error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch history" },
+      { status: 500 }
+    );
+  }
 }

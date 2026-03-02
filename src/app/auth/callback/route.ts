@@ -19,27 +19,43 @@ export async function GET(request: Request) {
         .single();
 
       if (!existingProfile) {
-        await supabase.from("profiles").insert({
+        const { error: profileError } = await supabase.from("profiles").insert({
           id: data.user.id,
           email: data.user.email,
           display_name:
-            data.user.user_metadata?.full_name || data.user.email?.split("@")[0],
+            data.user.user_metadata?.full_name ||
+            data.user.email?.split("@")[0] ||
+            "User",
           avatar_url: data.user.user_metadata?.avatar_url,
         });
+        if (profileError) {
+          console.error("Profile creation failed:", profileError);
+        }
 
-        await supabase.from("user_preferences").insert({
-          user_id: data.user.id,
-        });
+        // These depend on profile existing (FK), so only run if profile succeeded
+        if (!profileError) {
+          const [prefsResult, subResult] = await Promise.all([
+            supabase.from("user_preferences").insert({
+              user_id: data.user.id,
+            }),
+            supabase.from("subscriptions").insert({
+              user_id: data.user.id,
+              plan: "free",
+              status: "active",
+            }),
+          ]);
 
-        await supabase.from("subscriptions").insert({
-          user_id: data.user.id,
-          plan: "free",
-          status: "active",
-        });
+          if (prefsResult.error)
+            console.error("Preferences creation failed:", prefsResult.error);
+          if (subResult.error)
+            console.error("Subscription creation failed:", subResult.error);
+        }
       }
 
       return NextResponse.redirect(`${origin}${next}`);
     }
+
+    console.error("Auth exchange failed:", error);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth`);
