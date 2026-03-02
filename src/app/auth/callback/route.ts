@@ -64,16 +64,10 @@ export async function GET(request: Request) {
       }
 
       console.error("Auth exchange failed:", error);
-      return NextResponse.redirect(
-        `${appUrl}/login?error=exchange&detail=${encodeURIComponent(error?.message || "unknown")}`
-      );
     } catch (err) {
       console.error("Auth callback error:", err);
-      return NextResponse.redirect(
-        `${appUrl}/login?error=exception&detail=${encodeURIComponent(String(err))}`
-      );
     }
   }
 
-  return NextResponse.redirect(`${appUrl}/login?error=no_code`);
+  return NextResponse.redirect(`${appUrl}/login?error=auth`);
 }
