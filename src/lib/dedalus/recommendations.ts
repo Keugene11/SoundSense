@@ -9,8 +9,33 @@ interface AIRecommendation {
   confidence_score: number;
 }
 
-const SYSTEM_PROMPT =
-  "You are a music curator who gives genuinely good, non-obvious recommendations. You have encyclopedic knowledge of music across all genres and eras. You never recommend generic popular songs unless they are a perfect fit.";
+interface SeedContext {
+  likedSongs: { title: string; artist: string }[];
+  dislikedSongs: { title: string; artist: string }[];
+  previouslyRecommended: string[];
+  recentListens: { title: string; artist: string }[];
+  topArtists: { artist: string; count: number }[];
+  preferences: {
+    genres: string[];
+    mood: string;
+    discoveryLevel: number;
+    excludeArtists: string[];
+  } | null;
+}
+
+const SYSTEM_PROMPT = `You are a world-class music curator — think of yourself as the person behind the best "Discover Weekly" playlists. You have deep knowledge of:
+- Music theory (chord progressions, time signatures, key signatures)
+- Production techniques (lo-fi, overdriven, reverb-drenched, crisp, analog warmth)
+- Genre genealogy (how genres evolved, split, and cross-pollinated)
+- Artist networks (collaborators, influences, contemporaries, proteges)
+- Cultural context (scenes, movements, eras, regional sounds)
+
+You recommend songs that make people say "holy shit, how did you know I'd love this?" — not songs that make them say "oh yeah, I already know that one."
+
+CRITICAL RULES:
+- Every song you recommend MUST be a real song that actually exists. Never invent songs or artists.
+- Never recommend a song the user has already heard, liked, or been recommended before.
+- Never recommend the seed songs themselves.`;
 
 async function callAI(prompt: string, count: number): Promise<AIRecommendation[]> {
   const response = await dedalus.chat.completions.create({
@@ -19,8 +44,8 @@ async function callAI(prompt: string, count: number): Promise<AIRecommendation[]
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: prompt },
     ],
-    temperature: 0.65,
-    max_tokens: 3000,
+    temperature: 0.7,
+    max_tokens: 4000,
   });
 
   const content = response.choices[0]?.message?.content?.trim();
@@ -86,31 +111,86 @@ Return ONLY the JSON array, no other text.`;
 
 export async function generateFromSeeds(
   seeds: { title: string; artist: string }[],
-  count: number = 10
+  count: number = 10,
+  context?: SeedContext
 ): Promise<AIRecommendation[]> {
   const seedList = seeds
     .map((s) => `- "${s.title}"${s.artist ? ` by ${s.artist}` : ""}`)
     .join("\n");
 
-  const prompt = `A user wants recommendations based on these seed songs:
+  // Build context sections
+  let contextSections = "";
+
+  if (context?.likedSongs?.length) {
+    contextSections += `\n## Songs This User Has Liked Before (use as POSITIVE signal — recommend more like these)
+${context.likedSongs.map((s) => `- "${s.title}" by ${s.artist}`).join("\n")}
+`;
+  }
+
+  if (context?.dislikedSongs?.length) {
+    contextSections += `\n## Songs This User Disliked (use as NEGATIVE signal — avoid this style/vibe)
+${context.dislikedSongs.map((s) => `- "${s.title}" by ${s.artist}`).join("\n")}
+`;
+  }
+
+  if (context?.recentListens?.length) {
+    contextSections += `\n## What They've Been Listening To Recently
+${context.recentListens.map((s) => `- "${s.title}" by ${s.artist}`).join("\n")}
+`;
+  }
+
+  if (context?.topArtists?.length) {
+    contextSections += `\n## Their Most-Played Artists
+${context.topArtists.map((a) => `- ${a.artist} (${a.count} plays)`).join("\n")}
+`;
+  }
+
+  if (context?.preferences) {
+    const p = context.preferences;
+    contextSections += `\n## User Preferences
+- Favorite genres: ${p.genres.length > 0 ? p.genres.join(", ") : "Not specified"}
+- Current mood: ${p.mood || "Not specified"}
+- Discovery level: ${p.discoveryLevel}/100 (0=stick to what I know, 100=surprise me)
+${p.excludeArtists.length > 0 ? `- DO NOT recommend these artists: ${p.excludeArtists.join(", ")}` : ""}
+`;
+  }
+
+  let avoidSection = "";
+  if (context?.previouslyRecommended?.length) {
+    avoidSection = `\n## DO NOT RECOMMEND (already recommended before)
+${context.previouslyRecommended.map((s) => `- ${s}`).join("\n")}
+`;
+  }
+
+  const prompt = `A user wants music recommendations based on these seed songs:
 
 ${seedList}
-
+${contextSections}${avoidSection}
 ## Your Analysis Process
-1. Identify the common threads: genre, subgenre, tempo, mood, era, instrumentation, vocal style, lyrical themes, production style
-2. Consider the sonic palette — are these songs dark, upbeat, melancholic, aggressive, dreamy, etc.?
-3. Think about what makes someone love THESE specific songs, not just the artists in general
+First, analyze the seeds carefully:
+1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
+2. What emotional territory do they occupy? (not just "sad" — think: "bittersweet nostalgia with an undercurrent of hope")
+3. What era/scene/movement do they connect to?
+4. What would someone who loves these songs be searching for but can't quite find?
+${context?.likedSongs?.length ? "\n5. Cross-reference with their liked songs — what patterns emerge? Double down on those qualities." : ""}
+${context?.dislikedSongs?.length ? "\n6. Cross-reference with their disliked songs — what should you actively AVOID?" : ""}
 
-## Recommendation Rules
-- Recommend ${count} songs. Prioritize QUALITY over variety — every pick should be a genuine "if you love those songs, you'll love this" recommendation
-- Include a mix of: well-known tracks the user may have missed, deep cuts from related artists, and lesser-known artists in the same sonic space
-- NEVER recommend the seed songs or obvious greatest hits that everyone already knows (e.g. don't recommend "Bohemian Rhapsody" or "Stairway to Heaven" unless the seeds are truly obscure)
-- Match the ENERGY and MOOD of the seeds, not just the genre. If seeds are chill indie, don't recommend upbeat pop
-- Each song MUST actually exist — do not invent fake songs or artists
-- The reason should reference specific musical qualities shared with the seeds (e.g. "similar dreamy synth textures" not "you might like this artist")
-- Confidence score: 0.9+ = perfect match, 0.7-0.9 = strong match, 0.5-0.7 = adventurous pick
+## Recommendation Strategy
+Generate ${count} recommendations using this distribution:
+- 3-4 songs: **Deep cuts** from artists adjacent to the seeds (B-sides, album tracks, not singles)
+- 2-3 songs: **Lesser-known artists** in the same sonic space that most people haven't heard
+- 2-3 songs: **Cross-genre gems** that share the same emotional DNA but from unexpected genres
+- 1-2 songs: **Classic tracks** the user genuinely might have missed (not obvious hits)
 
-Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences referencing specific musical qualities), confidence_score (number 0-1).
+## Hard Rules
+- Every song MUST actually exist — real title, real artist, real release
+- NEVER recommend the seed songs themselves
+- NEVER recommend songs from the "already recommended" list above
+- Match the ENERGY and MOOD, not just the genre
+- The reason MUST reference a specific musical quality shared with the seeds (production style, vocal texture, rhythmic feel, harmonic approach, lyrical theme)
+- Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
+
+Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences with specific musical qualities), confidence_score (number 0-1).
 
 Return ONLY the JSON array, no other text.`;
 
