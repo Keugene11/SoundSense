@@ -230,7 +230,7 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
       <div className="space-y-3">
         <div className="flex gap-2">
           <Input
-            placeholder="Search for a song (e.g. Bohemian Rhapsody, Sea of Problems)"
+            placeholder="Song name or YouTube link"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {

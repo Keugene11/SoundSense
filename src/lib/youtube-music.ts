@@ -160,6 +160,63 @@ export async function lookupSeedSong(
   }
 }
 
+/**
+ * Extract a YouTube video ID from various URL formats.
+ * Returns null if the string isn't a YouTube link.
+ */
+export function extractYouTubeVideoId(input: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|music\.youtube\.com\/watch\?.*v=)([\w-]{11})/,
+    /youtube\.com\/shorts\/([\w-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = input.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+/**
+ * Get video details (title, channel) from a YouTube video ID
+ * using the Data API v3.
+ */
+export async function getVideoDetails(
+  videoId: string
+): Promise<{ title: string; channelTitle: string } | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const params = new URLSearchParams({
+      part: "snippet",
+      id: videoId,
+      key: apiKey,
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?${params}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const item = data.items?.[0];
+    if (!item) return null;
+
+    return {
+      title: item.snippet.title,
+      channelTitle: item.snippet.channelTitle,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function startDeviceFlow() {
   return fetchService("/api/oauth/device-code", { method: "POST" });
 }
