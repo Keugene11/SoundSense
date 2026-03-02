@@ -233,7 +233,7 @@ ${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
 
   const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
   const bannedArtistsLine = seedArtists.length > 0
-    ? `\n## BANNED ARTISTS (do NOT recommend any song by these artists):\n${seedArtists.map((a) => `- ${a}`).join("\n")}\nThe user already knows these artists. Recommending their other songs is lazy curation. Show the user something NEW.\n`
+    ? `\n## BANNED ARTISTS (do NOT recommend any song by these artists — not even as a featured artist):\n${seedArtists.map((a) => `- ${a}`).join("\n")}\nThe user already knows these artists. Recommending their other songs is lazy curation. Show the user something NEW. This includes songs where they appear as a featured artist (feat.), collaborator, or under any variation of their name.\n`
     : "";
 
   const prompt = `A user wants music recommendations based on these seed songs:
@@ -267,12 +267,16 @@ Generate exactly ${requestCount} recommendations.${candidates?.length ? `
 - NEVER recommend ANY song by ANY of the seed artists. The user already knows those artists. Zero exceptions.
 - NEVER recommend songs from the "already recommended" list above
 - Match the ENERGY and MOOD, not just the genre
-- The reason MUST reference a specific musical quality shared with the seeds (e.g., "driving 808 bass with falsetto vocals" not "similar vibe")
+- Each reason MUST name at least ONE specific musical element (e.g., tempo, chord voicings, production technique, instrument tone, vocal style, rhythmic pattern). NEVER use vague phrases like "similar vibe", "fans of X will enjoy", "if you like", "in the same vein", or "reminiscent of".
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
 
-Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences with specific musical qualities), confidence_score (number 0-1).
+Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences naming specific musical elements), confidence_score (number 0-1).
 
 Return ONLY the JSON array, no other text.`;
 
-  return callAI(prompt, requestCount);
+  const results = await callAI(prompt, requestCount);
+
+  // Safety net: programmatically filter out any seed artist songs that leaked through
+  const seedArtistSet = new Set(seedArtists.map((a) => a.toLowerCase()));
+  return results.filter((r) => !seedArtistSet.has(r.artist.toLowerCase()));
 }
