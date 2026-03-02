@@ -4,8 +4,6 @@ import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity } from "@/lib
 import { searchYouTubeRace, lookupSeedSong } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
-import { verifyTrackMusicBrainz } from "@/lib/musicbrainz";
-import { verifyViaOdesli } from "@/lib/odesli";
 import {
   getSubscription,
   getTodayRecommendationCount,
@@ -27,9 +25,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const seeds: { title: string; artist: string }[] = body.seeds;
 
-    if (!Array.isArray(seeds) || seeds.length === 0 || seeds.length > 10) {
+    if (!Array.isArray(seeds) || seeds.length === 0 || seeds.length > 1) {
       return NextResponse.json(
-        { error: "Provide between 1 and 10 seed songs" },
+        { error: "Provide exactly 1 seed song" },
         { status: 400 }
       );
     }
@@ -85,12 +83,13 @@ export async function POST(req: NextRequest) {
         getTopArtists(user.id, 20),
       ]);
 
-    // Merge + dedupe similar artists from TasteDive and ListenBrainz
+    // Merge + dedupe similar artists from TasteDive and ListenBrainz, excluding seed artists
+    const seedArtistLower = new Set(seedArtists.map((a) => a.toLowerCase()));
     const seenArtists = new Set<string>();
     const similarArtists: string[] = [];
     for (const name of [...tdArtists, ...lbArtists]) {
       const lower = name.toLowerCase();
-      if (!seenArtists.has(lower)) {
+      if (!seenArtists.has(lower) && !seedArtistLower.has(lower)) {
         seenArtists.add(lower);
         similarArtists.push(name);
       }
@@ -127,24 +126,19 @@ export async function POST(req: NextRequest) {
       similarArtists.length > 0 ? similarArtists : undefined
     );
 
-    // Phase 3: YouTube search + multi-source verification in parallel for each rec
+    // Phase 3: YouTube search + Last.fm verification in parallel for each rec
+    // (Dropped MusicBrainz — rate limited at 1 req/sec, mostly 503s with 12 parallel reqs)
     const enrichedRecs = await Promise.all(
       aiRecs.map(async (rec) => {
         const searchQuery = `${rec.title} ${rec.artist}`;
 
-        // Run YouTube search, Last.fm, and MusicBrainz verification concurrently
-        const [ytResult, lastfm, mb] = await Promise.all([
+        // Run YouTube search and Last.fm verification concurrently
+        const [ytResult, lastfm] = await Promise.all([
           searchYouTubeRace(searchQuery),
           verifyTrackExists(rec.artist, rec.title),
-          verifyTrackMusicBrainz(rec.artist, rec.title),
         ]);
 
-        // Odesli needs videoId, so it runs after YouTube search
-        const odesliResult = ytResult?.videoId
-          ? await verifyViaOdesli(ytResult.videoId)
-          : { exists: false, platformCount: 0 };
-
-        // Compute verification score from all sources
+        // Compute verification score
         let ytScore = 0;
         if (ytResult?.resultTitle) {
           const recStr = `${rec.title} ${rec.artist}`;
@@ -154,9 +148,7 @@ export async function POST(req: NextRequest) {
           );
         }
         const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
-        const mbScore = mb.score;
-        const odesliScore = odesliResult.platformCount >= 3 ? 1.0 : (odesliResult.exists ? 0.7 : 0);
-        const verificationScore = Math.max(ytScore, lastfmScore, mbScore, odesliScore);
+        const verificationScore = Math.max(ytScore, lastfmScore);
 
         return {
           user_id: user.id,

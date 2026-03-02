@@ -74,16 +74,20 @@ export async function getSimilarArtistsLB(
 ): Promise<string[]> {
   if (artistNames.length === 0) return [];
 
-  // Cap at 3 to respect MusicBrainz rate limit (1 req/sec)
-  const capped = artistNames.slice(0, 3);
+  // Look up just the first artist to keep it fast
+  const capped = artistNames.slice(0, 1);
   const allSimilar: string[] = [];
   const inputLower = new Set(artistNames.map((a) => a.toLowerCase()));
 
-  // Run sequentially to respect MusicBrainz rate limit
-  for (const artist of capped) {
-    const mbid = await getArtistMBID(artist);
-    if (!mbid) continue;
-    const similar = await getSimilarFromLB(mbid);
+  // Run lookups in parallel (only 1 artist, so MusicBrainz rate limit is fine)
+  const results = await Promise.all(
+    capped.map(async (artist) => {
+      const mbid = await getArtistMBID(artist);
+      if (!mbid) return [];
+      return getSimilarFromLB(mbid);
+    })
+  );
+  for (const similar of results) {
     allSimilar.push(...similar);
   }
 

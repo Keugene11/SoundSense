@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -9,10 +10,13 @@ export function TrackCard({ track }: { track: ListeningHistoryEntry }) {
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
         {track.thumbnail_url ? (
-          <img
+          <Image
             src={track.thumbnail_url}
             alt={track.title}
+            width={48}
+            height={48}
             className="h-12 w-12 rounded object-cover"
+            unoptimized
           />
         ) : (
           <div className="flex h-12 w-12 items-center justify-center rounded bg-muted text-xs">

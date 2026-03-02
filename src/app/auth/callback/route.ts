@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -6,14 +7,35 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
 
-  // Use the app URL for redirects (more reliable on Vercel than request origin)
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     `${request.headers.get("x-forwarded-proto") || "https"}://${request.headers.get("host")}`;
 
   if (code) {
     try {
-      const supabase = await createClient();
+      const cookieStore = await cookies();
+
+      // Collect cookies that the SDK wants to set so we can apply them to the redirect
+      const cookiesToReturn: { name: string; value: string; options: Record<string, unknown> }[] = [];
+
+      const supabase = createServerClient(
+        process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+                cookiesToReturn.push({ name, value, options: options as Record<string, unknown> });
+              });
+            },
+          },
+        }
+      );
+
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (!error && data.user) {
@@ -40,7 +62,6 @@ export async function GET(request: Request) {
             console.error("Profile creation failed:", profileError);
           }
 
-          // These depend on profile existing (FK), so only run if profile succeeded
           if (!profileError) {
             const [prefsResult, subResult] = await Promise.all([
               supabase.from("user_preferences").insert({
@@ -60,7 +81,12 @@ export async function GET(request: Request) {
           }
         }
 
-        return NextResponse.redirect(`${appUrl}${next}`);
+        // Build redirect and explicitly copy session cookies onto it
+        const response = NextResponse.redirect(`${appUrl}${next}`);
+        for (const { name, value, options } of cookiesToReturn) {
+          response.cookies.set(name, value, options);
+        }
+        return response;
       }
 
       console.error("Auth exchange failed:", error);

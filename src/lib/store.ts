@@ -115,20 +115,6 @@ export async function insertRecommendations(
   return data ?? [];
 }
 
-export async function updateRecommendationStatus(
-  id: string,
-  userId: string,
-  status: Recommendation["status"]
-): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("recommendations")
-    .update({ status })
-    .eq("id", id)
-    .eq("user_id", userId);
-  if (error) throw error;
-}
-
 export async function getTodayRecommendationCount(
   userId: string
 ): Promise<number> {

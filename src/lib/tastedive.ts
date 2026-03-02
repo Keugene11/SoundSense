@@ -19,7 +19,7 @@ export async function getSimilarArtistsTD(
   });
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 5000);
 
   try {
     const res = await fetch(

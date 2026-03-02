@@ -4,8 +4,6 @@ import { getSimilarTracks, verifyTrackExists, titleSimilarity } from "@/lib/last
 import { searchYTMusic } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
-import { verifyTrackMusicBrainz } from "@/lib/musicbrainz";
-import { verifyViaOdesli } from "@/lib/odesli";
 import {
   getListeningHistory,
   getPreferences,
@@ -72,8 +70,8 @@ export async function POST() {
       .slice(0, 5);
     const seedArtists = [...new Set(recentSeeds.map((t) => t.artist!))];
 
-    let lastfmCandidates: { title: string; artist: string; matchScore: number }[] = [];
-    let similarArtists: string[] = [];
+    const lastfmCandidates: { title: string; artist: string; matchScore: number }[] = [];
+    const similarArtists: string[] = [];
 
     // Run Last.fm candidates + TasteDive + ListenBrainz in parallel
     const [lastfmResult, tdArtists, lbArtists] = await Promise.all([
@@ -131,8 +129,8 @@ export async function POST() {
       aiRecs.map(async (rec) => {
         const searchQuery = `${rec.title} ${rec.artist}`;
 
-        // Run YouTube search, Last.fm, and MusicBrainz verification concurrently
-        const [ytResult, lastfm, mb] = await Promise.all([
+        // Run YouTube search and Last.fm verification concurrently
+        const [ytResult, lastfm] = await Promise.all([
           searchYTMusic(user.id, searchQuery, "songs", 1)
             .then((results: Record<string, unknown>[]) => {
               if (results.length > 0 && results[0].videoId) {
@@ -146,15 +144,9 @@ export async function POST() {
             })
             .catch(() => null),
           verifyTrackExists(rec.artist, rec.title),
-          verifyTrackMusicBrainz(rec.artist, rec.title),
         ]);
 
-        // Odesli needs videoId, so it runs after YouTube search
-        const odesliResult = ytResult?.videoId
-          ? await verifyViaOdesli(ytResult.videoId)
-          : { exists: false, platformCount: 0 };
-
-        // Compute verification score from all sources
+        // Compute verification score
         let ytScore = 0;
         if (ytResult?.resultTitle) {
           const recStr = `${rec.title} ${rec.artist}`;
@@ -164,9 +156,7 @@ export async function POST() {
           );
         }
         const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
-        const mbScore = mb.score;
-        const odesliScore = odesliResult.platformCount >= 3 ? 1.0 : (odesliResult.exists ? 0.7 : 0);
-        const verificationScore = Math.max(ytScore, lastfmScore, mbScore, odesliScore);
+        const verificationScore = Math.max(ytScore, lastfmScore);
 
         return {
           user_id: user.id,

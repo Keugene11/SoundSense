@@ -10,14 +10,12 @@ import type { Recommendation, SeedSong } from "@/types/database";
 interface DiscoverClientProps {
   plan: "free" | "pro";
   initialSeeds: SeedSong[];
-  likedSongs: Recommendation[];
 }
 
-export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }: DiscoverClientProps) {
+export function DiscoverClient({ plan, initialSeeds }: DiscoverClientProps) {
   const [seeds, setSeeds] = useState<SeedSong[]>(initialSeeds);
   const [input, setInput] = useState("");
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [liked, setLiked] = useState<Recommendation[]>(initialLiked);
   const [generating, setGenerating] = useState(false);
 
   // Playlist state
@@ -38,9 +36,18 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    if (seeds.length >= 10) {
-      toast.error("Maximum 10 seed songs");
-      return;
+    // Remove existing seed first if one exists
+    if (seeds.length > 0) {
+      for (const s of seeds) {
+        try {
+          await fetch("/api/seeds", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: s.id }),
+          });
+        } catch {}
+      }
+      setSeeds([]);
     }
 
     setInput("");
@@ -55,11 +62,11 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       if (data.seeds) {
-        // Playlist — multiple seeds returned
-        setSeeds((prev) => [...prev, ...data.seeds]);
-        toast.success(`Added ${data.seeds.length} songs from playlist`);
+        // Playlist — take only the first song
+        setSeeds([data.seeds[0]]);
+        toast.success(`Added "${data.seeds[0].title}"`);
       } else {
-        setSeeds((prev) => [...prev, data.seed]);
+        setSeeds([data.seed]);
       }
     } catch {
       toast.error("Failed to save seed song");
@@ -132,52 +139,6 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
     }
   };
 
-  // Keep a ref map of all known recs so we can always find them
-  const allRecsMap = new Map<string, Recommendation>();
-  for (const r of recommendations) allRecsMap.set(r.id, r);
-  for (const r of liked) allRecsMap.set(r.id, r);
-
-  const handleStatusChange = async (
-    id: string,
-    status: Recommendation["status"]
-  ) => {
-    const rec = allRecsMap.get(id);
-    if (!rec) return;
-
-    const updatedRec = { ...rec, status };
-
-    // Update recommendations list
-    setRecommendations((prev) =>
-      prev.map((r) => (r.id === id ? updatedRec : r))
-    );
-
-    // Update liked list
-    setLiked((prev) => {
-      if (status === "liked") {
-        // Add or update in liked list
-        const exists = prev.some((r) => r.id === id);
-        if (exists) {
-          return prev.map((r) => (r.id === id ? updatedRec : r));
-        }
-        return [...prev, updatedRec];
-      }
-      // Remove from liked list if no longer liked
-      return prev.filter((r) => r.id !== id);
-    });
-
-    // Persist to DB
-    try {
-      const res = await fetch("/api/recommendations", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
-      });
-      if (!res.ok) throw new Error("Failed to update");
-    } catch {
-      toast.error("Failed to update recommendation");
-    }
-  };
-
   // Playlist controls
   const playIndex = useCallback(
     (index: number) => {
@@ -229,14 +190,14 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
       <div>
         <h1 className="text-3xl font-bold">Discover</h1>
         <p className="mt-1 text-muted-foreground">
-          Enter songs you like and get personalized recommendations.
+          Enter a song you like and get personalized recommendations.
         </p>
       </div>
 
       <div className="space-y-3">
         <div className="flex gap-2">
           <Input
-            placeholder="Song name, YouTube link, or playlist URL"
+            placeholder="Song name or YouTube link"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -247,7 +208,7 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
             }}
           />
           <Button variant="outline" onClick={addSeed} disabled={!input.trim() || adding}>
-            {adding ? "Finding..." : "Add"}
+            {adding ? "Finding..." : seeds.length > 0 ? "Replace" : "Add"}
           </Button>
         </div>
 
@@ -327,7 +288,6 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
             <RecommendationCard
               key={rec.id}
               rec={rec}
-              onStatusChange={handleStatusChange}
               isActive={currentIndex === i && isPlaying}
               onPlay={
                 rec.video_id
@@ -343,22 +303,6 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
               onEnded={playNext}
             />
           ))}
-        </div>
-      )}
-
-      {/* Liked Songs */}
-      {liked.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold">Liked Songs</h2>
-          <div className="grid gap-4">
-            {liked.map((rec) => (
-              <RecommendationCard
-                key={rec.id}
-                rec={rec}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
-          </div>
         </div>
       )}
 

@@ -69,7 +69,7 @@ async function callAI(prompt: string, count: number): Promise<AIRecommendation[]
 export async function generateRecommendations(
   history: ListeningHistoryEntry[],
   preferences: UserPreferences,
-  count: number = 10,
+  _count: number = 10,
   candidates?: CandidateTrack[],
   similarArtists?: string[]
 ): Promise<AIRecommendation[]> {
@@ -90,13 +90,13 @@ export async function generateRecommendations(
     .slice(0, 15)
     .map(([name, count]) => ({ name, count }));
 
-  const requestCount = 20; // Over-generate, verification will filter to final count
+  const requestCount = 10;
 
   let candidateSection = "";
   if (candidates?.length) {
     const halfCount = Math.ceil(requestCount * 0.5);
     const candidateList = candidates
-      .slice(0, 80)
+      .slice(0, 40)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
@@ -165,7 +165,7 @@ interface CandidateTrack {
 
 export async function generateFromSeeds(
   seeds: EnrichedSeed[],
-  count: number = 10,
+  _count: number = 10,
   context?: SeedContext,
   candidates?: CandidateTrack[],
   similarArtists?: string[]
@@ -212,13 +212,13 @@ ${context.previouslyRecommended.map((s) => `- ${s}`).join("\n")}
 `;
   }
 
-  const requestCount = 20; // Over-generate, verification will filter to final count
+  const requestCount = 10;
 
   let candidateSection = "";
   if (candidates?.length) {
     const halfCount = Math.ceil(requestCount * 0.5);
     const candidateList = candidates
-      .slice(0, 80)
+      .slice(0, 40)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
@@ -239,7 +239,18 @@ ${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
 `;
   }
 
-  const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
+  // Extract ALL artists from seeds, splitting collabs like "Tainy, Bad Bunny, Julieta Venegas"
+  const seedArtists = [...new Set(
+    seeds
+      .flatMap((s) => {
+        if (!s.artist) return [];
+        // Split on common collaboration delimiters
+        return s.artist
+          .split(/(?:,\s*|\s+(?:feat\.?|ft\.?|x|&|and|with|y)\s+)/i)
+          .map((a) => a.trim())
+          .filter(Boolean);
+      })
+  )];
   const bannedArtistsLine = seedArtists.length > 0
     ? `\n## BANNED ARTISTS (do NOT recommend any song by these artists — not even as a featured artist):\n${seedArtists.map((a) => `- ${a}`).join("\n")}\nThe user already knows these artists. Recommending their other songs is lazy curation. Show the user something NEW. This includes songs where they appear as a featured artist (feat.), collaborator, or under any variation of their name.\n`
     : "";
@@ -288,5 +299,11 @@ Return ONLY the JSON array, no other text.`;
 
   // Safety net: programmatically filter out any seed artist songs that leaked through
   const seedArtistSet = new Set(seedArtists.map((a) => a.toLowerCase()));
-  return results.filter((r) => !seedArtistSet.has(r.artist.toLowerCase()));
+  return results.filter((r) => {
+    // Split the recommendation's artist field too, in case it's a collab
+    const recArtists = r.artist
+      .split(/(?:,\s*|\s+(?:feat\.?|ft\.?|x|&|and|with|y)\s+)/i)
+      .map((a) => a.trim().toLowerCase());
+    return !recArtists.some((a) => seedArtistSet.has(a));
+  });
 }

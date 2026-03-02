@@ -18,7 +18,7 @@ interface LastfmSimilarArtistsResponse {
 
 async function fetchLastfm<T>(path: string): Promise<T> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
     const res = await fetch(`${PYTHON_SERVICE_URL}${path}`, {
       signal: controller.signal,
@@ -165,6 +165,17 @@ export async function getCandidatesForSeeds(
   const seedKeys = new Set(
     seeds.map((s) => `${s.title.toLowerCase()}|${s.artist.toLowerCase()}`)
   );
+
+  // Build a set of all seed artists (splitting collabs) so we can exclude them
+  const seedArtists = new Set(
+    seeds.flatMap((s) =>
+      s.artist
+        .split(/(?:,\s*|\s+(?:feat\.?|ft\.?|x|&|and|with|y)\s+)/i)
+        .map((a) => a.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+
   const candidates: LastfmTrack[] = [];
 
   for (const result of results) {
@@ -172,6 +183,13 @@ export async function getCandidatesForSeeds(
     for (const track of result.value) {
       const key = `${track.title.toLowerCase()}|${track.artist.toLowerCase()}`;
       if (seen.has(key) || seedKeys.has(key)) continue;
+
+      // Skip tracks by seed artists
+      const trackArtists = track.artist
+        .split(/(?:,\s*|\s+(?:feat\.?|ft\.?|x|&|and|with|y)\s+)/i)
+        .map((a) => a.trim().toLowerCase());
+      if (trackArtists.some((a) => seedArtists.has(a))) continue;
+
       seen.add(key);
       candidates.push(track);
     }

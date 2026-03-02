@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { toast } from "sonner";
 import type { Recommendation } from "@/types/database";
@@ -19,7 +18,6 @@ export function RecommendationsClient({
   const [recommendations, setRecommendations] =
     useState<Recommendation[]>(initialRecs);
   const [generating, setGenerating] = useState(false);
-  const [filter, setFilter] = useState<string>("all");
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -53,31 +51,6 @@ export function RecommendationsClient({
     }
   };
 
-  const handleStatusChange = async (
-    id: string,
-    status: Recommendation["status"]
-  ) => {
-    try {
-      const res = await fetch("/api/recommendations", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
-      });
-      if (!res.ok) throw new Error("Failed to update");
-
-      setRecommendations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status } : r))
-      );
-    } catch {
-      toast.error("Failed to update recommendation");
-    }
-  };
-
-  const filtered =
-    filter === "all"
-      ? recommendations
-      : recommendations.filter((r) => r.status === filter);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -87,43 +60,20 @@ export function RecommendationsClient({
         </Button>
       </div>
 
-      <Tabs value={filter} onValueChange={setFilter}>
-        <TabsList>
-          <TabsTrigger value="all">All ({recommendations.length})</TabsTrigger>
-          <TabsTrigger value="pending">
-            New ({recommendations.filter((r) => r.status === "pending").length})
-          </TabsTrigger>
-          <TabsTrigger value="liked">
-            Liked ({recommendations.filter((r) => r.status === "liked").length})
-          </TabsTrigger>
-          <TabsTrigger value="saved">
-            Saved ({recommendations.filter((r) => r.status === "saved").length})
-          </TabsTrigger>
-          <TabsTrigger value="disliked">
-            Disliked (
-            {recommendations.filter((r) => r.status === "disliked").length})
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value={filter} className="mt-4">
-          {filtered.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              {recommendations.length === 0
-                ? "No recommendations yet. Click Generate to get started!"
-                : "No recommendations in this category."}
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {filtered.map((rec) => (
-                <RecommendationCard
-                  key={rec.id}
-                  rec={rec}
-                  onStatusChange={handleStatusChange}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      {recommendations.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground">
+          No recommendations yet. Click Generate to get started!
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {recommendations.map((rec) => (
+            <RecommendationCard
+              key={rec.id}
+              rec={rec}
+            />
+          ))}
+        </div>
+      )}
 
       {plan === "free" && (
         <p className="text-center text-sm text-muted-foreground">

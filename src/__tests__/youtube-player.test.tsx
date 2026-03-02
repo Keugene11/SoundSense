@@ -1,20 +1,23 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, cleanup, act } from "@testing-library/react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- test mocks need flexible typing
+type AnyWindow = Record<string, any>;
+
 // Track Player constructor calls
 const mockDestroy = vi.fn();
-let playerConstructorCalls: Array<{ element: any; config: any }> = [];
+let playerConstructorCalls: Array<{ element: unknown; config: Record<string, unknown> }> = [];
 
 class MockPlayer {
   destroy: typeof mockDestroy;
-  constructor(element: any, config: any) {
+  constructor(element: unknown, config: Record<string, unknown>) {
     playerConstructorCalls.push({ element, config });
     this.destroy = mockDestroy;
   }
 }
 
 function setupYTMock() {
-  (window as any).YT = {
+  (window as unknown as AnyWindow).YT = {
     Player: MockPlayer,
     PlayerState: {
       ENDED: 0,
@@ -33,12 +36,12 @@ describe("YouTubePlayer", () => {
     playerConstructorCalls = [];
     document.head.querySelectorAll('script[src*="youtube"]').forEach((s) => s.remove());
     window.onYouTubeIframeAPIReady = undefined;
-    delete (window as any).YT;
+    delete (window as unknown as AnyWindow).YT;
   });
 
   afterEach(() => {
     cleanup();
-    delete (window as any).YT;
+    delete (window as unknown as AnyWindow).YT;
     window.onYouTubeIframeAPIReady = undefined;
   });
 
@@ -108,13 +111,14 @@ describe("YouTubePlayer", () => {
       }
     });
 
-    const onStateChange = playerConstructorCalls[0].config.events.onStateChange;
+    const events = playerConstructorCalls[0].config.events as Record<string, (e: { data: number }) => void>;
+    const onStateChange = events.onStateChange;
 
-    onStateChange({ data: (window as any).YT.PlayerState.ENDED });
+    onStateChange({ data: 0 }); // ENDED
     expect(onEnded).toHaveBeenCalledTimes(1);
 
     // Non-ENDED state should not call onEnded
-    onStateChange({ data: (window as any).YT.PlayerState.PLAYING });
+    onStateChange({ data: 1 }); // PLAYING
     expect(onEnded).toHaveBeenCalledTimes(1);
   });
 

@@ -14,7 +14,7 @@ export async function verifyViaOdesli(
   if (ODESLI_API_KEY) params.set("key", ODESLI_API_KEY);
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 6000);
+  const timeout = setTimeout(() => controller.abort(), 4000);
 
   try {
     const res = await fetch(

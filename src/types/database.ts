@@ -50,7 +50,7 @@ export interface Recommendation {
   thumbnail_url: string | null;
   reason: string | null;
   confidence_score: number | null;
-  status: "pending" | "liked" | "disliked" | "saved";
+  status: "pending";
   created_at: string;
 }
 

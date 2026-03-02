@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRouteUser } from "@/lib/auth";
-import { insertSeedSong, deleteSeedSong, getSeedSongs } from "@/lib/store";
+import { insertSeedSong, deleteSeedSong } from "@/lib/store";
 import {
   lookupSeedSong,
   extractYouTubeVideoId,
@@ -46,13 +46,7 @@ export async function POST(request: Request) {
     const playlistId = extractYouTubePlaylistId(input);
     if (playlistId) {
       // Check how many seeds the user already has
-      const existing = await getSeedSongs(user.id);
-      const slotsLeft = 10 - existing.length;
-      if (slotsLeft <= 0) {
-        return NextResponse.json({ error: "Maximum 10 seed songs" }, { status: 400 });
-      }
-
-      const items = await getPlaylistItems(playlistId, slotsLeft);
+      const items = await getPlaylistItems(playlistId, 1);
       if (items.length === 0) {
         return NextResponse.json(
           { error: "Could not load playlist. It may be private or the API quota is exceeded." },
