@@ -277,7 +277,7 @@ Generate exactly ${requestCount} recommendations.${candidates?.length ? `
 - NEVER recommend songs from the "already recommended" list above
 - Maximum 1 song per artist in your recommendations. Every recommendation should be from a DIFFERENT artist.
 - Match the ENERGY and MOOD, not just the genre
-- Each reason should follow this pattern: "Features [specific musical element] that connects to the seeds' [specific quality]." Name concrete elements like BPM, key, chord types, production effects, instrument tones, vocal techniques. Do NOT use comparison words like "reminiscent of", "akin to", "echoing", "similar to". Describe what the song DOES, not what it's LIKE.
+- Each reason must describe what the song DOES musically, naming 2-3 concrete elements (e.g., BPM, key, chord types, production effects, instrument tones, vocal techniques, rhythmic patterns). Do NOT use comparison clichés like "reminiscent of", "akin to", "echoing", "similar to". Example: "Layers warm Rhodes piano over a shuffling 6/8 drum pattern at ~90 BPM, with breathy falsetto vocals that float above lush string arrangements."
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
 
 Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences naming specific musical elements), confidence_score (number 0-1).
