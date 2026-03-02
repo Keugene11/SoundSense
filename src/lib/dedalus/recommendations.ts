@@ -140,10 +140,10 @@ ${candidateSection}${similarArtistsSection}
 - Maximum 1 song per artist — show variety
 - Every song MUST actually exist — use EXACT official title and artist spelling
 - NEVER invent or guess at song titles. If you can't recall the exact title, skip it.
-- For each recommendation, reference specific musical qualities (e.g., "warm analog synths with a driving beat" not "similar vibe")
-- Assign a confidence score from 0.0 to 1.0
+- Each reason must describe what the song DOES musically, naming 2-3 concrete elements (BPM, key, chord types, production effects, instrument tones, vocal techniques). Do NOT use comparison clichés like "reminiscent of", "akin to", "similar to".
+- Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous pick"
 
-Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences), confidence_score (number 0-1).
+Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences naming specific musical elements), confidence_score (number 0-1).
 
 Return ONLY the JSON array, no other text.`;
 
