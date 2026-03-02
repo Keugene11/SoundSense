@@ -34,18 +34,20 @@ You recommend songs that make people say "holy shit, how did you know I'd love t
 
 CRITICAL RULES:
 - Every song you recommend MUST be a real song that actually exists. Never invent songs or artists.
+- If you are not 100% certain a song exists, do NOT include it. It is better to recommend fewer songs than to recommend fake ones.
 - Never recommend a song the user has already heard, liked, or been recommended before.
 - Never recommend the seed songs themselves.`;
 
-async function callAI(prompt: string, count: number): Promise<AIRecommendation[]> {
+async function callAI(prompt: string, count: number, overGenerate = false): Promise<AIRecommendation[]> {
+  const requestCount = overGenerate ? count + 5 : count;
   const response = await dedalus.chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: prompt },
     ],
-    temperature: 0.7,
-    max_tokens: 4000,
+    temperature: 0.5,
+    max_tokens: 5000,
   });
 
   const content = response.choices[0]?.message?.content?.trim();
@@ -54,13 +56,20 @@ async function callAI(prompt: string, count: number): Promise<AIRecommendation[]
   const cleaned = content.replace(/^```json?\n?/, "").replace(/\n?```$/, "");
   const recommendations: AIRecommendation[] = JSON.parse(cleaned);
 
-  return recommendations.slice(0, count);
+  // When over-generating, sort by confidence and take the top `count`
+  if (overGenerate && recommendations.length > count) {
+    recommendations.sort((a, b) => b.confidence_score - a.confidence_score);
+    return recommendations.slice(0, count);
+  }
+
+  return recommendations.slice(0, requestCount);
 }
 
 export async function generateRecommendations(
   history: ListeningHistoryEntry[],
   preferences: UserPreferences,
-  count: number = 10
+  count: number = 10,
+  candidates?: CandidateTrack[]
 ): Promise<AIRecommendation[]> {
   const recentTracks = history.slice(0, 50).map((t) => ({
     title: t.title,
@@ -79,7 +88,22 @@ export async function generateRecommendations(
     .slice(0, 15)
     .map(([name, count]) => ({ name, count }));
 
-  const prompt = `Based on the user's listening history and preferences, suggest ${count} songs they would enjoy.
+  let candidateSection = "";
+  if (candidates?.length) {
+    const candidateList = candidates
+      .slice(0, 60)
+      .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
+      .join("\n");
+    candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
+These songs are confirmed similar based on real listener behavior.
+STRONGLY prefer picking from this list — these are verified real songs.
+You may include 1-3 wildcards not on this list, but they MUST be real songs you are certain exist.
+
+${candidateList}
+`;
+  }
+
+  const prompt = `Based on the user's listening history and preferences, suggest ${candidates?.length ? count + 5 : count} songs they would enjoy.
 
 ## User Preferences
 - Favorite genres: ${preferences.favorite_genres.length > 0 ? preferences.favorite_genres.join(", ") : "Not specified"}
@@ -92,13 +116,13 @@ ${topArtists.map((a) => `- ${a.name} (${a.count} plays)`).join("\n")}
 
 ## Recent Listening History
 ${recentTracks.map((t) => `- "${t.title}" by ${t.artist}${t.album ? ` (${t.album})` : ""}`).join("\n")}
-
+${candidateSection}
 ## Instructions
-- Suggest ${count} songs the user would likely enjoy
+- Suggest songs the user would likely enjoy
 - Mix familiar artists with new discoveries based on discovery_level
 - Do NOT recommend songs already in their history
 - Do NOT recommend songs by excluded artists
-- Each song MUST actually exist
+- Each song MUST actually exist — if you are not 100% certain a song exists, do NOT include it
 - For each recommendation, reference specific musical qualities
 - Assign a confidence score from 0.0 to 1.0
 
@@ -106,7 +130,7 @@ Respond with a JSON array of objects: title (string), artist (string), album (st
 
 Return ONLY the JSON array, no other text.`;
 
-  return callAI(prompt, count);
+  return callAI(prompt, count, !!candidates?.length);
 }
 
 interface EnrichedSeed {
@@ -116,10 +140,17 @@ interface EnrichedSeed {
   youtubeArtist?: string;
 }
 
+interface CandidateTrack {
+  title: string;
+  artist: string;
+  matchScore: number;
+}
+
 export async function generateFromSeeds(
   seeds: EnrichedSeed[],
   count: number = 10,
-  context?: SeedContext
+  context?: SeedContext,
+  candidates?: CandidateTrack[]
 ): Promise<AIRecommendation[]> {
   const seedList = seeds
     .map((s) => {
@@ -175,12 +206,27 @@ ${context.previouslyRecommended.map((s) => `- ${s}`).join("\n")}
 `;
   }
 
+  let candidateSection = "";
+  if (candidates?.length) {
+    const candidateList = candidates
+      .slice(0, 60)
+      .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
+      .join("\n");
+    candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
+These songs are confirmed similar to the seeds based on real listener behavior.
+STRONGLY prefer picking from this list — these are verified real songs.
+You may include 1-3 wildcards not on this list, but they MUST be real songs you are certain exist.
+
+${candidateList}
+`;
+  }
+
   const prompt = `A user wants music recommendations based on these seed songs:
 
 ${seedList}
 
 IMPORTANT: Use the "YouTube match" line (if present) to identify the ACTUAL song. The user may have misspelled the title or artist — the YouTube match shows what song they actually mean. Base your recommendations on the REAL song, not a literal interpretation of the user's text.
-${contextSections}${avoidSection}
+${candidateSection}${contextSections}${avoidSection}
 ## Your Analysis Process
 First, analyze the seeds carefully:
 1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
@@ -191,7 +237,7 @@ ${context?.likedSongs?.length ? "\n5. Cross-reference with their liked songs —
 ${context?.dislikedSongs?.length ? "\n6. Cross-reference with their disliked songs — what should you actively AVOID?" : ""}
 
 ## Recommendation Strategy
-Generate ${count} recommendations using this distribution:
+Generate ${candidates?.length ? count + 5 : count} recommendations using this distribution:
 - 3-4 songs: **Deep cuts** from artists adjacent to the seeds (B-sides, album tracks, not singles)
 - 2-3 songs: **Lesser-known artists** in the same sonic space that most people haven't heard
 - 2-3 songs: **Cross-genre gems** that share the same emotional DNA but from unexpected genres
@@ -204,10 +250,11 @@ Generate ${count} recommendations using this distribution:
 - Match the ENERGY and MOOD, not just the genre
 - The reason MUST reference a specific musical quality shared with the seeds (production style, vocal texture, rhythmic feel, harmonic approach, lyrical theme)
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
+- If you are not 100% certain a song exists, do NOT include it. It is better to recommend fewer songs than to recommend fake ones.
 
 Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences with specific musical qualities), confidence_score (number 0-1).
 
 Return ONLY the JSON array, no other text.`;
 
-  return callAI(prompt, count);
+  return callAI(prompt, count, !!candidates?.length);
 }

@@ -1,5 +1,6 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateFromSeeds } from "@/lib/dedalus/recommendations";
+import { getCandidatesForSeeds } from "@/lib/lastfm";
 import { searchYTMusicPublic, searchYouTubeDirect, searchYouTubeScrape, lookupSeedSong } from "@/lib/youtube-music";
 import {
   getSubscription,
@@ -72,6 +73,19 @@ export async function POST(req: NextRequest) {
       })
     );
 
+    // Fetch Last.fm similar tracks as candidates for grounding
+    let lastfmCandidates: { title: string; artist: string; matchScore: number }[] = [];
+    try {
+      lastfmCandidates = await getCandidatesForSeeds(
+        enrichedSeeds.map((s) => ({
+          title: s.youtubeTitle || s.title,
+          artist: s.youtubeArtist || s.artist,
+        }))
+      );
+    } catch (e) {
+      console.warn("Last.fm candidate fetch failed, continuing without:", e);
+    }
+
     // Build context from user's history
     const likedSongs = allRecs
       .filter((r) => r.status === "liked")
@@ -92,24 +106,29 @@ export async function POST(req: NextRequest) {
       artist: t.artist || "Unknown",
     }));
 
-    // Generate AI recommendations with full context
-    const aiRecs = await generateFromSeeds(enrichedSeeds, 10, {
-      likedSongs,
-      dislikedSongs,
-      previouslyRecommended,
-      recentListens,
-      topArtists: topArtists.slice(0, 10),
-      preferences: preferences
-        ? {
-            genres: preferences.favorite_genres,
-            mood: preferences.mood,
-            discoveryLevel: preferences.discovery_level,
-            excludeArtists: preferences.exclude_artists,
-          }
-        : null,
-    });
+    // Generate AI recommendations with full context + Last.fm candidates
+    const aiRecs = await generateFromSeeds(
+      enrichedSeeds,
+      10,
+      {
+        likedSongs,
+        dislikedSongs,
+        previouslyRecommended,
+        recentListens,
+        topArtists: topArtists.slice(0, 10),
+        preferences: preferences
+          ? {
+              genres: preferences.favorite_genres,
+              mood: preferences.mood,
+              discoveryLevel: preferences.discovery_level,
+              excludeArtists: preferences.exclude_artists,
+            }
+          : null,
+      },
+      lastfmCandidates.length > 0 ? lastfmCandidates : undefined
+    );
 
-    // Search YouTube for video IDs
+    // Search YouTube for video IDs and verify songs exist
     const enrichedRecs = await Promise.all(
       aiRecs.map(async (rec) => {
         let video_id: string | null = null;
@@ -166,7 +185,18 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    const saved = await insertRecommendations(enrichedRecs);
+    // Post-generation verification: drop recs where no YouTube match was found
+    // (likely hallucinated songs)
+    const verifiedRecs = enrichedRecs.filter((rec) => rec.video_id !== null);
+    if (verifiedRecs.length < enrichedRecs.length) {
+      const dropped = enrichedRecs.length - verifiedRecs.length;
+      console.warn(`Dropped ${dropped} recommendation(s) with no YouTube match (likely hallucinated)`);
+    }
+    if (verifiedRecs.length < 7) {
+      console.warn(`Only ${verifiedRecs.length} verified recommendations — below target of 7`);
+    }
+
+    const saved = await insertRecommendations(verifiedRecs.length > 0 ? verifiedRecs : enrichedRecs);
 
     return NextResponse.json({ recommendations: saved });
   } catch (error) {

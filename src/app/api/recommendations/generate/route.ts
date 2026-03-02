@@ -1,5 +1,6 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateRecommendations } from "@/lib/dedalus/recommendations";
+import { getSimilarTracks } from "@/lib/lastfm";
 import { searchYTMusic } from "@/lib/youtube-music";
 import {
   getListeningHistory,
@@ -65,8 +66,42 @@ export async function POST() {
       updated_at: "",
     };
 
+    // Fetch Last.fm similar tracks for recent listens as candidates
+    let lastfmCandidates: { title: string; artist: string; matchScore: number }[] = [];
+    try {
+      // Pick up to 5 recent tracks with known artists to use as seeds
+      const recentSeeds = history
+        .filter((t) => t.artist && t.title)
+        .slice(0, 5);
+      const trackResults = await Promise.allSettled(
+        recentSeeds.map((t) => getSimilarTracks(t.artist!, t.title, 20))
+      );
+      const seen = new Set<string>();
+      const historyKeys = new Set(
+        history.map((t) => `${t.title.toLowerCase()}|${(t.artist || "").toLowerCase()}`)
+      );
+      for (const result of trackResults) {
+        if (result.status !== "fulfilled") continue;
+        for (const track of result.value) {
+          const key = `${track.title.toLowerCase()}|${track.artist.toLowerCase()}`;
+          if (!seen.has(key) && !historyKeys.has(key)) {
+            seen.add(key);
+            lastfmCandidates.push(track);
+          }
+        }
+      }
+      lastfmCandidates.sort((a, b) => b.matchScore - a.matchScore);
+    } catch (e) {
+      console.warn("Last.fm candidate fetch failed, continuing without:", e);
+    }
+
     // Generate AI recommendations
-    const aiRecs = await generateRecommendations(history, defaultPrefs);
+    const aiRecs = await generateRecommendations(
+      history,
+      defaultPrefs,
+      10,
+      lastfmCandidates.length > 0 ? lastfmCandidates : undefined
+    );
 
     // Search YouTube Music for video IDs
     const enrichedRecs = await Promise.all(
@@ -103,7 +138,17 @@ export async function POST() {
       })
     );
 
-    const saved = await insertRecommendations(enrichedRecs);
+    // Post-generation verification: drop recs where no YouTube match was found
+    const verifiedRecs = enrichedRecs.filter((rec) => rec.video_id !== null);
+    if (verifiedRecs.length < enrichedRecs.length) {
+      const dropped = enrichedRecs.length - verifiedRecs.length;
+      console.warn(`Dropped ${dropped} recommendation(s) with no YouTube match (likely hallucinated)`);
+    }
+    if (verifiedRecs.length < 7) {
+      console.warn(`Only ${verifiedRecs.length} verified recommendations — below target of 7`);
+    }
+
+    const saved = await insertRecommendations(verifiedRecs.length > 0 ? verifiedRecs : enrichedRecs);
 
     return NextResponse.json({ recommendations: saved });
   } catch (error) {
