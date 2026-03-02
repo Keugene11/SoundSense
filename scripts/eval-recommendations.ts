@@ -203,8 +203,8 @@ Generate exactly ${requestCount} recommendations.
 - 1-2 songs: **Wildcards** — surprising picks that share a subtle quality with the seeds
 
 ## Hard Rules
-- Every song MUST actually exist — real title, real artist, real release. Use EXACT official spelling.
-- NEVER invent or guess at song titles. If you can't recall the exact title, skip it.
+- Every song MUST actually exist — real title, real artist, real release. Use EXACT official spelling. Double-check that the title belongs to the artist you're crediting — do NOT attribute a song to the wrong artist.
+- NEVER invent or guess at song titles. If you can't recall the EXACT title AND the correct artist, skip it.
 - NEVER recommend the seed songs themselves
 - NEVER recommend ANY song by ANY of the seed artists. The user already knows those artists. Zero exceptions.
 - NEVER recommend songs from the "already recommended" list above
