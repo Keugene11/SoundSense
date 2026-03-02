@@ -47,7 +47,23 @@ export async function POST(request: Request) {
       if (details) {
         ({ title, artist } = parseYouTubeTitle(details.title, details.channelTitle));
       } else {
-        return NextResponse.json({ error: "Could not find that video" }, { status: 400 });
+        // API quota exceeded or unavailable — try scraping the oEmbed endpoint
+        try {
+          const oembed = await fetch(
+            `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
+            { signal: AbortSignal.timeout(5000) }
+          );
+          if (oembed.ok) {
+            const data = await oembed.json();
+            ({ title, artist } = parseYouTubeTitle(data.title || videoId, data.author_name || ""));
+          } else {
+            title = videoId;
+            artist = "";
+          }
+        } catch {
+          title = videoId;
+          artist = "";
+        }
       }
     } else {
       // Free-text search — look up on YouTube

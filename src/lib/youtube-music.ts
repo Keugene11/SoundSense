@@ -202,9 +202,17 @@ export async function getVideoDetails(
     );
     clearTimeout(timeout);
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error("YouTube videos API error:", res.status);
+      return null;
+    }
 
     const data = await res.json();
+    if (data.error) {
+      console.error("YouTube API error:", data.error.message);
+      return null;
+    }
+
     const item = data.items?.[0];
     if (!item) return null;
 
