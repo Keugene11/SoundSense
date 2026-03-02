@@ -130,6 +130,7 @@ ${candidateSection}${similarArtistsSection}
 - Do NOT recommend songs already in their history
 - Do NOT recommend songs by excluded artists
 - Do NOT recommend songs by the user's top artists — they already know those. Show them something NEW.
+- Maximum 1 song per artist — show variety
 - Every song MUST actually exist — use EXACT official title and artist spelling
 - NEVER invent or guess at song titles. If you can't recall the exact title, skip it.
 - For each recommendation, reference specific musical qualities (e.g., "warm analog synths with a driving beat" not "similar vibe")
@@ -247,7 +248,8 @@ First, analyze the seeds carefully:
 1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
 2. What emotional territory do they occupy? (not just "sad" — think: "bittersweet nostalgia with an undercurrent of hope")
 3. What era/scene/movement do they connect to?
-4. What would someone who loves these songs be searching for but can't quite find?
+4. If the seeds span different genres/languages/eras, what is the BRIDGE between them? Find songs that live at that intersection — don't just recommend from each genre separately.
+5. What would someone who loves ALL of these songs be searching for but can't quite find?
 
 ## Recommendation Strategy
 Generate exactly ${requestCount} recommendations.${candidates?.length ? `
@@ -255,10 +257,10 @@ Generate exactly ${requestCount} recommendations.${candidates?.length ? `
 - The rest can be wildcards NOT on the list — be creative and adventurous with these picks${similarArtists?.length ? `, using the Similar Artists list for inspiration` : ""}
 - For songs from the verified list, use the EXACT title and artist spelling shown
 - Wildcard picks MUST be real songs you're certain exist` : `
-- 5-7 songs: **Deep cuts** from artists adjacent to the seeds (B-sides, album tracks, not singles)
-- 4-5 songs: **Lesser-known artists** in the same sonic space
-- 3-4 songs: **Cross-genre gems** that share the same emotional DNA
-- 2-3 songs: **Classic tracks** the user genuinely might have missed`}
+- 5-7 songs: **Deep cuts** — album tracks, B-sides, or lesser-known singles. AVOID mega-hits with 500M+ streams.
+- 4-5 songs: **Lesser-known artists** in the same sonic space (artists most people haven't heard of)
+- 3-4 songs: **Cross-genre gems** that share the same emotional DNA but come from a totally different genre
+- 2-3 songs: **Wildcards** — surprising picks that share a subtle quality with the seeds`}
 
 ## Hard Rules
 - Every song MUST actually exist — real title, real artist, real release. Use EXACT official spelling.
@@ -266,6 +268,7 @@ Generate exactly ${requestCount} recommendations.${candidates?.length ? `
 - NEVER recommend the seed songs themselves
 - NEVER recommend ANY song by ANY of the seed artists. The user already knows those artists. Zero exceptions.
 - NEVER recommend songs from the "already recommended" list above
+- Maximum 1 song per artist in your recommendations. Every recommendation should be from a DIFFERENT artist.
 - Match the ENERGY and MOOD, not just the genre
 - Each reason MUST name at least ONE specific musical element (e.g., tempo, chord voicings, production technique, instrument tone, vocal style, rhythmic pattern). NEVER use vague phrases like "similar vibe", "fans of X will enjoy", "if you like", "in the same vein", or "reminiscent of".
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"

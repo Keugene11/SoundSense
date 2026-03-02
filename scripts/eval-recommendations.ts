@@ -192,14 +192,15 @@ First, analyze the seeds carefully:
 1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
 2. What emotional territory do they occupy? (not just "sad" — think: "bittersweet nostalgia with an undercurrent of hope")
 3. What era/scene/movement do they connect to?
-4. What would someone who loves these songs be searching for but can't quite find?
+4. If the seeds span different genres/languages/eras, what is the BRIDGE between them? Find songs that live at that intersection — don't just recommend from each genre separately.
+5. What would someone who loves ALL of these songs be searching for but can't quite find?
 
 ## Recommendation Strategy
 Generate exactly ${requestCount} recommendations.
-- 3-4 songs: **Deep cuts** from artists adjacent to the seeds (B-sides, album tracks, not singles)
-- 2-3 songs: **Lesser-known artists** in the same sonic space
-- 2-3 songs: **Cross-genre gems** that share the same emotional DNA
-- 1-2 songs: **Classic tracks** the user genuinely might have missed
+- 3-4 songs: **Deep cuts** — album tracks, B-sides, or lesser-known singles. AVOID mega-hits with 500M+ streams.
+- 2-3 songs: **Lesser-known artists** in the same sonic space (artists most people haven't heard of)
+- 2-3 songs: **Cross-genre gems** that share the same emotional DNA but come from a totally different genre
+- 1-2 songs: **Wildcards** — surprising picks that share a subtle quality with the seeds
 
 ## Hard Rules
 - Every song MUST actually exist — real title, real artist, real release. Use EXACT official spelling.
@@ -207,6 +208,7 @@ Generate exactly ${requestCount} recommendations.
 - NEVER recommend the seed songs themselves
 - NEVER recommend ANY song by ANY of the seed artists. The user already knows those artists. Zero exceptions.
 - NEVER recommend songs from the "already recommended" list above
+- Maximum 1 song per artist in your recommendations. Every recommendation should be from a DIFFERENT artist.
 - Match the ENERGY and MOOD, not just the genre
 - Each reason MUST name at least ONE specific musical element (e.g., tempo, chord voicings, production technique, instrument tone, vocal style, rhythmic pattern). NEVER use vague phrases like "similar vibe", "fans of X will enjoy", "if you like", "in the same vein", or "reminiscent of".
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
