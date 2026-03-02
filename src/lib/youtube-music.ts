@@ -122,38 +122,59 @@ export async function lookupSeedSong(
   description: string;
 } | null> {
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) return null;
+  const query = artist ? `${title} ${artist}` : title;
 
+  // Try YouTube Data API first
+  if (apiKey) {
+    try {
+      const searchParams = new URLSearchParams({
+        part: "snippet",
+        q: `${query} official audio`,
+        type: "video",
+        videoCategoryId: "10",
+        maxResults: "3",
+        key: apiKey,
+      });
+
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?${searchParams}`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.error) {
+          const item = data.items?.[0];
+          if (item) {
+            return {
+              resolvedTitle: item.snippet.title,
+              resolvedArtist: item.snippet.channelTitle,
+              description: item.snippet.description?.slice(0, 200) || "",
+            };
+          }
+        }
+      }
+    } catch {
+      // Fall through to scrape fallback
+    }
+  }
+
+  // Fallback: scrape YouTube search to find a video ID, then use oEmbed
   try {
-    const query = artist ? `${title} ${artist}` : title;
-    const searchParams = new URLSearchParams({
-      part: "snippet",
-      q: `${query} official audio`,
-      type: "video",
-      videoCategoryId: "10",
-      maxResults: "3",
-      key: apiKey,
-    });
+    const scrapeResult = await searchYouTubeScrape(query);
+    if (!scrapeResult) return null;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-
-    const res = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?${searchParams}`,
-      { signal: controller.signal }
+    const oembed = await fetch(
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${scrapeResult.videoId}&format=json`,
+      { signal: AbortSignal.timeout(5000) }
     );
-    clearTimeout(timeout);
+    if (!oembed.ok) return null;
 
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    const item = data.items?.[0];
-    if (!item) return null;
-
+    const data = await oembed.json();
     return {
-      resolvedTitle: item.snippet.title,
-      resolvedArtist: item.snippet.channelTitle,
-      description: item.snippet.description?.slice(0, 200) || "",
+      resolvedTitle: data.title || title,
+      resolvedArtist: data.author_name || artist,
+      description: "",
     };
   } catch {
     return null;
