@@ -22,7 +22,7 @@ export const PLANS = {
   free: {
     name: "Free",
     price: 0,
-    recommendations_per_day: 5,
+    recommendations_per_day: Infinity,
     features: [
       "5 AI recommendations per day",
       "Basic listening analytics",
