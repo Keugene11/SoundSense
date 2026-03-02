@@ -119,7 +119,7 @@ export function YouTubePlayer({ videoId, onEnded }: YouTubePlayerProps) {
   }, [initPlayer]);
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-md">
+    <div className="aspect-video w-full max-w-sm overflow-hidden rounded-md">
       <div ref={containerRef} className="h-full w-full" />
     </div>
   );
