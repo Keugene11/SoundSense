@@ -1,0 +1,5 @@
+fastapi==0.115.0
+uvicorn==0.30.6
+ytmusicapi==1.8.2
+supabase==2.9.1
+python-dotenv==1.0.1

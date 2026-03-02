@@ -1,0 +1,223 @@
+import { createClient } from "@/lib/supabase/server";
+import type {
+  Profile,
+  ListeningHistoryEntry,
+  Recommendation,
+  UserPreferences,
+  Subscription,
+  SyncLog,
+} from "@/types/database";
+
+// --- Profiles ---
+
+export async function getProfile(userId: string): Promise<Profile | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  return data;
+}
+
+export async function upsertProfile(
+  profile: Partial<Profile> & { id: string }
+): Promise<Profile> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(profile)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// --- Listening History ---
+
+export async function getListeningHistory(
+  userId: string,
+  limit = 50,
+  offset = 0
+): Promise<ListeningHistoryEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("listening_history")
+    .select("*")
+    .eq("user_id", userId)
+    .order("played_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function upsertListeningHistory(
+  entries: Omit<ListeningHistoryEntry, "id" | "synced_at">[]
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("listening_history")
+    .upsert(entries, { onConflict: "user_id,video_id,played_at" });
+  if (error) throw error;
+}
+
+export async function getTopArtists(
+  userId: string,
+  limit = 10
+): Promise<{ artist: string; count: number }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("listening_history")
+    .select("artist")
+    .eq("user_id", userId)
+    .not("artist", "is", null);
+  if (error) throw error;
+
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) {
+    if (row.artist) counts[row.artist] = (counts[row.artist] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([artist, count]) => ({ artist, count }));
+}
+
+// --- Recommendations ---
+
+export async function getRecommendations(
+  userId: string,
+  status?: Recommendation["status"]
+): Promise<Recommendation[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("recommendations")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (status) query = query.eq("status", status);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function insertRecommendations(
+  recs: Omit<Recommendation, "id" | "created_at">[]
+): Promise<Recommendation[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("recommendations")
+    .insert(recs)
+    .select();
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function updateRecommendationStatus(
+  id: string,
+  userId: string,
+  status: Recommendation["status"]
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("recommendations")
+    .update({ status })
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) throw error;
+}
+
+export async function getTodayRecommendationCount(
+  userId: string
+): Promise<number> {
+  const supabase = await createClient();
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const { count, error } = await supabase
+    .from("recommendations")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", startOfDay.toISOString());
+  if (error) throw error;
+  return count ?? 0;
+}
+
+// --- User Preferences ---
+
+export async function getPreferences(
+  userId: string
+): Promise<UserPreferences | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_preferences")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+  return data;
+}
+
+export async function upsertPreferences(
+  prefs: Partial<UserPreferences> & { user_id: string }
+): Promise<UserPreferences> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("user_preferences")
+    .upsert(prefs)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// --- Subscriptions ---
+
+export async function getSubscription(
+  userId: string
+): Promise<Subscription | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+  return data;
+}
+
+// --- Sync Log ---
+
+export async function createSyncLog(userId: string): Promise<SyncLog> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sync_log")
+    .insert({ user_id: userId, status: "running" })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateSyncLog(
+  id: string,
+  updates: Partial<SyncLog>
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sync_log")
+    .update(updates)
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function getLatestSync(userId: string): Promise<SyncLog | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("sync_log")
+    .select("*")
+    .eq("user_id", userId)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .single();
+  return data;
+}
