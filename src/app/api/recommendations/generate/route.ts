@@ -1,6 +1,6 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateRecommendations } from "@/lib/dedalus/recommendations";
-import { getSimilarTracks } from "@/lib/lastfm";
+import { getSimilarTracks, verifyRecommendation } from "@/lib/lastfm";
 import { searchYTMusic } from "@/lib/youtube-music";
 import {
   getListeningHistory,
@@ -103,11 +103,12 @@ export async function POST() {
       lastfmCandidates.length > 0 ? lastfmCandidates : undefined
     );
 
-    // Search YouTube Music for video IDs
+    // Search YouTube Music for video IDs and verify songs are real
     const enrichedRecs = await Promise.all(
       aiRecs.map(async (rec) => {
         let video_id: string | null = null;
         let thumbnail_url: string | null = null;
+        let ytResultTitle: string | null = null;
 
         try {
           const results = await searchYTMusic(
@@ -119,10 +120,16 @@ export async function POST() {
           if (results.length > 0) {
             video_id = results[0].videoId || null;
             thumbnail_url = results[0].thumbnails?.[0]?.url || null;
+            ytResultTitle = results[0].title || results[0].name || null;
           }
         } catch {
-          // Search failed, still save the recommendation without video_id
+          // Search failed
         }
+
+        const verification = await verifyRecommendation(
+          { title: rec.title, artist: rec.artist },
+          ytResultTitle
+        );
 
         return {
           user_id: user.id,
@@ -134,21 +141,31 @@ export async function POST() {
           reason: rec.reason,
           confidence_score: rec.confidence_score,
           status: "pending" as const,
+          _verified: verification.verified,
+          _verificationScore: verification.verificationScore,
         };
       })
     );
 
-    // Post-generation verification: drop recs where no YouTube match was found
-    const verifiedRecs = enrichedRecs.filter((rec) => rec.video_id !== null);
+    // Filter to verified songs, sorted by verification then AI confidence
+    const verifiedRecs = enrichedRecs
+      .filter((rec) => rec._verified && rec.video_id !== null)
+      .sort((a, b) => b._verificationScore - a._verificationScore || b.confidence_score - a.confidence_score)
+      .slice(0, 10)
+      .map(({ _verified, _verificationScore, ...rec }) => rec);
+
     if (verifiedRecs.length < enrichedRecs.length) {
-      const dropped = enrichedRecs.length - verifiedRecs.length;
-      console.warn(`Dropped ${dropped} recommendation(s) with no YouTube match (likely hallucinated)`);
-    }
-    if (verifiedRecs.length < 7) {
-      console.warn(`Only ${verifiedRecs.length} verified recommendations — below target of 7`);
+      console.warn(`Dropped ${enrichedRecs.length - verifiedRecs.length} recommendation(s) that failed verification`);
     }
 
-    const saved = await insertRecommendations(verifiedRecs.length > 0 ? verifiedRecs : enrichedRecs);
+    const finalRecs = verifiedRecs.length >= 5
+      ? verifiedRecs
+      : enrichedRecs
+          .filter((r) => r.video_id !== null)
+          .slice(0, 10)
+          .map(({ _verified, _verificationScore, ...rec }) => rec);
+
+    const saved = await insertRecommendations(finalRecs);
 
     return NextResponse.json({ recommendations: saved });
   } catch (error) {

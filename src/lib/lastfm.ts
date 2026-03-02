@@ -65,6 +65,95 @@ export async function getSimilarArtists(
   }));
 }
 
+interface TrackInfoResponse {
+  exists: boolean;
+  track: { title: string; artist: string; listeners: number; playcount: number; url: string } | null;
+}
+
+/**
+ * Check if a track exists on Last.fm. Returns existence + listener count.
+ */
+export async function verifyTrackExists(
+  artist: string,
+  track: string
+): Promise<{ exists: boolean; listeners: number }> {
+  try {
+    const params = new URLSearchParams({ artist, track });
+    const data = await fetchLastfm<TrackInfoResponse>(
+      `/api/lastfm/track-info?${params}`
+    );
+    return {
+      exists: data.exists,
+      listeners: data.track?.listeners ?? 0,
+    };
+  } catch {
+    // If the service is down, assume it exists (don't block recs)
+    return { exists: true, listeners: 0 };
+  }
+}
+
+/**
+ * Normalize a string for fuzzy comparison: lowercase, strip punctuation,
+ * remove common suffixes like "(Official Video)", "ft.", "feat.", etc.
+ */
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\(.*?\)/g, "")
+    .replace(/\[.*?\]/g, "")
+    .replace(/\b(official|video|audio|lyrics|lyric|hd|hq|remaster(ed)?|ft\.?|feat\.?|music video)\b/gi, "")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Check how similar two strings are (0 = no match, 1 = identical).
+ * Uses token overlap (Jaccard-like) which handles word reordering.
+ */
+export function titleSimilarity(a: string, b: string): number {
+  const tokensA = new Set(normalize(a).split(" ").filter(Boolean));
+  const tokensB = new Set(normalize(b).split(" ").filter(Boolean));
+  if (tokensA.size === 0 || tokensB.size === 0) return 0;
+  let overlap = 0;
+  for (const t of tokensA) {
+    if (tokensB.has(t)) overlap++;
+  }
+  return overlap / Math.max(tokensA.size, tokensB.size);
+}
+
+/**
+ * Verify a recommendation is real by checking:
+ * 1. YouTube result title similarity (did YouTube find the actual song?)
+ * 2. Last.fm track existence (does Last.fm know this song?)
+ * Returns a confidence that the song is real (0-1).
+ */
+export async function verifyRecommendation(
+  rec: { title: string; artist: string },
+  youtubeResultTitle: string | null
+): Promise<{ verified: boolean; verificationScore: number }> {
+  // Check YouTube title similarity
+  let ytScore = 0;
+  if (youtubeResultTitle) {
+    const recStr = `${rec.title} ${rec.artist}`;
+    ytScore = Math.max(
+      titleSimilarity(recStr, youtubeResultTitle),
+      titleSimilarity(rec.title, youtubeResultTitle)
+    );
+  }
+
+  // Check Last.fm existence
+  const lastfm = await verifyTrackExists(rec.artist, rec.title);
+  const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
+
+  // A rec is verified if either source confirms it strongly
+  const verificationScore = Math.max(ytScore, lastfmScore);
+  return {
+    verified: verificationScore >= 0.35,
+    verificationScore,
+  };
+}
+
 export async function getCandidatesForSeeds(
   seeds: { title: string; artist: string }[]
 ): Promise<LastfmTrack[]> {

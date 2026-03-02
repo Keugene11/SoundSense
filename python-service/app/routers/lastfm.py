@@ -58,6 +58,46 @@ async def similar_tracks(
     }
 
 
+@router.get("/lastfm/track-info")
+async def track_info(
+    artist: str = Query(..., min_length=1),
+    track: str = Query(..., min_length=1),
+):
+    """Check if a track exists on Last.fm and return its info."""
+    if not LASTFM_API_KEY:
+        raise HTTPException(status_code=500, detail="LASTFM_API_KEY not configured")
+
+    params = {
+        "method": "track.getInfo",
+        "artist": artist,
+        "track": track,
+        "api_key": LASTFM_API_KEY,
+        "format": "json",
+    }
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(LASTFM_BASE_URL, params=params)
+
+    if resp.status_code != 200:
+        return {"exists": False, "track": None}
+
+    data = resp.json()
+    if "error" in data:
+        return {"exists": False, "track": None}
+
+    track_data = data.get("track", {})
+    return {
+        "exists": True,
+        "track": {
+            "title": track_data.get("name", ""),
+            "artist": track_data.get("artist", {}).get("name", ""),
+            "listeners": int(track_data.get("listeners", 0)),
+            "playcount": int(track_data.get("playcount", 0)),
+            "url": track_data.get("url", ""),
+        },
+    }
+
+
 @router.get("/lastfm/similar-artists")
 async def similar_artists(
     artist: str = Query(..., min_length=1),

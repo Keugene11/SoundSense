@@ -1,6 +1,6 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateFromSeeds } from "@/lib/dedalus/recommendations";
-import { getCandidatesForSeeds } from "@/lib/lastfm";
+import { getCandidatesForSeeds, verifyRecommendation } from "@/lib/lastfm";
 import { searchYTMusicPublic, searchYouTubeDirect, searchYouTubeScrape, lookupSeedSong } from "@/lib/youtube-music";
 import {
   getSubscription,
@@ -128,11 +128,12 @@ export async function POST(req: NextRequest) {
       lastfmCandidates.length > 0 ? lastfmCandidates : undefined
     );
 
-    // Search YouTube for video IDs and verify songs exist
+    // Search YouTube for video IDs, get result titles, and verify songs are real
     const enrichedRecs = await Promise.all(
       aiRecs.map(async (rec) => {
         let video_id: string | null = null;
         let thumbnail_url: string | null = null;
+        let ytResultTitle: string | null = null;
 
         const searchQuery = `${rec.title} ${rec.artist}`;
 
@@ -141,6 +142,7 @@ export async function POST(req: NextRequest) {
           if (results.length > 0) {
             video_id = results[0].videoId || null;
             thumbnail_url = results[0].thumbnails?.[0]?.url || null;
+            ytResultTitle = results[0].title || results[0].name || null;
           }
         } catch {
           // Python service unavailable
@@ -152,13 +154,13 @@ export async function POST(req: NextRequest) {
             if (result) {
               video_id = result.videoId;
               thumbnail_url = result.thumbnail;
+              // ytResultTitle not available from this endpoint
             }
           } catch {
             // YouTube API failed
           }
         }
 
-        // Final fallback: scrape YouTube search (no API quota needed)
         if (!video_id) {
           try {
             const result = await searchYouTubeScrape(searchQuery);
@@ -171,6 +173,12 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        // Verify the recommendation is a real song (title similarity + Last.fm check)
+        const verification = await verifyRecommendation(
+          { title: rec.title, artist: rec.artist },
+          ytResultTitle
+        );
+
         return {
           user_id: user.id,
           title: rec.title,
@@ -181,22 +189,36 @@ export async function POST(req: NextRequest) {
           reason: rec.reason,
           confidence_score: rec.confidence_score,
           status: "pending" as const,
+          _verified: verification.verified,
+          _verificationScore: verification.verificationScore,
         };
       })
     );
 
-    // Post-generation verification: drop recs where no YouTube match was found
-    // (likely hallucinated songs)
-    const verifiedRecs = enrichedRecs.filter((rec) => rec.video_id !== null);
+    // Filter to verified songs, sorted by verification confidence then AI confidence
+    const verifiedRecs = enrichedRecs
+      .filter((rec) => rec._verified && rec.video_id !== null)
+      .sort((a, b) => b._verificationScore - a._verificationScore || b.confidence_score - a.confidence_score)
+      .slice(0, 10)
+      .map(({ _verified, _verificationScore, ...rec }) => rec);
+
     if (verifiedRecs.length < enrichedRecs.length) {
       const dropped = enrichedRecs.length - verifiedRecs.length;
-      console.warn(`Dropped ${dropped} recommendation(s) with no YouTube match (likely hallucinated)`);
+      console.warn(`Dropped ${dropped} recommendation(s) that failed verification`);
     }
     if (verifiedRecs.length < 7) {
       console.warn(`Only ${verifiedRecs.length} verified recommendations — below target of 7`);
     }
 
-    const saved = await insertRecommendations(verifiedRecs.length > 0 ? verifiedRecs : enrichedRecs);
+    // Fall back to unverified if verification dropped everything
+    const finalRecs = verifiedRecs.length >= 5
+      ? verifiedRecs
+      : enrichedRecs
+          .filter((r) => r.video_id !== null)
+          .slice(0, 10)
+          .map(({ _verified, _verificationScore, ...rec }) => rec);
+
+    const saved = await insertRecommendations(finalRecs);
 
     return NextResponse.json({ recommendations: saved });
   } catch (error) {

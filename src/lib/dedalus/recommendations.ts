@@ -38,8 +38,7 @@ CRITICAL RULES:
 - Never recommend a song the user has already heard, liked, or been recommended before.
 - Never recommend the seed songs themselves.`;
 
-async function callAI(prompt: string, count: number, overGenerate = false): Promise<AIRecommendation[]> {
-  const requestCount = overGenerate ? count + 5 : count;
+async function callAI(prompt: string, count: number): Promise<AIRecommendation[]> {
   const response = await dedalus.chat.completions.create({
     model: "gpt-4o",
     messages: [
@@ -47,7 +46,7 @@ async function callAI(prompt: string, count: number, overGenerate = false): Prom
       { role: "user", content: prompt },
     ],
     temperature: 0.5,
-    max_tokens: 5000,
+    max_tokens: 6000,
   });
 
   const content = response.choices[0]?.message?.content?.trim();
@@ -56,13 +55,9 @@ async function callAI(prompt: string, count: number, overGenerate = false): Prom
   const cleaned = content.replace(/^```json?\n?/, "").replace(/\n?```$/, "");
   const recommendations: AIRecommendation[] = JSON.parse(cleaned);
 
-  // When over-generating, sort by confidence and take the top `count`
-  if (overGenerate && recommendations.length > count) {
-    recommendations.sort((a, b) => b.confidence_score - a.confidence_score);
-    return recommendations.slice(0, count);
-  }
-
-  return recommendations.slice(0, requestCount);
+  // Sort by confidence and return up to requested count
+  recommendations.sort((a, b) => b.confidence_score - a.confidence_score);
+  return recommendations.slice(0, count);
 }
 
 export async function generateRecommendations(
@@ -88,22 +83,25 @@ export async function generateRecommendations(
     .slice(0, 15)
     .map(([name, count]) => ({ name, count }));
 
+  const requestCount = 20; // Over-generate, verification will filter to final count
+
   let candidateSection = "";
   if (candidates?.length) {
     const candidateList = candidates
-      .slice(0, 60)
+      .slice(0, 80)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
-These songs are confirmed similar based on real listener behavior.
-STRONGLY prefer picking from this list — these are verified real songs.
-You may include 1-3 wildcards not on this list, but they MUST be real songs you are certain exist.
+These songs are confirmed similar based on REAL listener behavior on Last.fm.
+You MUST select at least ${Math.min(Math.ceil(requestCount * 0.7), candidates.length)} of your recommendations from this list.
+These are VERIFIED REAL songs — prioritize them heavily.
+You may include up to 3 wildcards not on this list, but ONLY if you are 100% certain they are real songs with EXACT correct spelling.
 
 ${candidateList}
 `;
   }
 
-  const prompt = `Based on the user's listening history and preferences, suggest ${candidates?.length ? count + 5 : count} songs they would enjoy.
+  const prompt = `Based on the user's listening history and preferences, suggest ${requestCount} songs they would enjoy.
 
 ## User Preferences
 - Favorite genres: ${preferences.favorite_genres.length > 0 ? preferences.favorite_genres.join(", ") : "Not specified"}
@@ -118,11 +116,12 @@ ${topArtists.map((a) => `- ${a.name} (${a.count} plays)`).join("\n")}
 ${recentTracks.map((t) => `- "${t.title}" by ${t.artist}${t.album ? ` (${t.album})` : ""}`).join("\n")}
 ${candidateSection}
 ## Instructions
-- Suggest songs the user would likely enjoy
+- Suggest ${requestCount} songs the user would likely enjoy
 - Mix familiar artists with new discoveries based on discovery_level
 - Do NOT recommend songs already in their history
 - Do NOT recommend songs by excluded artists
-- Each song MUST actually exist — if you are not 100% certain a song exists, do NOT include it
+- Every song MUST actually exist — use EXACT official title and artist spelling
+- NEVER invent or guess at song titles. If you can't recall the exact title, skip it.
 - For each recommendation, reference specific musical qualities
 - Assign a confidence score from 0.0 to 1.0
 
@@ -130,7 +129,7 @@ Respond with a JSON array of objects: title (string), artist (string), album (st
 
 Return ONLY the JSON array, no other text.`;
 
-  return callAI(prompt, count, !!candidates?.length);
+  return callAI(prompt, requestCount);
 }
 
 interface EnrichedSeed {
@@ -206,16 +205,19 @@ ${context.previouslyRecommended.map((s) => `- ${s}`).join("\n")}
 `;
   }
 
+  const requestCount = 20; // Over-generate, verification will filter to final count
+
   let candidateSection = "";
   if (candidates?.length) {
     const candidateList = candidates
-      .slice(0, 60)
+      .slice(0, 80)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
-These songs are confirmed similar to the seeds based on real listener behavior.
-STRONGLY prefer picking from this list — these are verified real songs.
-You may include 1-3 wildcards not on this list, but they MUST be real songs you are certain exist.
+These songs are confirmed similar to the seeds based on REAL listener behavior on Last.fm.
+You MUST select at least ${Math.min(Math.ceil(requestCount * 0.7), candidates.length)} of your recommendations from this list.
+These are VERIFIED REAL songs — prioritize them heavily.
+You may include up to 3 wildcards not on this list, but ONLY if you are 100% certain they are real, commercially released songs with the EXACT correct title and artist spelling.
 
 ${candidateList}
 `;
@@ -237,24 +239,27 @@ ${context?.likedSongs?.length ? "\n5. Cross-reference with their liked songs —
 ${context?.dislikedSongs?.length ? "\n6. Cross-reference with their disliked songs — what should you actively AVOID?" : ""}
 
 ## Recommendation Strategy
-Generate ${candidates?.length ? count + 5 : count} recommendations using this distribution:
-- 3-4 songs: **Deep cuts** from artists adjacent to the seeds (B-sides, album tracks, not singles)
-- 2-3 songs: **Lesser-known artists** in the same sonic space that most people haven't heard
-- 2-3 songs: **Cross-genre gems** that share the same emotional DNA but from unexpected genres
-- 1-2 songs: **Classic tracks** the user genuinely might have missed (not obvious hits)
+Generate exactly ${requestCount} recommendations.${candidates?.length ? `
+- At least ${Math.min(Math.ceil(requestCount * 0.7), candidates.length)} MUST come from the Verified Similar Songs list above
+- Up to 3 can be wildcards NOT on the list (but must be real songs you're certain exist)
+- For songs from the verified list, use the EXACT title and artist spelling shown` : `
+- 5-7 songs: **Deep cuts** from artists adjacent to the seeds (B-sides, album tracks, not singles)
+- 4-5 songs: **Lesser-known artists** in the same sonic space
+- 3-4 songs: **Cross-genre gems** that share the same emotional DNA
+- 2-3 songs: **Classic tracks** the user genuinely might have missed`}
 
 ## Hard Rules
-- Every song MUST actually exist — real title, real artist, real release
+- Every song MUST actually exist — real title, real artist, real release. Use EXACT official spelling.
+- NEVER invent or guess at song titles. If you can't recall the exact title, skip it.
 - NEVER recommend the seed songs themselves
 - NEVER recommend songs from the "already recommended" list above
 - Match the ENERGY and MOOD, not just the genre
-- The reason MUST reference a specific musical quality shared with the seeds (production style, vocal texture, rhythmic feel, harmonic approach, lyrical theme)
+- The reason MUST reference a specific musical quality shared with the seeds
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
-- If you are not 100% certain a song exists, do NOT include it. It is better to recommend fewer songs than to recommend fake ones.
 
 Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences with specific musical qualities), confidence_score (number 0-1).
 
 Return ONLY the JSON array, no other text.`;
 
-  return callAI(prompt, count, !!candidates?.length);
+  return callAI(prompt, requestCount);
 }
