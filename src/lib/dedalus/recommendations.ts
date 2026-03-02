@@ -54,9 +54,16 @@ async function callAI(prompt: string, count: number): Promise<AIRecommendation[]
   const cleaned = content.replace(/^```json?\n?/, "").replace(/\n?```$/, "");
   const recommendations: AIRecommendation[] = JSON.parse(cleaned);
 
-  // Sort by confidence and return up to requested count
+  // Sort by confidence, deduplicate artists (keep highest-confidence per artist)
   recommendations.sort((a, b) => b.confidence_score - a.confidence_score);
-  return recommendations.slice(0, count);
+  const seenArtists = new Set<string>();
+  const deduped = recommendations.filter((r) => {
+    const key = r.artist.toLowerCase();
+    if (seenArtists.has(key)) return false;
+    seenArtists.add(key);
+    return true;
+  });
+  return deduped.slice(0, count);
 }
 
 export async function generateRecommendations(
@@ -270,7 +277,7 @@ Generate exactly ${requestCount} recommendations.${candidates?.length ? `
 - NEVER recommend songs from the "already recommended" list above
 - Maximum 1 song per artist in your recommendations. Every recommendation should be from a DIFFERENT artist.
 - Match the ENERGY and MOOD, not just the genre
-- Each reason MUST name at least ONE specific musical element (e.g., tempo, chord voicings, production technique, instrument tone, vocal style, rhythmic pattern). NEVER use vague phrases like "similar vibe", "fans of X will enjoy", "if you like", "in the same vein", or "reminiscent of".
+- Each reason should follow this pattern: "Features [specific musical element] that connects to the seeds' [specific quality]." Name concrete elements like BPM, key, chord types, production effects, instrument tones, vocal techniques. Do NOT use comparison words like "reminiscent of", "akin to", "echoing", "similar to". Describe what the song DOES, not what it's LIKE.
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
 
 Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences naming specific musical elements), confidence_score (number 0-1).

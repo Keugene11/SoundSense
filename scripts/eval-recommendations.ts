@@ -210,7 +210,7 @@ Generate exactly ${requestCount} recommendations.
 - NEVER recommend songs from the "already recommended" list above
 - Maximum 1 song per artist in your recommendations. Every recommendation should be from a DIFFERENT artist.
 - Match the ENERGY and MOOD, not just the genre
-- Each reason MUST name at least ONE specific musical element (e.g., tempo, chord voicings, production technique, instrument tone, vocal style, rhythmic pattern). NEVER use vague phrases like "similar vibe", "fans of X will enjoy", "if you like", "in the same vein", or "reminiscent of".
+- Each reason should follow this pattern: "Features [specific musical element] that connects to the seeds' [specific quality]." Name concrete elements like BPM, key, chord types, production effects, instrument tones, vocal techniques. Do NOT use comparison words like "reminiscent of", "akin to", "echoing", "similar to". Describe what the song DOES, not what it's LIKE.
 - Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
 
 Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences naming specific musical elements), confidence_score (number 0-1).
@@ -267,6 +267,8 @@ Return ONLY the JSON array, no other text.`;
     "similar feel",
     "in the same vein",
     "reminiscent of",
+    "echoing the",
+    "akin to",
   ];
   const suspiciouslyGeneric = recommendations
     .filter((r) =>
