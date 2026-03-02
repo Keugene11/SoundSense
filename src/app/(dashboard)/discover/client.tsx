@@ -126,10 +126,40 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
     }
   };
 
+  // Keep a ref map of all known recs so we can always find them
+  const allRecsMap = new Map<string, Recommendation>();
+  for (const r of recommendations) allRecsMap.set(r.id, r);
+  for (const r of liked) allRecsMap.set(r.id, r);
+
   const handleStatusChange = async (
     id: string,
     status: Recommendation["status"]
   ) => {
+    const rec = allRecsMap.get(id);
+    if (!rec) return;
+
+    const updatedRec = { ...rec, status };
+
+    // Update recommendations list
+    setRecommendations((prev) =>
+      prev.map((r) => (r.id === id ? updatedRec : r))
+    );
+
+    // Update liked list
+    setLiked((prev) => {
+      if (status === "liked") {
+        // Add or update in liked list
+        const exists = prev.some((r) => r.id === id);
+        if (exists) {
+          return prev.map((r) => (r.id === id ? updatedRec : r));
+        }
+        return [...prev, updatedRec];
+      }
+      // Remove from liked list if no longer liked
+      return prev.filter((r) => r.id !== id);
+    });
+
+    // Persist to DB
     try {
       const res = await fetch("/api/recommendations", {
         method: "PATCH",
@@ -137,22 +167,6 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
         body: JSON.stringify({ id, status }),
       });
       if (!res.ok) throw new Error("Failed to update");
-
-      const updater = (prev: Recommendation[]) =>
-        prev.map((r) => (r.id === id ? { ...r, status } : r));
-      setRecommendations(updater);
-      setLiked((prev) => {
-        const updated = updater(prev);
-        // If a rec was just liked and isn't in the liked list, add it
-        if (status === "liked") {
-          const rec = recommendations.find((r) => r.id === id);
-          if (rec && !prev.some((r) => r.id === id)) {
-            return [...updated, { ...rec, status }];
-          }
-        }
-        // Remove unliked songs from the liked list
-        return updated.filter((r) => r.status === "liked");
-      });
     } catch {
       toast.error("Failed to update recommendation");
     }
