@@ -28,39 +28,47 @@ export async function POST(request: Request) {
   if (auth.error) return auth.error;
   const { user } = auth;
 
-  const { query } = await request.json();
-  if (!query || typeof query !== "string" || !query.trim()) {
-    return NextResponse.json({ error: "Search query is required" }, { status: 400 });
-  }
-
-  let title: string;
-  let artist: string;
-  const input = query.trim();
-
-  // Check if the input is a YouTube link
-  const videoId = extractYouTubeVideoId(input);
-
-  if (videoId) {
-    // Resolve directly from video ID — no search needed
-    const details = await getVideoDetails(videoId);
-    if (details) {
-      ({ title, artist } = parseYouTubeTitle(details.title, details.channelTitle));
-    } else {
-      return NextResponse.json({ error: "Could not find that video" }, { status: 400 });
+  try {
+    const { query } = await request.json();
+    if (!query || typeof query !== "string" || !query.trim()) {
+      return NextResponse.json({ error: "Search query is required" }, { status: 400 });
     }
-  } else {
-    // Free-text search — look up on YouTube
-    const lookup = await lookupSeedSong(input, "");
-    if (lookup) {
-      ({ title, artist } = parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist));
-    } else {
-      title = input;
-      artist = "";
-    }
-  }
 
-  const seed = await insertSeedSong(user.id, title, artist);
-  return NextResponse.json({ seed });
+    let title: string;
+    let artist: string;
+    const input = query.trim();
+
+    // Check if the input is a YouTube link
+    const videoId = extractYouTubeVideoId(input);
+
+    if (videoId) {
+      // Resolve directly from video ID — no search needed
+      const details = await getVideoDetails(videoId);
+      if (details) {
+        ({ title, artist } = parseYouTubeTitle(details.title, details.channelTitle));
+      } else {
+        return NextResponse.json({ error: "Could not find that video" }, { status: 400 });
+      }
+    } else {
+      // Free-text search — look up on YouTube
+      const lookup = await lookupSeedSong(input, "");
+      if (lookup) {
+        ({ title, artist } = parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist));
+      } else {
+        title = input;
+        artist = "";
+      }
+    }
+
+    const seed = await insertSeedSong(user.id, title, artist);
+    return NextResponse.json({ seed });
+  } catch (error) {
+    console.error("Seeds POST error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to add seed song" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(request: Request) {
