@@ -112,6 +112,8 @@ export async function searchYouTubeDirect(
  * Look up a seed song on YouTube to get the real title, channel name,
  * and description. This helps the AI understand what the song actually is
  * instead of guessing from the user's text input.
+ *
+ * Races YouTube API and scrape+oEmbed in parallel for speed.
  */
 export async function lookupSeedSong(
   title: string,
@@ -124,61 +126,104 @@ export async function lookupSeedSong(
   const apiKey = process.env.YOUTUBE_API_KEY;
   const query = artist ? `${title} ${artist}` : title;
 
-  // Try YouTube Data API first
-  if (apiKey) {
-    try {
-      const searchParams = new URLSearchParams({
-        part: "snippet",
-        q: `${query} official audio`,
-        type: "video",
-        videoCategoryId: "10",
-        maxResults: "3",
-        key: apiKey,
-      });
-
-      const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?${searchParams}`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        if (!data.error) {
+  // Race both methods in parallel — prefer API result (has description)
+  const apiPromise: Promise<{
+    resolvedTitle: string;
+    resolvedArtist: string;
+    description: string;
+  } | null> = apiKey
+    ? fetch(
+        `https://www.googleapis.com/youtube/v3/search?${new URLSearchParams({
+          part: "snippet",
+          q: `${query} official audio`,
+          type: "video",
+          videoCategoryId: "10",
+          maxResults: "3",
+          key: apiKey,
+        })}`,
+        { signal: AbortSignal.timeout(5000) }
+      )
+        .then(async (res) => {
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data.error) return null;
           const item = data.items?.[0];
-          if (item) {
-            return {
-              resolvedTitle: item.snippet.title,
-              resolvedArtist: item.snippet.channelTitle,
-              description: item.snippet.description?.slice(0, 200) || "",
-            };
-          }
-        }
+          if (!item) return null;
+          return {
+            resolvedTitle: item.snippet.title as string,
+            resolvedArtist: item.snippet.channelTitle as string,
+            description: (item.snippet.description?.slice(0, 200) || "") as string,
+          };
+        })
+        .catch(() => null)
+    : Promise.resolve(null);
+
+  const scrapePromise: Promise<{
+    resolvedTitle: string;
+    resolvedArtist: string;
+    description: string;
+  } | null> = searchYouTubeScrape(query)
+    .then(async (scrapeResult) => {
+      if (!scrapeResult) return null;
+      const oembed = await fetch(
+        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${scrapeResult.videoId}&format=json`,
+        { signal: AbortSignal.timeout(3000) }
+      );
+      if (!oembed.ok) return null;
+      const data = await oembed.json();
+      return {
+        resolvedTitle: (data.title || title) as string,
+        resolvedArtist: (data.author_name || artist) as string,
+        description: "",
+      };
+    })
+    .catch(() => null);
+
+  const [apiResult, scrapeResult] = await Promise.all([apiPromise, scrapePromise]);
+  return apiResult || scrapeResult;
+}
+
+interface YouTubeSearchResult {
+  videoId: string;
+  thumbnail: string | null;
+  resultTitle: string | null;
+}
+
+/**
+ * Race all available YouTube search methods in parallel.
+ * Returns the best result, preferring YTMusicPublic (has title metadata for verification).
+ */
+export async function searchYouTubeRace(
+  query: string
+): Promise<YouTubeSearchResult | null> {
+  const ytMusicP: Promise<YouTubeSearchResult | null> = searchYTMusicPublic(query, "songs", 1)
+    .then(({ results }: { results: Record<string, unknown>[] }) => {
+      if (results.length > 0 && results[0].videoId) {
+        return {
+          videoId: results[0].videoId as string,
+          thumbnail: ((results[0].thumbnails as { url: string }[])?.[0]?.url || null) as string | null,
+          resultTitle: ((results[0].title || results[0].name) as string) || null,
+        };
       }
-    } catch {
-      // Fall through to scrape fallback
-    }
-  }
+      return null;
+    })
+    .catch(() => null);
 
-  // Fallback: scrape YouTube search to find a video ID, then use oEmbed
-  try {
-    const scrapeResult = await searchYouTubeScrape(query);
-    if (!scrapeResult) return null;
+  const ytDirectP: Promise<YouTubeSearchResult | null> = searchYouTubeDirect(query)
+    .then((r) =>
+      r ? { videoId: r.videoId, thumbnail: r.thumbnail, resultTitle: null } : null
+    )
+    .catch(() => null);
 
-    const oembed = await fetch(
-      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${scrapeResult.videoId}&format=json`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-    if (!oembed.ok) return null;
+  const ytScrapeP: Promise<YouTubeSearchResult | null> = searchYouTubeScrape(query)
+    .then((r) =>
+      r ? { videoId: r.videoId, thumbnail: r.thumbnail, resultTitle: null } : null
+    )
+    .catch(() => null);
 
-    const data = await oembed.json();
-    return {
-      resolvedTitle: data.title || title,
-      resolvedArtist: data.author_name || artist,
-      description: "",
-    };
-  } catch {
-    return null;
-  }
+  // Wait for all to settle, prefer YTMusic (has title for verification)
+  const [ytMusic, ytDirect, ytScrape] = await Promise.all([ytMusicP, ytDirectP, ytScrapeP]);
+  return ytMusic || ytDirect || ytScrape;
 }
 
 /**
