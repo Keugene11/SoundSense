@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { YouTubePlayer } from "@/components/youtube-player";
 import type { Recommendation } from "@/types/database";
 
 interface RecommendationCardProps {
@@ -14,6 +15,7 @@ interface RecommendationCardProps {
   onStatusChange: (id: string, status: Recommendation["status"]) => void;
   isActive?: boolean;
   onPlay?: () => void;
+  onEnded?: () => void;
 }
 
 export function RecommendationCard({
@@ -21,8 +23,10 @@ export function RecommendationCard({
   onStatusChange,
   isActive,
   onPlay,
+  onEnded,
 }: RecommendationCardProps) {
   const [playing, setPlaying] = useState(false);
+  const showPlayer = (playing || isActive) && rec.video_id;
 
   return (
     <Card className={isActive ? "ring-2 ring-primary" : ""}>
@@ -77,7 +81,7 @@ export function RecommendationCard({
         <div className="flex gap-2">
           {rec.video_id && (
             <Button
-              variant={playing || isActive ? "default" : "outline"}
+              variant={showPlayer ? "default" : "outline"}
               size="sm"
               onClick={() => {
                 if (onPlay) {
@@ -87,7 +91,7 @@ export function RecommendationCard({
                 }
               }}
             >
-              {playing || isActive ? "Playing" : "Play"}
+              {showPlayer ? "Stop" : "Play"}
             </Button>
           )}
           <Button
@@ -122,15 +126,11 @@ export function RecommendationCard({
           </Button>
         </div>
 
-        {(playing || isActive) && rec.video_id && (
-          <div className="aspect-video w-full overflow-hidden rounded-md">
-            <iframe
-              src={`https://www.youtube.com/embed/${rec.video_id}?autoplay=1&enablejsapi=1`}
-              className="h-full w-full"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-            />
-          </div>
+        {showPlayer && (
+          <YouTubePlayer
+            videoId={rec.video_id!}
+            onEnded={onEnded}
+          />
         )}
       </CardContent>
     </Card>

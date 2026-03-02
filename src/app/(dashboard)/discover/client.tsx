@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RecommendationCard } from "@/components/recommendation-card";
@@ -198,26 +198,6 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
     }
   };
 
-  // Listen for YouTube iframe messages to detect when a video ends
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== "https://www.youtube.com") return;
-      try {
-        const data =
-          typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        // YouTube iframe API sends playerState: 0 when video ends
-        if (data.event === "onStateChange" && data.info === 0) {
-          playNext();
-        }
-      } catch {
-        // Not a JSON message we care about
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [playNext]);
-
   const hasPlayable = playableIndices.length > 0;
   const currentPlayablePos =
     currentIndex !== null ? playableIndices.indexOf(currentIndex) : -1;
@@ -340,6 +320,7 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
                     }
                   : undefined
               }
+              onEnded={playNext}
             />
           ))}
         </div>
