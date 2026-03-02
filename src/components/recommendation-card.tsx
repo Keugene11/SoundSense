@@ -72,12 +72,6 @@ export function RecommendationCard({
           )}
         </div>
 
-        {rec.reason && (
-          <p className="text-sm italic text-muted-foreground">
-            &ldquo;{rec.reason}&rdquo;
-          </p>
-        )}
-
         <div className="flex gap-2">
           {rec.video_id && (
             <Button
