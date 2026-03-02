@@ -32,14 +32,11 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
   const currentRec =
     currentIndex !== null ? recommendations[currentIndex] : null;
 
+  const [adding, setAdding] = useState(false);
+
   const addSeed = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-
-    const parts = trimmed.split(" - ");
-    const title = parts[0].trim();
-    const artist =
-      parts.length >= 2 ? parts.slice(1).join(" - ").trim() : "";
 
     if (seeds.length >= 10) {
       toast.error("Maximum 10 seed songs");
@@ -47,18 +44,21 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
     }
 
     setInput("");
+    setAdding(true);
 
     try {
       const res = await fetch("/api/seeds", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, artist }),
+        body: JSON.stringify({ query: trimmed }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSeeds((prev) => [...prev, data.seed]);
     } catch {
       toast.error("Failed to save seed song");
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -230,7 +230,7 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
       <div className="space-y-3">
         <div className="flex gap-2">
           <Input
-            placeholder="Song title - Artist (e.g. Bohemian Rhapsody - Queen)"
+            placeholder="Search for a song (e.g. Bohemian Rhapsody, Sea of Problems)"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -240,8 +240,8 @@ export function DiscoverClient({ plan, initialSeeds, likedSongs: initialLiked }:
               }
             }}
           />
-          <Button variant="outline" onClick={addSeed} disabled={!input.trim()}>
-            Add
+          <Button variant="outline" onClick={addSeed} disabled={!input.trim() || adding}>
+            {adding ? "Finding..." : "Add"}
           </Button>
         </div>
 
