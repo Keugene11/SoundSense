@@ -63,10 +63,10 @@ export async function searchYouTubeDirect(
   try {
     const params = new URLSearchParams({
       part: "snippet",
-      q: query,
+      q: `${query} official audio`,
       type: "video",
       videoCategoryId: "10", // Music category
-      maxResults: "1",
+      maxResults: "5",
       key: apiKey,
     });
 
@@ -85,7 +85,14 @@ export async function searchYouTubeDirect(
     }
 
     const data = await res.json();
-    const item = data.items?.[0];
+    const items = data.items ?? [];
+
+    // Skip Shorts and pick the first real music video/audio
+    const item = items.find((item: { snippet: { title: string } }) => {
+      const title = item.snippet.title.toLowerCase();
+      return !title.includes("#short") && !title.includes("shorts");
+    }) ?? items[0];
+
     if (!item) return null;
 
     return {
