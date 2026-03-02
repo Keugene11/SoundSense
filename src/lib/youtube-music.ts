@@ -47,6 +47,60 @@ export async function searchYTMusicPublic(
   return fetchService(`/api/search-public?${params}`);
 }
 
+/**
+ * Search YouTube via the Data API v3 (requires YOUTUBE_API_KEY env var).
+ * Returns { videoId, thumbnail } or null.
+ */
+export async function searchYouTubeDirect(
+  query: string
+): Promise<{ videoId: string; thumbnail: string | null } | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) {
+    console.warn("YOUTUBE_API_KEY not set — cannot search YouTube");
+    return null;
+  }
+
+  try {
+    const params = new URLSearchParams({
+      part: "snippet",
+      q: query,
+      type: "video",
+      videoCategoryId: "10", // Music category
+      maxResults: "1",
+      key: apiKey,
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?${params}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      console.error("YouTube API error:", res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    const item = data.items?.[0];
+    if (!item) return null;
+
+    return {
+      videoId: item.id.videoId,
+      thumbnail:
+        item.snippet.thumbnails?.medium?.url ||
+        item.snippet.thumbnails?.default?.url ||
+        `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`,
+    };
+  } catch (e) {
+    console.error("YouTube search failed:", e);
+    return null;
+  }
+}
+
 export async function startDeviceFlow() {
   return fetchService("/api/oauth/device-code", { method: "POST" });
 }

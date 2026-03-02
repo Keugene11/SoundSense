@@ -22,6 +22,14 @@ function loadYTApi() {
   if (apiLoaded) return;
   apiLoaded = true;
 
+  // Check if API is already available (e.g. script was loaded externally)
+  if (window.YT?.Player) {
+    apiReady = true;
+    readyCallbacks.forEach((cb) => cb());
+    readyCallbacks.length = 0;
+    return;
+  }
+
   const prev = window.onYouTubeIframeAPIReady;
   window.onYouTubeIframeAPIReady = () => {
     prev?.();
@@ -32,11 +40,15 @@ function loadYTApi() {
 
   const script = document.createElement("script");
   script.src = "https://www.youtube.com/iframe_api";
+  script.onerror = () => {
+    // Reset so we can retry on next mount
+    apiLoaded = false;
+  };
   document.head.appendChild(script);
 }
 
 function onApiReady(cb: () => void) {
-  if (apiReady) {
+  if (apiReady && window.YT?.Player) {
     cb();
   } else {
     readyCallbacks.push(cb);
@@ -69,14 +81,19 @@ export function YouTubePlayer({ videoId, onEnded }: YouTubePlayerProps) {
 
     playerRef.current = new window.YT.Player(div, {
       videoId,
-      width: "100%",
-      height: "100%",
       playerVars: {
         autoplay: 1,
         modestbranding: 1,
         rel: 0,
+        origin: window.location.origin,
       },
       events: {
+        onReady: (event: YT.PlayerEvent) => {
+          // Force iframe to fill container
+          const iframe = event.target.getIframe();
+          iframe.style.width = "100%";
+          iframe.style.height = "100%";
+        },
         onStateChange: (event: YT.OnStateChangeEvent) => {
           if (event.data === window.YT.PlayerState.ENDED) {
             onEndedRef.current?.();

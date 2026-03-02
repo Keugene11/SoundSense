@@ -1,6 +1,6 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateFromSeeds } from "@/lib/dedalus/recommendations";
-import { searchYTMusicPublic } from "@/lib/youtube-music";
+import { searchYTMusicPublic, searchYouTubeDirect } from "@/lib/youtube-music";
 import {
   getSubscription,
   getTodayRecommendationCount,
@@ -55,18 +55,29 @@ export async function POST(req: NextRequest) {
         let video_id: string | null = null;
         let thumbnail_url: string | null = null;
 
+        const searchQuery = `${rec.title} ${rec.artist}`;
+
+        // Try Python service first, fall back to direct YouTube search
         try {
-          const { results } = await searchYTMusicPublic(
-            `${rec.title} ${rec.artist}`,
-            "songs",
-            1
-          );
+          const { results } = await searchYTMusicPublic(searchQuery, "songs", 1);
           if (results.length > 0) {
             video_id = results[0].videoId || null;
             thumbnail_url = results[0].thumbnails?.[0]?.url || null;
           }
         } catch {
-          // Search failed, still save the recommendation without video_id
+          // Python service unavailable — fall back to direct search
+        }
+
+        if (!video_id) {
+          try {
+            const result = await searchYouTubeDirect(searchQuery);
+            if (result) {
+              video_id = result.videoId;
+              thumbnail_url = result.thumbnail;
+            }
+          } catch {
+            // All search methods failed
+          }
         }
 
         return {
