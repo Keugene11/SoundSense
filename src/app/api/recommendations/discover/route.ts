@@ -1,7 +1,11 @@
 import { getRouteUser } from "@/lib/auth";
 import { generateFromSeeds } from "@/lib/dedalus/recommendations";
-import { getCandidatesForSeeds, verifyRecommendation } from "@/lib/lastfm";
-import { searchYTMusicPublic, searchYouTubeDirect, searchYouTubeScrape, lookupSeedSong } from "@/lib/youtube-music";
+import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity } from "@/lib/lastfm";
+import { searchYouTubeRace, lookupSeedSong } from "@/lib/youtube-music";
+import { getSimilarArtistsTD } from "@/lib/tastedive";
+import { getSimilarArtistsLB } from "@/lib/listenbrainz";
+import { verifyTrackMusicBrainz } from "@/lib/musicbrainz";
+import { verifyViaOdesli } from "@/lib/odesli";
 import {
   getSubscription,
   getTodayRecommendationCount,
@@ -30,16 +34,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fetch rate limits + all available context in parallel
-    const [subscription, todayCount, allRecs, preferences, history, topArtists] =
-      await Promise.all([
-        getSubscription(user.id),
-        getTodayRecommendationCount(user.id),
-        getRecommendations(user.id),
-        getPreferences(user.id),
-        getListeningHistory(user.id, 100),
-        getTopArtists(user.id, 20),
-      ]);
+    // Phase 0: Rate limit check (fast — must pass before expensive work)
+    const [subscription, todayCount] = await Promise.all([
+      getSubscription(user.id),
+      getTodayRecommendationCount(user.id),
+    ]);
 
     const plan = subscription?.plan || "free";
     const limit = PLANS[plan].recommendations_per_day;
@@ -56,47 +55,48 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Look up each seed on YouTube to resolve the actual song
-    // This prevents the AI from guessing based on literal title words
-    const enrichedSeeds = await Promise.all(
-      seeds.map(async (seed) => {
-        const lookup = await lookupSeedSong(seed.title, seed.artist);
-        if (lookup) {
-          return {
-            title: seed.title,
-            artist: seed.artist,
-            youtubeTitle: lookup.resolvedTitle,
-            youtubeArtist: lookup.resolvedArtist,
-          };
-        }
-        return { title: seed.title, artist: seed.artist };
-      })
-    );
+    // Phase 1: Run seed lookups, Last.fm candidates, similar artists, and DB context ALL in parallel
+    const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
+    const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists, allRecs, preferences, history, topArtists] =
+      await Promise.all([
+        Promise.all(
+          seeds.map(async (seed) => {
+            const lookup = await lookupSeedSong(seed.title, seed.artist);
+            if (lookup) {
+              return {
+                title: seed.title,
+                artist: seed.artist,
+                youtubeTitle: lookup.resolvedTitle,
+                youtubeArtist: lookup.resolvedArtist,
+              };
+            }
+            return { title: seed.title, artist: seed.artist };
+          })
+        ),
+        getCandidatesForSeeds(seeds).catch((e) => {
+          console.warn("Last.fm candidate fetch failed, continuing without:", e);
+          return [] as { title: string; artist: string; matchScore: number }[];
+        }),
+        getSimilarArtistsTD(seedArtists),
+        getSimilarArtistsLB(seedArtists),
+        getRecommendations(user.id),
+        getPreferences(user.id),
+        getListeningHistory(user.id, 100),
+        getTopArtists(user.id, 20),
+      ]);
 
-    // Fetch Last.fm similar tracks as candidates for grounding
-    let lastfmCandidates: { title: string; artist: string; matchScore: number }[] = [];
-    try {
-      lastfmCandidates = await getCandidatesForSeeds(
-        enrichedSeeds.map((s) => ({
-          title: s.youtubeTitle || s.title,
-          artist: s.youtubeArtist || s.artist,
-        }))
-      );
-    } catch (e) {
-      console.warn("Last.fm candidate fetch failed, continuing without:", e);
+    // Merge + dedupe similar artists from TasteDive and ListenBrainz
+    const seenArtists = new Set<string>();
+    const similarArtists: string[] = [];
+    for (const name of [...tdArtists, ...lbArtists]) {
+      const lower = name.toLowerCase();
+      if (!seenArtists.has(lower)) {
+        seenArtists.add(lower);
+        similarArtists.push(name);
+      }
     }
 
     // Build context from user's history
-    const likedSongs = allRecs
-      .filter((r) => r.status === "liked")
-      .slice(0, 15)
-      .map((r) => ({ title: r.title, artist: r.artist }));
-
-    const dislikedSongs = allRecs
-      .filter((r) => r.status === "disliked")
-      .slice(0, 10)
-      .map((r) => ({ title: r.title, artist: r.artist }));
-
     const previouslyRecommended = allRecs
       .slice(0, 50)
       .map((r) => `${r.title} - ${r.artist}`);
@@ -106,13 +106,11 @@ export async function POST(req: NextRequest) {
       artist: t.artist || "Unknown",
     }));
 
-    // Generate AI recommendations with full context + Last.fm candidates
+    // Phase 2: AI generation (needs seeds + candidates + context)
     const aiRecs = await generateFromSeeds(
       enrichedSeeds,
       10,
       {
-        likedSongs,
-        dislikedSongs,
         previouslyRecommended,
         recentListens,
         topArtists: topArtists.slice(0, 10),
@@ -125,72 +123,53 @@ export async function POST(req: NextRequest) {
             }
           : null,
       },
-      lastfmCandidates.length > 0 ? lastfmCandidates : undefined
+      lastfmCandidates.length > 0 ? lastfmCandidates : undefined,
+      similarArtists.length > 0 ? similarArtists : undefined
     );
 
-    // Search YouTube for video IDs, get result titles, and verify songs are real
+    // Phase 3: YouTube search + multi-source verification in parallel for each rec
     const enrichedRecs = await Promise.all(
       aiRecs.map(async (rec) => {
-        let video_id: string | null = null;
-        let thumbnail_url: string | null = null;
-        let ytResultTitle: string | null = null;
-
         const searchQuery = `${rec.title} ${rec.artist}`;
 
-        try {
-          const { results } = await searchYTMusicPublic(searchQuery, "songs", 1);
-          if (results.length > 0) {
-            video_id = results[0].videoId || null;
-            thumbnail_url = results[0].thumbnails?.[0]?.url || null;
-            ytResultTitle = results[0].title || results[0].name || null;
-          }
-        } catch {
-          // Python service unavailable
-        }
+        // Run YouTube search, Last.fm, and MusicBrainz verification concurrently
+        const [ytResult, lastfm, mb] = await Promise.all([
+          searchYouTubeRace(searchQuery),
+          verifyTrackExists(rec.artist, rec.title),
+          verifyTrackMusicBrainz(rec.artist, rec.title),
+        ]);
 
-        if (!video_id) {
-          try {
-            const result = await searchYouTubeDirect(searchQuery);
-            if (result) {
-              video_id = result.videoId;
-              thumbnail_url = result.thumbnail;
-              // ytResultTitle not available from this endpoint
-            }
-          } catch {
-            // YouTube API failed
-          }
-        }
+        // Odesli needs videoId, so it runs after YouTube search
+        const odesliResult = ytResult?.videoId
+          ? await verifyViaOdesli(ytResult.videoId)
+          : { exists: false, platformCount: 0 };
 
-        if (!video_id) {
-          try {
-            const result = await searchYouTubeScrape(searchQuery);
-            if (result) {
-              video_id = result.videoId;
-              thumbnail_url = result.thumbnail;
-            }
-          } catch {
-            // All search methods failed
-          }
+        // Compute verification score from all sources
+        let ytScore = 0;
+        if (ytResult?.resultTitle) {
+          const recStr = `${rec.title} ${rec.artist}`;
+          ytScore = Math.max(
+            titleSimilarity(recStr, ytResult.resultTitle),
+            titleSimilarity(rec.title, ytResult.resultTitle)
+          );
         }
-
-        // Verify the recommendation is a real song (title similarity + Last.fm check)
-        const verification = await verifyRecommendation(
-          { title: rec.title, artist: rec.artist },
-          ytResultTitle
-        );
+        const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
+        const mbScore = mb.score;
+        const odesliScore = odesliResult.platformCount >= 3 ? 1.0 : (odesliResult.exists ? 0.7 : 0);
+        const verificationScore = Math.max(ytScore, lastfmScore, mbScore, odesliScore);
 
         return {
           user_id: user.id,
           title: rec.title,
           artist: rec.artist,
           album: rec.album || null,
-          video_id,
-          thumbnail_url,
+          video_id: ytResult?.videoId || null,
+          thumbnail_url: ytResult?.thumbnail || null,
           reason: rec.reason,
           confidence_score: rec.confidence_score,
           status: "pending" as const,
-          _verified: verification.verified,
-          _verificationScore: verification.verificationScore,
+          _verified: verificationScore >= 0.35,
+          _verificationScore: verificationScore,
         };
       })
     );

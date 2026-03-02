@@ -10,8 +10,6 @@ interface AIRecommendation {
 }
 
 interface SeedContext {
-  likedSongs: { title: string; artist: string }[];
-  dislikedSongs: { title: string; artist: string }[];
   previouslyRecommended: string[];
   recentListens: { title: string; artist: string }[];
   topArtists: { artist: string; count: number }[];
@@ -64,7 +62,8 @@ export async function generateRecommendations(
   history: ListeningHistoryEntry[],
   preferences: UserPreferences,
   count: number = 10,
-  candidates?: CandidateTrack[]
+  candidates?: CandidateTrack[],
+  similarArtists?: string[]
 ): Promise<AIRecommendation[]> {
   const recentTracks = history.slice(0, 50).map((t) => ({
     title: t.title,
@@ -87,17 +86,26 @@ export async function generateRecommendations(
 
   let candidateSection = "";
   if (candidates?.length) {
+    const halfCount = Math.ceil(requestCount * 0.5);
     const candidateList = candidates
       .slice(0, 80)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
 These songs are confirmed similar based on REAL listener behavior on Last.fm.
-You MUST select at least ${Math.min(Math.ceil(requestCount * 0.7), candidates.length)} of your recommendations from this list.
+You MUST select at least ${Math.min(halfCount, candidates.length)} of your recommendations from this list.
 These are VERIFIED REAL songs — prioritize them heavily.
-You may include up to 3 wildcards not on this list, but ONLY if you are 100% certain they are real songs with EXACT correct spelling.
+The remaining ${requestCount - Math.min(halfCount, candidates.length)} can be wildcards not on this list, but ONLY if you are 100% certain they are real songs with EXACT correct spelling.
 
 ${candidateList}
+`;
+  }
+
+  let similarArtistsSection = "";
+  if (similarArtists?.length) {
+    similarArtistsSection = `\n## Similar Artists (from TasteDive and ListenBrainz)
+Use these as inspiration for your wildcard picks (songs NOT from the verified list above):
+${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
 `;
   }
 
@@ -114,7 +122,7 @@ ${topArtists.map((a) => `- ${a.name} (${a.count} plays)`).join("\n")}
 
 ## Recent Listening History
 ${recentTracks.map((t) => `- "${t.title}" by ${t.artist}${t.album ? ` (${t.album})` : ""}`).join("\n")}
-${candidateSection}
+${candidateSection}${similarArtistsSection}
 ## Instructions
 - Suggest ${requestCount} songs the user would likely enjoy
 - Mix familiar artists with new discoveries based on discovery_level
@@ -149,7 +157,8 @@ export async function generateFromSeeds(
   seeds: EnrichedSeed[],
   count: number = 10,
   context?: SeedContext,
-  candidates?: CandidateTrack[]
+  candidates?: CandidateTrack[],
+  similarArtists?: string[]
 ): Promise<AIRecommendation[]> {
   const seedList = seeds
     .map((s) => {
@@ -163,18 +172,6 @@ export async function generateFromSeeds(
 
   // Build context sections
   let contextSections = "";
-
-  if (context?.likedSongs?.length) {
-    contextSections += `\n## Songs This User Has Liked Before (use as POSITIVE signal — recommend more like these)
-${context.likedSongs.map((s) => `- "${s.title}" by ${s.artist}`).join("\n")}
-`;
-  }
-
-  if (context?.dislikedSongs?.length) {
-    contextSections += `\n## Songs This User Disliked (use as NEGATIVE signal — avoid this style/vibe)
-${context.dislikedSongs.map((s) => `- "${s.title}" by ${s.artist}`).join("\n")}
-`;
-  }
 
   if (context?.recentListens?.length) {
     contextSections += `\n## What They've Been Listening To Recently
@@ -209,17 +206,26 @@ ${context.previouslyRecommended.map((s) => `- ${s}`).join("\n")}
 
   let candidateSection = "";
   if (candidates?.length) {
+    const halfCount = Math.ceil(requestCount * 0.5);
     const candidateList = candidates
       .slice(0, 80)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
 These songs are confirmed similar to the seeds based on REAL listener behavior on Last.fm.
-You MUST select at least ${Math.min(Math.ceil(requestCount * 0.7), candidates.length)} of your recommendations from this list.
+You MUST select at least ${Math.min(halfCount, candidates.length)} of your recommendations from this list.
 These are VERIFIED REAL songs — prioritize them heavily.
-You may include up to 3 wildcards not on this list, but ONLY if you are 100% certain they are real, commercially released songs with the EXACT correct title and artist spelling.
+The remaining ${requestCount - Math.min(halfCount, candidates.length)} can be wildcards not on this list, but ONLY if you are 100% certain they are real, commercially released songs with the EXACT correct title and artist spelling.
 
 ${candidateList}
+`;
+  }
+
+  let similarArtistsSection = "";
+  if (similarArtists?.length) {
+    similarArtistsSection = `\n## Similar Artists (from TasteDive and ListenBrainz)
+Use these as inspiration for your wildcard picks (songs NOT from the verified list above):
+${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
 `;
   }
 
@@ -228,21 +234,20 @@ ${candidateList}
 ${seedList}
 
 IMPORTANT: Use the "YouTube match" line (if present) to identify the ACTUAL song. The user may have misspelled the title or artist — the YouTube match shows what song they actually mean. Base your recommendations on the REAL song, not a literal interpretation of the user's text.
-${candidateSection}${contextSections}${avoidSection}
+${candidateSection}${similarArtistsSection}${contextSections}${avoidSection}
 ## Your Analysis Process
 First, analyze the seeds carefully:
 1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
 2. What emotional territory do they occupy? (not just "sad" — think: "bittersweet nostalgia with an undercurrent of hope")
 3. What era/scene/movement do they connect to?
 4. What would someone who loves these songs be searching for but can't quite find?
-${context?.likedSongs?.length ? "\n5. Cross-reference with their liked songs — what patterns emerge? Double down on those qualities." : ""}
-${context?.dislikedSongs?.length ? "\n6. Cross-reference with their disliked songs — what should you actively AVOID?" : ""}
 
 ## Recommendation Strategy
 Generate exactly ${requestCount} recommendations.${candidates?.length ? `
-- At least ${Math.min(Math.ceil(requestCount * 0.7), candidates.length)} MUST come from the Verified Similar Songs list above
-- Up to 3 can be wildcards NOT on the list (but must be real songs you're certain exist)
-- For songs from the verified list, use the EXACT title and artist spelling shown` : `
+- At least ${Math.min(Math.ceil(requestCount * 0.5), candidates.length)} MUST come from the Verified Similar Songs list above
+- The rest can be wildcards NOT on the list — be creative and adventurous with these picks${similarArtists?.length ? `, using the Similar Artists list for inspiration` : ""}
+- For songs from the verified list, use the EXACT title and artist spelling shown
+- Wildcard picks MUST be real songs you're certain exist` : `
 - 5-7 songs: **Deep cuts** from artists adjacent to the seeds (B-sides, album tracks, not singles)
 - 4-5 songs: **Lesser-known artists** in the same sonic space
 - 3-4 songs: **Cross-genre gems** that share the same emotional DNA
