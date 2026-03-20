@@ -3,6 +3,10 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { YouTubePlayer } from "@/components/youtube-player";
 import type { Recommendation } from "@/types/database";
 
@@ -52,87 +56,84 @@ export function DiscoverClient() {
   const hasResults = recommendations.length > 0;
 
   return (
-    <div className="min-h-screen">
-      {/* Hero / Input */}
+    <div className="min-h-screen bg-background">
+      {/* Hero state — centered input */}
       {!hasResults && !generating && (
-        <div className="flex flex-col items-center justify-center min-h-screen px-6">
-          <div className="w-full max-w-lg animate-slideInUp">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-center leading-[1.1] mb-4">
-              SoundSense
-            </h1>
-            <p className="text-[15px] text-on-surface/40 text-center mb-14">
-              Paste a YouTube link or type a song name.
-            </p>
+        <div className="flex flex-col items-center justify-center min-h-screen px-4">
+          <div className="w-full max-w-md space-y-8">
+            <div className="text-center space-y-2">
+              <h1 className="text-4xl font-bold tracking-tight">SoundSense</h1>
+              <p className="text-muted-foreground">
+                Enter a song or paste a YouTube link. Get 10 recommendations.
+              </p>
+            </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-[11px] uppercase tracking-[0.15em] text-on-surface/40 mb-3">
-                  Seed song
-                </label>
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleSubmit();
-                    }
-                  }}
-                  placeholder="e.g. Toxicity by System of a Down"
-                  className="w-full bg-transparent border-b border-on-surface/20 pb-3 text-lg text-on-surface placeholder-on-surface/20 focus:outline-none focus:border-on-surface/50 transition-colors"
-                />
-              </div>
-
-              <button
+            <div className="space-y-4">
+              <Input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
+                placeholder="e.g. Toxicity by System of a Down"
+                className="h-12 text-base"
+              />
+              <Button
                 onClick={handleSubmit}
                 disabled={!input.trim()}
-                className="w-full py-3.5 bg-black text-white font-medium rounded-full text-sm hover:bg-black/85 transition-all disabled:opacity-15 disabled:cursor-not-allowed"
+                className="w-full h-12 text-base"
+                size="lg"
               >
                 Get recommendations
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Loading */}
+      {/* Loading state */}
       {generating && (
-        <div className="flex flex-col items-center justify-center min-h-screen px-6 gap-4">
-          <div className="w-6 h-6 border-2 border-on-surface/15 border-t-on-surface/50 rounded-full animate-spin" />
-          <p className="text-[14px] text-on-surface/35">
-            Finding songs based on <span className="text-on-surface/60">{seedLabel}</span>
+        <div className="flex flex-col items-center justify-center min-h-screen px-4 gap-4">
+          <div className="w-6 h-6 border-2 border-muted-foreground/30 border-t-foreground rounded-full animate-spin" />
+          <p className="text-muted-foreground">
+            Finding songs based on <span className="font-medium text-foreground">{seedLabel}</span>
           </p>
-          <p className="text-[12px] text-on-surface/20">This can take up to 30 seconds</p>
+          <p className="text-sm text-muted-foreground/60">This can take up to 30 seconds</p>
         </div>
       )}
 
-      {/* Results */}
+      {/* Results state */}
       {hasResults && !generating && (
-        <div className="max-w-3xl mx-auto px-6 pt-8 pb-20">
-          {/* Top bar */}
-          <div className="flex items-center justify-between mb-6">
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">SoundSense</h1>
-              <p className="text-[13px] text-on-surface/35 mt-0.5">
-                Based on <span className="text-on-surface/60">{seedLabel}</span>
+              <p className="text-sm text-muted-foreground mt-1">
+                Based on <span className="font-medium text-foreground">{seedLabel}</span>
+                {" "}&middot; {recommendations.length} songs
               </p>
             </div>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 setSeedLabel(null);
                 setRecommendations([]);
                 setActiveIndex(null);
               }}
-              className="px-4 py-1.5 border border-on-surface/15 text-on-surface/50 rounded-full text-[13px] hover:border-on-surface/30 hover:text-on-surface/70 transition-all"
             >
               New search
-            </button>
+            </Button>
           </div>
 
-          {/* Try another inline */}
-          <div className="mb-8">
-            <input
+          {/* Search another */}
+          <div className="flex gap-2 mb-8">
+            <Input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -143,100 +144,92 @@ export function DiscoverClient() {
                 }
               }}
               placeholder="Try another song or paste a link..."
-              className="w-full bg-transparent border-b border-on-surface/10 pb-2.5 text-[14px] text-on-surface placeholder-on-surface/20 focus:outline-none focus:border-on-surface/40 transition-colors"
             />
+            <Button onClick={handleSubmit} disabled={!input.trim()}>
+              Go
+            </Button>
           </div>
 
-          {/* Song cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 stagger">
+          {/* Results grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {recommendations.map((rec, i) => {
               const isActive = activeIndex === i;
               return (
-                <div
+                <Card
                   key={rec.id}
-                  className={`group border border-on-surface/10 rounded-xl p-4 transition-all hover:border-on-surface/20 ${
-                    isActive ? "border-on-surface/25 bg-on-surface/[0.02] md:col-span-2" : ""
+                  className={`transition-all cursor-pointer hover:shadow-md ${
+                    isActive ? "ring-2 ring-primary md:col-span-2" : ""
                   }`}
+                  onClick={() => {
+                    if (!rec.video_id) return;
+                    setActiveIndex(isActive ? null : i);
+                  }}
                 >
-                  <div className="flex gap-4">
-                    {/* Thumbnail */}
-                    <button
-                      onClick={() => {
-                        if (!rec.video_id) return;
-                        setActiveIndex(isActive ? null : i);
-                      }}
-                      disabled={!rec.video_id}
-                      className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-on-surface/5 disabled:cursor-default"
-                    >
-                      {rec.thumbnail_url ? (
-                        <Image
-                          src={rec.thumbnail_url}
-                          alt=""
-                          width={64}
-                          height={64}
-                          className="w-full h-full object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <span className="flex items-center justify-center w-full h-full text-on-surface/15 text-xl">
-                          &#9835;
-                        </span>
-                      )}
-                      {rec.video_id && (
-                        <div className={`absolute inset-0 flex items-center justify-center transition-all ${
-                          isActive
-                            ? "bg-black/50"
-                            : "bg-black/0 group-hover:bg-black/40"
-                        }`}>
-                          <span className={`text-white text-sm transition-opacity ${
-                            isActive
-                              ? "opacity-100"
-                              : "opacity-0 group-hover:opacity-100"
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      {/* Thumbnail */}
+                      <div className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted">
+                        {rec.thumbnail_url ? (
+                          <Image
+                            src={rec.thumbnail_url}
+                            alt=""
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center w-full h-full text-muted-foreground text-xl">
+                            ♪
+                          </div>
+                        )}
+                        {rec.video_id && (
+                          <div className={`absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 transition-all ${
+                            isActive ? "bg-black/50" : ""
                           }`}>
-                            {isActive ? "■" : "▶"}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-
-                    {/* Song info */}
-                    <div className="min-w-0 flex-1 py-0.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-[15px] font-medium text-on-surface leading-snug truncate">
-                            {rec.title}
-                          </p>
-                          <p className="text-[13px] text-on-surface/40 mt-0.5">
-                            {rec.artist}
-                            {rec.album && (
-                              <span className="text-on-surface/20"> &middot; {rec.album}</span>
-                            )}
-                          </p>
-                        </div>
-                        {rec.confidence_score && rec.confidence_score >= 0.7 && (
-                          <span className="shrink-0 text-[11px] text-on-surface/25 border border-on-surface/10 rounded-full px-2 py-0.5">
-                            {Math.round(rec.confidence_score * 100)}%
-                          </span>
+                            <span className={`text-white text-sm ${isActive ? "opacity-100" : "opacity-0 hover:opacity-100"}`}>
+                              {isActive ? "■" : "▶"}
+                            </span>
+                          </div>
                         )}
                       </div>
 
-                      {rec.reason && (
-                        <p className="mt-2 text-[12px] text-on-surface/35 leading-relaxed line-clamp-2">
-                          {rec.reason}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Player */}
-                  {isActive && rec.video_id && (
-                    <div className="mt-4 animate-fadeIn">
-                      <div className="aspect-video w-full overflow-hidden rounded-lg">
-                        <YouTubePlayer videoId={rec.video_id} onEnded={playNext} />
+                      {/* Info */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-semibold truncate">{rec.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {rec.artist}
+                              {rec.album && (
+                                <span className="text-muted-foreground/50"> · {rec.album}</span>
+                              )}
+                            </p>
+                          </div>
+                          {rec.confidence_score && rec.confidence_score >= 0.7 && (
+                            <Badge variant="secondary" className="shrink-0 text-xs">
+                              {Math.round(rec.confidence_score * 100)}%
+                            </Badge>
+                          )}
+                        </div>
+                        {rec.reason && (
+                          <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                            {rec.reason}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
+
+                    {/* YouTube Player */}
+                    {isActive && rec.video_id && (
+                      <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="aspect-video w-full overflow-hidden rounded-lg">
+                          <YouTubePlayer videoId={rec.video_id} onEnded={playNext} />
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               );
             })}
           </div>

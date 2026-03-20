@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "SoundSense",
@@ -14,22 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
-        <Toaster
-          position="bottom-center"
-          toastOptions={{
-            style: {
-              background: "rgb(var(--color-accent-rgb))",
-              color: "rgb(var(--color-on-accent-rgb))",
-              border: "none",
-              borderRadius: "9999px",
-              fontSize: "13px",
-              fontWeight: 500,
-              padding: "12px 24px",
-            },
-          }}
-        />
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   );
