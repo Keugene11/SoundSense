@@ -4,7 +4,13 @@ import { DiscoverClient } from "./client";
 
 export default async function DiscoverPage() {
   const userId = await getSessionUserId();
-  const savedSeeds = await getSeedSongs(userId);
+
+  let savedSeeds: Awaited<ReturnType<typeof getSeedSongs>> = [];
+  try {
+    savedSeeds = await getSeedSongs(userId);
+  } catch {
+    // DB query failed — continue with empty seeds
+  }
 
   return <DiscoverClient initialSeeds={savedSeeds} />;
 }

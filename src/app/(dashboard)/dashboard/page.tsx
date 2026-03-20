@@ -14,14 +14,23 @@ import { DashboardClient } from "./client";
 export default async function DashboardPage() {
   const userId = await getSessionUserId();
 
-  const [profile, history, topArtists, recentRecs, latestSync] =
-    await Promise.all([
+  let profile = null;
+  let history: Awaited<ReturnType<typeof getListeningHistory>> = [];
+  let topArtists: Awaited<ReturnType<typeof getTopArtists>> = [];
+  let recentRecs: Awaited<ReturnType<typeof getRecommendations>> = [];
+  let latestSync: Awaited<ReturnType<typeof getLatestSync>> = null;
+
+  try {
+    [profile, history, topArtists, recentRecs, latestSync] = await Promise.all([
       getProfile(userId),
       getListeningHistory(userId, 10),
       getTopArtists(userId, 8),
       getRecommendations(userId),
       getLatestSync(userId),
     ]);
+  } catch {
+    // DB query failed — continue with defaults
+  }
 
   const connected = profile?.youtube_music_connected ?? false;
 

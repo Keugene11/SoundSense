@@ -5,10 +5,16 @@ import { SettingsClient } from "./client";
 export default async function SettingsPage() {
   const userId = await getSessionUserId();
 
-  const [profile, preferences] = await Promise.all([
-    getProfile(userId),
-    getPreferences(userId),
-  ]);
+  let profile = null;
+  let preferences = null;
+  try {
+    [profile, preferences] = await Promise.all([
+      getProfile(userId),
+      getPreferences(userId),
+    ]);
+  } catch {
+    // DB query failed — continue with defaults
+  }
 
   const safeProfile = profile ?? {
     id: userId,

@@ -9,23 +9,20 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const userId = await getSessionUserId();
-  const profile = await getProfile(userId);
 
-  const safeProfile = profile ?? {
-    id: userId,
-    email: null,
-    display_name: null,
-    avatar_url: null,
-    youtube_music_connected: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  let connected = false;
+  try {
+    const profile = await getProfile(userId);
+    connected = profile?.youtube_music_connected ?? false;
+  } catch {
+    // DB query failed — continue with defaults
+  }
 
   return (
     <div className="flex h-screen">
       <NavSidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header connected={safeProfile.youtube_music_connected} />
+        <Header connected={connected} />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>

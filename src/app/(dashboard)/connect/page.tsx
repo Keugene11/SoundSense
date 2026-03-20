@@ -6,18 +6,25 @@ import { ConnectPageClient } from "./client";
 
 export default async function ConnectPage() {
   const userId = await getSessionUserId();
-  const profile = await getProfile(userId);
+
+  let connected = false;
+  try {
+    const profile = await getProfile(userId);
+    connected = profile?.youtube_music_connected ?? false;
+  } catch {
+    // DB query failed — continue with defaults
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Connect YouTube Music</h1>
-        <Badge variant={profile?.youtube_music_connected ? "default" : "secondary"}>
-          {profile?.youtube_music_connected ? "Connected" : "Not connected"}
+        <Badge variant={connected ? "default" : "secondary"}>
+          {connected ? "Connected" : "Not connected"}
         </Badge>
       </div>
 
-      {profile?.youtube_music_connected ? (
+      {connected ? (
         <Card>
           <CardHeader>
             <CardTitle>YouTube Music is connected</CardTitle>

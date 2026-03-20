@@ -4,7 +4,13 @@ import { RecommendationsClient } from "./client";
 
 export default async function RecommendationsPage() {
   const userId = await getSessionUserId();
-  const recommendations = await getRecommendations(userId);
+
+  let recommendations: Awaited<ReturnType<typeof getRecommendations>> = [];
+  try {
+    recommendations = await getRecommendations(userId);
+  } catch {
+    // DB query failed — continue with empty
+  }
 
   return <RecommendationsClient initialRecs={recommendations} />;
 }
