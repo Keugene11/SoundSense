@@ -1,62 +1,110 @@
 import { getSessionUserId } from "@/lib/session";
 import { generateFromSeeds } from "@/lib/anthropic/recommendations";
 import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity } from "@/lib/lastfm";
-import { searchYouTubeRace, lookupSeedSong } from "@/lib/youtube-music";
+import { searchYouTubeRace, lookupSeedSong, extractYouTubeVideoId, getVideoDetails } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
-import {
-  getRecommendations,
-  getPreferences,
-  getListeningHistory,
-  getTopArtists,
-  insertRecommendations,
-} from "@/lib/store";
+import { insertRecommendations } from "@/lib/store";
 import { NextRequest, NextResponse } from "next/server";
+
+function parseYouTubeTitle(rawTitle: string, rawArtist: string) {
+  const ytTitle = rawTitle
+    .replace(/\s*\(Official.*?\)/gi, "")
+    .replace(/\s*\[Official.*?\]/gi, "")
+    .replace(/\s*\|.*$/, "")
+    .replace(/\s*official\s*(audio|video|music\s*video|lyric\s*video)/gi, "")
+    .trim();
+
+  const channelArtist = rawArtist
+    .replace(/\s*-\s*Topic$/, "")
+    .replace(/\s*VEVO$/i, "")
+    .trim();
+
+  const dashParts = ytTitle.split(" - ");
+  if (dashParts.length >= 2) {
+    return { title: dashParts.slice(1).join(" - ").trim(), artist: dashParts[0].trim() };
+  }
+  return { title: ytTitle, artist: channelArtist };
+}
+
+async function resolveSeed(query: string): Promise<{ title: string; artist: string }> {
+  // Try YouTube URL first
+  const videoId = extractYouTubeVideoId(query);
+  if (videoId) {
+    const details = await getVideoDetails(videoId);
+    if (details) {
+      return parseYouTubeTitle(details.title, details.channelTitle);
+    }
+    // Fallback to oEmbed
+    try {
+      const oembed = await fetch(
+        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
+        { signal: AbortSignal.timeout(5000) }
+      );
+      if (oembed.ok) {
+        const data = await oembed.json();
+        return parseYouTubeTitle(data.title || query, data.author_name || "");
+      }
+    } catch {}
+    return { title: query, artist: "" };
+  }
+
+  // Free text — try YouTube lookup
+  const lookup = await lookupSeedSong(query, "");
+  if (lookup) {
+    return parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist);
+  }
+
+  // Last resort: split on " - " or " by "
+  const byMatch = query.match(/^(.+?)\s+(?:by|[-–—])\s+(.+)$/i);
+  if (byMatch) {
+    return { title: byMatch[1].trim(), artist: byMatch[2].trim() };
+  }
+
+  return { title: query, artist: "" };
+}
 
 export async function POST(req: NextRequest) {
   try {
     const userId = await getSessionUserId();
     const body = await req.json();
-    const seeds: { title: string; artist: string }[] = body.seeds;
 
-    if (!Array.isArray(seeds) || seeds.length === 0 || seeds.length > 1) {
-      return NextResponse.json(
-        { error: "Provide exactly 1 seed song" },
-        { status: 400 }
-      );
+    // Accept either { query: "..." } or { seeds: [...] }
+    let seeds: { title: string; artist: string }[];
+
+    if (body.query && typeof body.query === "string") {
+      const resolved = await resolveSeed(body.query.trim());
+      seeds = [resolved];
+    } else if (Array.isArray(body.seeds) && body.seeds.length > 0) {
+      seeds = body.seeds.slice(0, 1);
+    } else {
+      return NextResponse.json({ error: "Provide a song name or YouTube URL" }, { status: 400 });
     }
 
-    // Phase 1: Run seed lookups, Last.fm candidates, similar artists, and DB context ALL in parallel
+    // Phase 1: Enrich seeds + get candidates in parallel
     const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
-    const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists, allRecs, preferences, history, topArtists] =
-      await Promise.all([
-        Promise.all(
-          seeds.map(async (seed) => {
-            const lookup = await lookupSeedSong(seed.title, seed.artist);
-            if (lookup) {
-              return {
-                title: seed.title,
-                artist: seed.artist,
-                youtubeTitle: lookup.resolvedTitle,
-                youtubeArtist: lookup.resolvedArtist,
-              };
-            }
-            return { title: seed.title, artist: seed.artist };
-          })
-        ),
-        getCandidatesForSeeds(seeds).catch((e) => {
-          console.warn("Last.fm candidate fetch failed, continuing without:", e);
-          return [] as { title: string; artist: string; matchScore: number }[];
-        }),
-        getSimilarArtistsTD(seedArtists),
-        getSimilarArtistsLB(seedArtists),
-        getRecommendations(userId),
-        getPreferences(userId),
-        getListeningHistory(userId, 100),
-        getTopArtists(userId, 20),
-      ]);
 
-    // Merge + dedupe similar artists from TasteDive and ListenBrainz, excluding seed artists
+    const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists] = await Promise.all([
+      Promise.all(
+        seeds.map(async (seed) => {
+          const lookup = await lookupSeedSong(seed.title, seed.artist);
+          if (lookup) {
+            return {
+              title: seed.title,
+              artist: seed.artist,
+              youtubeTitle: lookup.resolvedTitle,
+              youtubeArtist: lookup.resolvedArtist,
+            };
+          }
+          return { title: seed.title, artist: seed.artist };
+        })
+      ),
+      getCandidatesForSeeds(seeds).catch(() => [] as { title: string; artist: string; matchScore: number }[]),
+      getSimilarArtistsTD(seedArtists).catch(() => [] as string[]),
+      getSimilarArtistsLB(seedArtists).catch(() => [] as string[]),
+    ]);
+
+    // Dedupe similar artists
     const seedArtistLower = new Set(seedArtists.map((a) => a.toLowerCase()));
     const seenArtists = new Set<string>();
     const similarArtists: string[] = [];
@@ -68,38 +116,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Build context from user's history
-    const previouslyRecommended = allRecs
-      .slice(0, 50)
-      .map((r) => `${r.title} - ${r.artist}`);
-
-    const recentListens = history.slice(0, 30).map((t) => ({
-      title: t.title,
-      artist: t.artist || "Unknown",
-    }));
-
-    // Phase 2: AI generation (needs seeds + candidates + context)
+    // Phase 2: AI generation
     const aiRecs = await generateFromSeeds(
       enrichedSeeds,
       10,
-      {
-        previouslyRecommended,
-        recentListens,
-        topArtists: topArtists.slice(0, 10),
-        preferences: preferences
-          ? {
-              genres: preferences.favorite_genres,
-              mood: preferences.mood,
-              discoveryLevel: preferences.discovery_level,
-              excludeArtists: preferences.exclude_artists,
-            }
-          : null,
-      },
+      { previouslyRecommended: [], recentListens: [], topArtists: [], preferences: null },
       lastfmCandidates.length > 0 ? lastfmCandidates : undefined,
       similarArtists.length > 0 ? similarArtists : undefined
     );
 
-    // Phase 3: YouTube search + Last.fm verification in parallel for each rec
+    // Phase 3: YouTube search + verification
     const enrichedRecs = await Promise.all(
       aiRecs.map(async (rec) => {
         const searchQuery = `${rec.title} ${rec.artist}`;
@@ -143,14 +169,6 @@ export async function POST(req: NextRequest) {
       .slice(0, 10)
       .map(({ _verified, _verificationScore, ...rec }) => rec);
 
-    if (verifiedRecs.length < enrichedRecs.length) {
-      const dropped = enrichedRecs.length - verifiedRecs.length;
-      console.warn(`Dropped ${dropped} recommendation(s) that failed verification`);
-    }
-    if (verifiedRecs.length < 7) {
-      console.warn(`Only ${verifiedRecs.length} verified recommendations — below target of 7`);
-    }
-
     const finalRecs = verifiedRecs.length >= 5
       ? verifiedRecs
       : enrichedRecs
@@ -158,9 +176,19 @@ export async function POST(req: NextRequest) {
           .slice(0, 10)
           .map(({ _verified, _verificationScore, ...rec }) => rec);
 
-    const saved = await insertRecommendations(finalRecs);
-
-    return NextResponse.json({ recommendations: saved });
+    // Try to save to DB but don't fail if it errors
+    try {
+      const saved = await insertRecommendations(finalRecs);
+      return NextResponse.json({ recommendations: saved });
+    } catch {
+      // DB save failed — return unsaved recs with temp IDs
+      const unsaved = finalRecs.map((r, i) => ({
+        ...r,
+        id: `temp-${i}`,
+        created_at: new Date().toISOString(),
+      }));
+      return NextResponse.json({ recommendations: unsaved });
+    }
   } catch (error) {
     console.error("Discover recommendations error:", error);
     return NextResponse.json(

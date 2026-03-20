@@ -217,7 +217,7 @@ Respond with a JSON array of objects: title (string), artist (string), album (st
 Return ONLY the JSON array, no other text.`;
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 6000,
     system: systemPrompt,
     messages: [
