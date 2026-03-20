@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session";
 import {
   getProfile,
   getListeningHistory,
@@ -12,15 +12,15 @@ import { TrackCard } from "@/components/track-card";
 import { DashboardClient } from "./client";
 
 export default async function DashboardPage() {
-  const user = await getAuthUser();
+  const userId = await getSessionUserId();
 
   const [profile, history, topArtists, recentRecs, latestSync] =
     await Promise.all([
-      getProfile(user.id),
-      getListeningHistory(user.id, 10),
-      getTopArtists(user.id, 8),
-      getRecommendations(user.id),
-      getLatestSync(user.id),
+      getProfile(userId),
+      getListeningHistory(userId, 10),
+      getTopArtists(userId, 8),
+      getRecommendations(userId),
+      getLatestSync(userId),
     ]);
 
   const connected = profile?.youtube_music_connected ?? false;

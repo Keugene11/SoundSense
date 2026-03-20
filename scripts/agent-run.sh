@@ -26,13 +26,13 @@ claude -p "You are an autonomous agent that will spend the next 1 HOUR continuou
 
 ## PROJECT CONTEXT
 This is a Next.js music recommendation app. The core recommendation logic is in:
-  src/lib/dedalus/recommendations.ts
+  src/lib/anthropic/recommendations.ts
 
-It uses GPT-4o (via Dedalus API) to generate song recommendations from seed songs. The prompt in that file controls recommendation quality. Your job is to iteratively improve it.
+It uses Claude (via Anthropic API) to generate song recommendations from seed songs. The prompt in that file controls recommendation quality. Your job is to iteratively improve it.
 
 ## YOUR EVAL SCRIPT
 There is an evaluation script at scripts/eval-recommendations.ts that:
-- Sends seed songs to the Dedalus API using the current prompt
+- Sends seed songs to the Anthropic API using the current prompt
 - Measures: recommendation count, confidence, artist diversity, seed artist leakage, duplicate detection, generic reason detection
 - Saves results to .claude/eval-results/
 
@@ -67,7 +67,7 @@ ALSO test with creative combos:
 ## YOUR LOOP (repeat for 1 hour)
 
 ### Step 1: Read the current prompt
-Read src/lib/dedalus/recommendations.ts to understand the current state.
+Read src/lib/anthropic/recommendations.ts to understand the current state.
 
 ### Step 2: Update the eval script test cases
 Edit scripts/eval-recommendations.ts to use the test songs listed above. Create diverse test case groupings. Make sure the eval script tests BOTH the generateFromSeeds prompt AND the generateRecommendations prompt patterns.
@@ -87,7 +87,7 @@ Look at the eval JSON output. Focus on:
 - Is confidence scoring calibrated? (0.85+ should genuinely be amazing picks)
 
 ### Step 5: Make improvements
-Edit src/lib/dedalus/recommendations.ts to fix issues found. Ideas:
+Edit src/lib/anthropic/recommendations.ts to fix issues found. Ideas:
 - Strengthen the 'no seed artists' rule if they're leaking
 - Improve the analysis framework (sonic qualities, BPM, key, production style)
 - Add constraints for diversity (max N songs from same artist, decade spread, etc.)
@@ -109,14 +109,14 @@ If your change made things WORSE, revert it and try something different.
 
 ### Step 7: Commit if improved
 If the change improved quality, commit it with a descriptive message like:
-  git add src/lib/dedalus/recommendations.ts
+  git add src/lib/anthropic/recommendations.ts
   git commit -m 'Improve recommendation prompt: [what you changed and why]'
 
 ### Step 8: Loop back to Step 3
 Keep iterating. Each cycle should take ~5-10 minutes. You should get through 6-12 improvement cycles in the hour.
 
 ## RULES
-- ONLY modify src/lib/dedalus/recommendations.ts and scripts/eval-recommendations.ts
+- ONLY modify src/lib/anthropic/recommendations.ts and scripts/eval-recommendations.ts
 - Keep a running log: after each iteration, append a summary to .claude/agent-logs/iterations.md
 - Never break the JSON output format
 - Never remove the critical rules about songs being real

@@ -1,4 +1,4 @@
-import { dedalus } from "./client";
+import { anthropic } from "./client";
 import type { ListeningHistoryEntry, UserPreferences } from "@/types/database";
 
 interface AIRecommendation {
@@ -38,17 +38,18 @@ CRITICAL RULES:
 - NEVER recommend ANY song by a seed artist. If the user gives you "Toxicity" by System of a Down, do NOT recommend other System of a Down songs. The user already knows that artist — show them something NEW.`;
 
 async function callAI(prompt: string, count: number): Promise<AIRecommendation[]> {
-  const response = await dedalus.chat.completions.create({
-    model: "gpt-4o",
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 6000,
+    system: SYSTEM_PROMPT,
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: prompt },
     ],
     temperature: 0.5,
-    max_tokens: 6000,
   });
 
-  const content = response.choices[0]?.message?.content?.trim();
+  const textBlock = response.content.find((block) => block.type === "text");
+  const content = textBlock?.text?.trim();
   if (!content) throw new Error("No response from AI");
 
   const cleaned = content.replace(/^```json?\n?/, "").replace(/\n?```$/, "");

@@ -1,21 +1,18 @@
-import { getRouteUser } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session";
 import { getRecommendations } from "@/lib/store";
 import { NextResponse } from "next/server";
 import type { Recommendation } from "@/types/database";
 
 export async function GET(request: Request) {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
   try {
+    const userId = await getSessionUserId();
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") as
       | Recommendation["status"]
       | null;
 
     const recommendations = await getRecommendations(
-      user.id,
+      userId,
       status || undefined
     );
 

@@ -1,4 +1,4 @@
-import { getRouteUser } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session";
 import { getHistory } from "@/lib/youtube-music";
 import {
   createSyncLog,
@@ -8,55 +8,60 @@ import {
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
-  const syncLog = await createSyncLog(user.id);
-
   try {
-    const history = await getHistory(user.id);
+    const userId = await getSessionUserId();
+    const syncLog = await createSyncLog(userId);
 
-    const entries = history.map(
-      (track: {
-        videoId: string;
-        title: string;
-        artists?: { name: string }[];
-        album?: { name: string };
-        thumbnails?: { url: string }[];
-        duration_seconds?: number;
-        played?: string;
-      }) => ({
-        user_id: user.id,
-        video_id: track.videoId,
-        title: track.title,
-        artist: track.artists?.map((a) => a.name).join(", ") || null,
-        album: track.album?.name || null,
-        thumbnail_url: track.thumbnails?.[0]?.url || null,
-        duration_seconds: track.duration_seconds || null,
-        played_at: track.played || new Date().toISOString(),
-      })
-    );
+    try {
+      const history = await getHistory(userId);
 
-    await upsertListeningHistory(entries);
+      const entries = history.map(
+        (track: {
+          videoId: string;
+          title: string;
+          artists?: { name: string }[];
+          album?: { name: string };
+          thumbnails?: { url: string }[];
+          duration_seconds?: number;
+          played?: string;
+        }) => ({
+          user_id: userId,
+          video_id: track.videoId,
+          title: track.title,
+          artist: track.artists?.map((a) => a.name).join(", ") || null,
+          album: track.album?.name || null,
+          thumbnail_url: track.thumbnails?.[0]?.url || null,
+          duration_seconds: track.duration_seconds || null,
+          played_at: track.played || new Date().toISOString(),
+        })
+      );
 
-    await updateSyncLog(syncLog.id, {
-      status: "completed",
-      tracks_synced: entries.length,
-      completed_at: new Date().toISOString(),
-    });
+      await upsertListeningHistory(entries);
 
-    return NextResponse.json({
-      synced: entries.length,
-      sync_id: syncLog.id,
-    });
+      await updateSyncLog(syncLog.id, {
+        status: "completed",
+        tracks_synced: entries.length,
+        completed_at: new Date().toISOString(),
+      });
+
+      return NextResponse.json({
+        synced: entries.length,
+        sync_id: syncLog.id,
+      });
+    } catch (error) {
+      await updateSyncLog(syncLog.id, {
+        status: "failed",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+        completed_at: new Date().toISOString(),
+      });
+
+      return NextResponse.json(
+        { error: "Sync failed" },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    await updateSyncLog(syncLog.id, {
-      status: "failed",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-      completed_at: new Date().toISOString(),
-    });
-
+    console.error("Sync error:", error);
     return NextResponse.json(
       { error: "Sync failed" },
       { status: 500 }

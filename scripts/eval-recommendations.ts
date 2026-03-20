@@ -1,24 +1,23 @@
 /**
  * Standalone evaluation script for SoundSense recommendations.
- * Calls the Dedalus API directly with test seed songs, then evaluates quality.
+ * Calls the Anthropic API directly with test seed songs, then evaluates quality.
  *
  * Usage: npx tsx scripts/eval-recommendations.ts
  *
- * Requires .env.local with DEDALUS_API_KEY and DEDALUS_BASE_URL
+ * Requires .env.local with ANTHROPIC_API_KEY
  */
 
 import "dotenv/config";
 import { config } from "dotenv";
 import { resolve } from "path";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 
 // Load .env.local
 config({ path: resolve(__dirname, "../.env.local") });
 
-const dedalus = new OpenAI({
-  apiKey: process.env.DEDALUS_API_KEY!,
-  baseURL: process.env.DEDALUS_BASE_URL || "https://api.dedaluslabs.ai/v1",
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
 // Test cases from the specified test songs
@@ -144,7 +143,7 @@ interface EvalResult {
 // Read the current system prompt and generateFromSeeds prompt from source
 function getCurrentPromptVersion(): string {
   const src = fs.readFileSync(
-    resolve(__dirname, "../src/lib/dedalus/recommendations.ts"),
+    resolve(__dirname, "../src/lib/anthropic/recommendations.ts"),
     "utf-8"
   );
   let hash = 0;
@@ -217,17 +216,18 @@ Respond with a JSON array of objects: title (string), artist (string), album (st
 
 Return ONLY the JSON array, no other text.`;
 
-  const response = await dedalus.chat.completions.create({
-    model: "gpt-4o",
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 6000,
+    system: systemPrompt,
     messages: [
-      { role: "system", content: systemPrompt },
       { role: "user", content: prompt },
     ],
     temperature: 0.5,
-    max_tokens: 6000,
   });
 
-  const content = response.choices[0]?.message?.content?.trim() || "[]";
+  const textBlock = response.content.find((block) => block.type === "text");
+  const content = textBlock?.text?.trim() || "[]";
   const cleaned = content.replace(/^```json?\n?/, "").replace(/\n?```$/, "");
   const recommendations: Recommendation[] = JSON.parse(cleaned);
 
@@ -306,7 +306,7 @@ Return ONLY the JSON array, no other text.`;
 async function main() {
   const promptVersion = getCurrentPromptVersion();
   const srcFile = fs.readFileSync(
-    resolve(__dirname, "../src/lib/dedalus/recommendations.ts"),
+    resolve(__dirname, "../src/lib/anthropic/recommendations.ts"),
     "utf-8"
   );
   const { systemPrompt } = buildPrompts(srcFile);

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRouteUser } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session";
 import { insertSeedSong, deleteSeedSong } from "@/lib/store";
 import {
   lookupSeedSong,
@@ -30,11 +30,8 @@ function parseYouTubeTitle(rawTitle: string, rawArtist: string) {
 }
 
 export async function POST(request: Request) {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
   try {
+    const userId = await getSessionUserId();
     const { query } = await request.json();
     if (!query || typeof query !== "string" || !query.trim()) {
       return NextResponse.json({ error: "Search query is required" }, { status: 400 });
@@ -45,7 +42,6 @@ export async function POST(request: Request) {
     // Check if it's a playlist URL
     const playlistId = extractYouTubePlaylistId(input);
     if (playlistId) {
-      // Check how many seeds the user already has
       const items = await getPlaylistItems(playlistId, 1);
       if (items.length === 0) {
         return NextResponse.json(
@@ -57,7 +53,7 @@ export async function POST(request: Request) {
       const seeds = [];
       for (const item of items) {
         const { title, artist } = parseYouTubeTitle(item.title, item.channelTitle);
-        const seed = await insertSeedSong(user.id, title, artist);
+        const seed = await insertSeedSong(userId, title, artist);
         seeds.push(seed);
       }
 
@@ -74,7 +70,6 @@ export async function POST(request: Request) {
       if (details) {
         ({ title, artist } = parseYouTubeTitle(details.title, details.channelTitle));
       } else {
-        // API quota exceeded — try oEmbed endpoint (no quota cost)
         try {
           const oembed = await fetch(
             `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
@@ -93,7 +88,6 @@ export async function POST(request: Request) {
         }
       }
     } else {
-      // Free-text search — look up on YouTube
       const lookup = await lookupSeedSong(input, "");
       if (lookup) {
         ({ title, artist } = parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist));
@@ -103,7 +97,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const seed = await insertSeedSong(user.id, title, artist);
+    const seed = await insertSeedSong(userId, title, artist);
     return NextResponse.json({ seed });
   } catch (error) {
     console.error("Seeds POST error:", error);
@@ -115,15 +109,20 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
+  try {
+    const userId = await getSessionUserId();
+    const { id } = await request.json();
+    if (!id || typeof id !== "string") {
+      return NextResponse.json({ error: "Seed ID is required" }, { status: 400 });
+    }
 
-  const { id } = await request.json();
-  if (!id || typeof id !== "string") {
-    return NextResponse.json({ error: "Seed ID is required" }, { status: 400 });
+    await deleteSeedSong(id, userId);
+    return NextResponse.json({ deleted: true });
+  } catch (error) {
+    console.error("Seeds DELETE error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete seed" },
+      { status: 500 }
+    );
   }
-
-  await deleteSeedSong(id, user.id);
-  return NextResponse.json({ deleted: true });
 }

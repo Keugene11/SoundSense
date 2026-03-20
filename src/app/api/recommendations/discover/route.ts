@@ -1,27 +1,21 @@
-import { getRouteUser } from "@/lib/auth";
-import { generateFromSeeds } from "@/lib/dedalus/recommendations";
+import { getSessionUserId } from "@/lib/session";
+import { generateFromSeeds } from "@/lib/anthropic/recommendations";
 import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity } from "@/lib/lastfm";
 import { searchYouTubeRace, lookupSeedSong } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
 import {
-  getSubscription,
-  getTodayRecommendationCount,
   getRecommendations,
   getPreferences,
   getListeningHistory,
   getTopArtists,
   insertRecommendations,
 } from "@/lib/store";
-import { PLANS } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
   try {
+    const userId = await getSessionUserId();
     const body = await req.json();
     const seeds: { title: string; artist: string }[] = body.seeds;
 
@@ -29,27 +23,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Provide exactly 1 seed song" },
         { status: 400 }
-      );
-    }
-
-    // Phase 0: Rate limit check (fast — must pass before expensive work)
-    const [subscription, todayCount] = await Promise.all([
-      getSubscription(user.id),
-      getTodayRecommendationCount(user.id),
-    ]);
-
-    const plan = subscription?.plan || "free";
-    const limit = PLANS[plan].recommendations_per_day;
-
-    if (todayCount >= limit) {
-      return NextResponse.json(
-        {
-          error: "Daily recommendation limit reached",
-          limit,
-          used: todayCount,
-          upgrade: plan === "free",
-        },
-        { status: 429 }
       );
     }
 
@@ -77,10 +50,10 @@ export async function POST(req: NextRequest) {
         }),
         getSimilarArtistsTD(seedArtists),
         getSimilarArtistsLB(seedArtists),
-        getRecommendations(user.id),
-        getPreferences(user.id),
-        getListeningHistory(user.id, 100),
-        getTopArtists(user.id, 20),
+        getRecommendations(userId),
+        getPreferences(userId),
+        getListeningHistory(userId, 100),
+        getTopArtists(userId, 20),
       ]);
 
     // Merge + dedupe similar artists from TasteDive and ListenBrainz, excluding seed artists
@@ -127,18 +100,15 @@ export async function POST(req: NextRequest) {
     );
 
     // Phase 3: YouTube search + Last.fm verification in parallel for each rec
-    // (Dropped MusicBrainz — rate limited at 1 req/sec, mostly 503s with 12 parallel reqs)
     const enrichedRecs = await Promise.all(
       aiRecs.map(async (rec) => {
         const searchQuery = `${rec.title} ${rec.artist}`;
 
-        // Run YouTube search and Last.fm verification concurrently
         const [ytResult, lastfm] = await Promise.all([
           searchYouTubeRace(searchQuery),
           verifyTrackExists(rec.artist, rec.title),
         ]);
 
-        // Compute verification score
         let ytScore = 0;
         if (ytResult?.resultTitle) {
           const recStr = `${rec.title} ${rec.artist}`;
@@ -151,7 +121,7 @@ export async function POST(req: NextRequest) {
         const verificationScore = Math.max(ytScore, lastfmScore);
 
         return {
-          user_id: user.id,
+          user_id: userId,
           title: rec.title,
           artist: rec.artist,
           album: rec.album || null,
@@ -166,7 +136,7 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    // Filter to verified songs, sorted by verification confidence then AI confidence
+    // Filter to verified songs
     const verifiedRecs = enrichedRecs
       .filter((rec) => rec._verified && rec.video_id !== null)
       .sort((a, b) => b._verificationScore - a._verificationScore || b.confidence_score - a.confidence_score)
@@ -181,7 +151,6 @@ export async function POST(req: NextRequest) {
       console.warn(`Only ${verifiedRecs.length} verified recommendations — below target of 7`);
     }
 
-    // Fall back to unverified if verification dropped everything
     const finalRecs = verifiedRecs.length >= 5
       ? verifiedRecs
       : enrichedRecs

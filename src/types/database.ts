@@ -54,18 +54,6 @@ export interface Recommendation {
   created_at: string;
 }
 
-export interface Subscription {
-  id: string;
-  user_id: string;
-  stripe_customer_id: string | null;
-  stripe_subscription_id: string | null;
-  plan: "free" | "pro";
-  status: "active" | "canceled" | "past_due" | "trialing";
-  current_period_end: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface SeedSong {
   id: string;
   user_id: string;

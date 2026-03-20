@@ -1,20 +1,17 @@
-import { getRouteUser } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session";
 import { getListeningHistory, getTopArtists } from "@/lib/store";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
   try {
+    const userId = await getSessionUserId();
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
     const [history, topArtists] = await Promise.all([
-      getListeningHistory(user.id, limit, offset),
-      getTopArtists(user.id),
+      getListeningHistory(userId, limit, offset),
+      getTopArtists(userId),
     ]);
 
     return NextResponse.json({ history, topArtists });

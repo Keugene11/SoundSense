@@ -1,12 +1,12 @@
-import { getAuthUser } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session";
 import { getProfile } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConnectPageClient } from "./client";
 
 export default async function ConnectPage() {
-  const user = await getAuthUser();
-  const profile = await getProfile(user.id);
+  const userId = await getSessionUserId();
+  const profile = await getProfile(userId);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

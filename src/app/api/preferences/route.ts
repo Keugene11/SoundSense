@@ -1,14 +1,11 @@
-import { getRouteUser } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session";
 import { getPreferences, upsertPreferences } from "@/lib/store";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
   try {
-    const preferences = await getPreferences(user.id);
+    const userId = await getSessionUserId();
+    const preferences = await getPreferences(userId);
     return NextResponse.json({ preferences });
   } catch (error) {
     console.error("Get preferences error:", error);
@@ -20,15 +17,12 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
   try {
+    const userId = await getSessionUserId();
     const body = await request.json();
 
     const preferences = await upsertPreferences({
-      user_id: user.id,
+      user_id: userId,
       favorite_genres: body.favorite_genres,
       mood: body.mood,
       discovery_level: body.discovery_level,

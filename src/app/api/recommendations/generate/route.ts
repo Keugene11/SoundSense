@@ -1,5 +1,5 @@
-import { getRouteUser } from "@/lib/auth";
-import { generateRecommendations } from "@/lib/dedalus/recommendations";
+import { getSessionUserId } from "@/lib/session";
+import { generateRecommendations } from "@/lib/anthropic/recommendations";
 import { getSimilarTracks, verifyTrackExists, titleSimilarity } from "@/lib/lastfm";
 import { searchYTMusic } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
@@ -7,41 +7,18 @@ import { getSimilarArtistsLB } from "@/lib/listenbrainz";
 import {
   getListeningHistory,
   getPreferences,
-  getSubscription,
-  getTodayRecommendationCount,
   insertRecommendations,
 } from "@/lib/store";
-import { PLANS } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const auth = await getRouteUser();
-  if (auth.error) return auth.error;
-  const { user } = auth;
-
   try {
-    // Fetch rate limits + user data in a single parallel batch
-    const [subscription, todayCount, history, preferences] = await Promise.all([
-      getSubscription(user.id),
-      getTodayRecommendationCount(user.id),
-      getListeningHistory(user.id, 200),
-      getPreferences(user.id),
+    const userId = await getSessionUserId();
+
+    const [history, preferences] = await Promise.all([
+      getListeningHistory(userId, 200),
+      getPreferences(userId),
     ]);
-
-    const plan = subscription?.plan || "free";
-    const limit = PLANS[plan].recommendations_per_day;
-
-    if (todayCount >= limit) {
-      return NextResponse.json(
-        {
-          error: "Daily recommendation limit reached",
-          limit,
-          used: todayCount,
-          upgrade: plan === "free",
-        },
-        { status: 429 }
-      );
-    }
 
     if (history.length === 0) {
       return NextResponse.json(
@@ -55,7 +32,7 @@ export async function POST() {
 
     const defaultPrefs = preferences || {
       id: "",
-      user_id: user.id,
+      user_id: userId,
       favorite_genres: [],
       mood: "balanced",
       discovery_level: 50,
@@ -131,7 +108,7 @@ export async function POST() {
 
         // Run YouTube search and Last.fm verification concurrently
         const [ytResult, lastfm] = await Promise.all([
-          searchYTMusic(user.id, searchQuery, "songs", 1)
+          searchYTMusic(userId, searchQuery, "songs", 1)
             .then((results: Record<string, unknown>[]) => {
               if (results.length > 0 && results[0].videoId) {
                 return {
@@ -159,7 +136,7 @@ export async function POST() {
         const verificationScore = Math.max(ytScore, lastfmScore);
 
         return {
-          user_id: user.id,
+          user_id: userId,
           title: rec.title,
           artist: rec.artist,
           album: rec.album || null,

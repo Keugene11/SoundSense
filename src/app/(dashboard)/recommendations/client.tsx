@@ -8,12 +8,10 @@ import type { Recommendation } from "@/types/database";
 
 interface RecommendationsClientProps {
   initialRecs: Recommendation[];
-  plan: "free" | "pro";
 }
 
 export function RecommendationsClient({
   initialRecs,
-  plan,
 }: RecommendationsClientProps) {
   const [recommendations, setRecommendations] =
     useState<Recommendation[]>(initialRecs);
@@ -28,16 +26,7 @@ export function RecommendationsClient({
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 429) {
-          toast.error(data.error, {
-            action: data.upgrade
-              ? { label: "Upgrade", onClick: () => (window.location.href = "/settings?tab=subscription") }
-              : undefined,
-          });
-        } else {
-          throw new Error(data.error);
-        }
-        return;
+        throw new Error(data.error);
       }
 
       setRecommendations((prev) => [...data.recommendations, ...prev]);
@@ -73,16 +62,6 @@ export function RecommendationsClient({
             />
           ))}
         </div>
-      )}
-
-      {plan === "free" && (
-        <p className="text-center text-sm text-muted-foreground">
-          Free plan: 5 recommendations per day.{" "}
-          <a href="/settings?tab=subscription" className="underline">
-            Upgrade to Pro
-          </a>{" "}
-          for unlimited.
-        </p>
       )}
     </div>
   );

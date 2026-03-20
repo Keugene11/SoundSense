@@ -8,11 +8,10 @@ import { toast } from "sonner";
 import type { Recommendation, SeedSong } from "@/types/database";
 
 interface DiscoverClientProps {
-  plan: "free" | "pro";
   initialSeeds: SeedSong[];
 }
 
-export function DiscoverClient({ plan, initialSeeds }: DiscoverClientProps) {
+export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
   const [seeds, setSeeds] = useState<SeedSong[]>(initialSeeds);
   const [input, setInput] = useState("");
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -110,20 +109,7 @@ export function DiscoverClient({ plan, initialSeeds }: DiscoverClientProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 429) {
-          toast.error(data.error, {
-            action: data.upgrade
-              ? {
-                  label: "Upgrade",
-                  onClick: () =>
-                    (window.location.href = "/settings?tab=subscription"),
-                }
-              : undefined,
-          });
-        } else {
-          throw new Error(data.error);
-        }
-        return;
+        throw new Error(data.error);
       }
 
       setRecommendations(data.recommendations);
@@ -304,16 +290,6 @@ export function DiscoverClient({ plan, initialSeeds }: DiscoverClientProps) {
             />
           ))}
         </div>
-      )}
-
-      {plan === "free" && (
-        <p className="text-center text-sm text-muted-foreground">
-          Free plan: 5 recommendations per day.{" "}
-          <a href="/settings?tab=subscription" className="underline">
-            Upgrade to Pro
-          </a>{" "}
-          for unlimited.
-        </p>
       )}
     </div>
   );

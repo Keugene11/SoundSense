@@ -1,60 +1,21 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { v4 as uuidv4 } from "uuid";
 
-const publicPaths = ["/", "/login", "/auth/callback", "/api/webhooks/stripe"];
+const COOKIE_NAME = "soundsense_session";
 
-function isPublicPath(pathname: string) {
-  return publicPaths.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
-}
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-
-  // Always refresh session — this keeps cookies in sync for ALL routes
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Only redirect to login for protected routes
-  if (!user && !isPublicPath(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  if (!request.cookies.get(COOKIE_NAME)) {
+    response.cookies.set(COOKIE_NAME, uuidv4(), {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: "/",
+    });
   }
 
-  // If user is logged in and visits /login, redirect to dashboard
-  if (user && pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
-
-  return supabaseResponse;
+  return response;
 }
 
 export const config = {

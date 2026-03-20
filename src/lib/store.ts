@@ -1,19 +1,21 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type {
   Profile,
   ListeningHistoryEntry,
   Recommendation,
   UserPreferences,
-  Subscription,
   SeedSong,
   SyncLog,
 } from "@/types/database";
 
+function db() {
+  return createAdminClient();
+}
+
 // --- Profiles ---
 
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
+  const { data } = await db()
     .from("profiles")
     .select("*")
     .eq("id", userId)
@@ -24,8 +26,7 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 export async function upsertProfile(
   profile: Partial<Profile> & { id: string }
 ): Promise<Profile> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("profiles")
     .upsert(profile)
     .select()
@@ -41,8 +42,7 @@ export async function getListeningHistory(
   limit = 50,
   offset = 0
 ): Promise<ListeningHistoryEntry[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("listening_history")
     .select("*")
     .eq("user_id", userId)
@@ -55,8 +55,7 @@ export async function getListeningHistory(
 export async function upsertListeningHistory(
   entries: Omit<ListeningHistoryEntry, "id" | "synced_at">[]
 ): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase
+  const { error } = await db()
     .from("listening_history")
     .upsert(entries, { onConflict: "user_id,video_id,played_at" });
   if (error) throw error;
@@ -66,8 +65,7 @@ export async function getTopArtists(
   userId: string,
   limit = 10
 ): Promise<{ artist: string; count: number }[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("listening_history")
     .select("artist")
     .eq("user_id", userId)
@@ -90,8 +88,7 @@ export async function getRecommendations(
   userId: string,
   status?: Recommendation["status"]
 ): Promise<Recommendation[]> {
-  const supabase = await createClient();
-  let query = supabase
+  let query = db()
     .from("recommendations")
     .select("*")
     .eq("user_id", userId)
@@ -106,8 +103,7 @@ export async function getRecommendations(
 export async function insertRecommendations(
   recs: Omit<Recommendation, "id" | "created_at">[]
 ): Promise<Recommendation[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("recommendations")
     .insert(recs)
     .select();
@@ -118,11 +114,10 @@ export async function insertRecommendations(
 export async function getTodayRecommendationCount(
   userId: string
 ): Promise<number> {
-  const supabase = await createClient();
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
-  const { count, error } = await supabase
+  const { count, error } = await db()
     .from("recommendations")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
@@ -136,8 +131,7 @@ export async function getTodayRecommendationCount(
 export async function getPreferences(
   userId: string
 ): Promise<UserPreferences | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
+  const { data } = await db()
     .from("user_preferences")
     .select("*")
     .eq("user_id", userId)
@@ -148,8 +142,7 @@ export async function getPreferences(
 export async function upsertPreferences(
   prefs: Partial<UserPreferences> & { user_id: string }
 ): Promise<UserPreferences> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("user_preferences")
     .upsert(prefs)
     .select()
@@ -158,25 +151,10 @@ export async function upsertPreferences(
   return data;
 }
 
-// --- Subscriptions ---
-
-export async function getSubscription(
-  userId: string
-): Promise<Subscription | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("subscriptions")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-  return data;
-}
-
 // --- Seed Songs ---
 
 export async function getSeedSongs(userId: string): Promise<SeedSong[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("seed_songs")
     .select("*")
     .eq("user_id", userId)
@@ -190,8 +168,7 @@ export async function insertSeedSong(
   title: string,
   artist: string
 ): Promise<SeedSong> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("seed_songs")
     .insert({ user_id: userId, title, artist })
     .select()
@@ -204,8 +181,7 @@ export async function deleteSeedSong(
   id: string,
   userId: string
 ): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase
+  const { error } = await db()
     .from("seed_songs")
     .delete()
     .eq("id", id)
@@ -216,8 +192,7 @@ export async function deleteSeedSong(
 // --- Sync Log ---
 
 export async function createSyncLog(userId: string): Promise<SyncLog> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("sync_log")
     .insert({ user_id: userId, status: "running" })
     .select()
@@ -230,8 +205,7 @@ export async function updateSyncLog(
   id: string,
   updates: Partial<SyncLog>
 ): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase
+  const { error } = await db()
     .from("sync_log")
     .update(updates)
     .eq("id", id);
@@ -239,8 +213,7 @@ export async function updateSyncLog(
 }
 
 export async function getLatestSync(userId: string): Promise<SyncLog | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
+  const { data } = await db()
     .from("sync_log")
     .select("*")
     .eq("user_id", userId)

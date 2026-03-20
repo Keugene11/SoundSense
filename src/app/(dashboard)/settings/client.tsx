@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -22,23 +21,17 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { PLANS } from "@/lib/stripe";
-import type { Profile, UserPreferences, Subscription } from "@/types/database";
+import type { Profile, UserPreferences } from "@/types/database";
 
 interface SettingsClientProps {
   profile: Profile;
   preferences: UserPreferences | null;
-  subscription: Subscription | null;
 }
 
 export function SettingsClient({
   profile,
   preferences,
-  subscription,
 }: SettingsClientProps) {
-  const searchParams = useSearchParams();
-  const defaultTab = searchParams.get("tab") || "preferences";
-
   const [prefs, setPrefs] = useState({
     favorite_genres: preferences?.favorite_genres?.join(", ") || "",
     mood: preferences?.mood || "balanced",
@@ -75,38 +68,14 @@ export function SettingsClient({
     }
   };
 
-  const handleUpgrade = async () => {
-    try {
-      const res = await fetch("/api/stripe/checkout", { method: "POST" });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      toast.error("Failed to start checkout");
-    }
-  };
-
-  const handleManageBilling = async () => {
-    try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      toast.error("Failed to open billing portal");
-    }
-  };
-
-  const plan = subscription?.plan || "free";
-
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-3xl font-bold">Settings</h1>
 
-      <Tabs defaultValue={defaultTab}>
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="preferences">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
           <TabsTrigger value="youtube">YouTube Music</TabsTrigger>
-          <TabsTrigger value="subscription">Subscription</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
 
         {/* Preferences Tab */}
@@ -217,73 +186,6 @@ export function SettingsClient({
                     : "Connect YouTube Music"}
                 </a>
               </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Subscription Tab */}
-        <TabsContent value="subscription">
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription</CardTitle>
-              <CardDescription>Manage your plan and billing</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span>Current Plan:</span>
-                <Badge>{PLANS[plan].name}</Badge>
-              </div>
-
-              <ul className="space-y-1">
-                {PLANS[plan].features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm">
-                    <span className="text-green-500">&#10003;</span> {f}
-                  </li>
-                ))}
-              </ul>
-
-              {plan === "free" ? (
-                <Button onClick={handleUpgrade}>
-                  Upgrade to Pro - $9/month
-                </Button>
-              ) : (
-                <div className="space-y-2">
-                  {subscription?.current_period_end && (
-                    <p className="text-sm text-muted-foreground">
-                      Next billing date:{" "}
-                      {new Date(
-                        subscription.current_period_end
-                      ).toLocaleDateString()}
-                    </p>
-                  )}
-                  <Button variant="outline" onClick={handleManageBilling}>
-                    Manage Billing
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Account Tab */}
-        <TabsContent value="account">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account</CardTitle>
-              <CardDescription>Your account details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={profile.email || ""} disabled />
-              </div>
-              <div className="space-y-2">
-                <Label>Display Name</Label>
-                <Input value={profile.display_name || ""} disabled />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Account details are managed through your Google account.
-              </p>
             </CardContent>
           </Card>
         </TabsContent>
