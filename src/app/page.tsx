@@ -1,5 +1,5 @@
-import { DiscoverClient } from "./discover-client";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return <DiscoverClient />;
+export default function LandingPage() {
+  redirect("/discover");
 }

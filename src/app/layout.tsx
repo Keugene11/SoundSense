@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SoundSense",
-  description: "AI-powered music discovery. Enter a song, get 10 recommendations.",
+  title: "SoundSense - AI Music Recommendations",
+  description:
+    "Get AI-powered song recommendations based on your YouTube Music listening history",
 };
 
 export default function RootLayout({
@@ -25,9 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
-        <Toaster richColors position="bottom-right" />
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <TooltipProvider>
+          {children}
+          <Toaster richColors position="bottom-right" />
+        </TooltipProvider>
       </body>
     </html>
   );
