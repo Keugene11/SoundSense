@@ -131,7 +131,7 @@ export function DiscoverClient() {
           </div>
 
           {/* Try another inline */}
-          <div className="flex gap-2 items-center mb-8">
+          <div className="mb-8">
             <input
               type="text"
               value={input}
@@ -142,16 +142,9 @@ export function DiscoverClient() {
                   handleSubmit();
                 }
               }}
-              placeholder="Try another song..."
-              className="flex-1 bg-transparent border-b border-on-surface/10 pb-2 text-[14px] text-on-surface placeholder-on-surface/20 focus:outline-none focus:border-on-surface/40 transition-colors"
+              placeholder="Try another song or paste a link..."
+              className="w-full bg-transparent border-b border-on-surface/10 pb-2.5 text-[14px] text-on-surface placeholder-on-surface/20 focus:outline-none focus:border-on-surface/40 transition-colors"
             />
-            <button
-              onClick={handleSubmit}
-              disabled={!input.trim()}
-              className="shrink-0 px-4 py-1.5 bg-on-surface text-surface font-medium rounded-full text-[12px] hover:opacity-85 transition-all disabled:opacity-15 disabled:cursor-not-allowed"
-            >
-              Go
-            </button>
           </div>
 
           {/* Song cards */}
