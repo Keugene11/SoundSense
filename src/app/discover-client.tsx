@@ -87,7 +87,7 @@ export function DiscoverClient() {
               <button
                 onClick={handleSubmit}
                 disabled={!input.trim()}
-                className="w-full py-3.5 bg-on-surface text-surface font-medium rounded-full text-sm hover:opacity-85 transition-all disabled:opacity-15 disabled:cursor-not-allowed"
+                className="w-full py-3.5 bg-black text-white font-medium rounded-full text-sm hover:bg-black/85 transition-all disabled:opacity-15 disabled:cursor-not-allowed"
               >
                 Get recommendations
               </button>
