@@ -109,9 +109,9 @@ export function DiscoverClient() {
 
       {/* Results */}
       {hasResults && !generating && (
-        <div className="max-w-2xl mx-auto px-4 md:px-8 pt-8 pb-20">
+        <div className="max-w-3xl mx-auto px-6 pt-8 pb-20">
           {/* Top bar */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">SoundSense</h1>
               <p className="text-[13px] text-on-surface/35 mt-0.5">
@@ -148,14 +148,14 @@ export function DiscoverClient() {
           </div>
 
           {/* Song cards */}
-          <div className="stagger">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 stagger">
             {recommendations.map((rec, i) => {
               const isActive = activeIndex === i;
               return (
                 <div
                   key={rec.id}
-                  className={`group border border-on-surface/10 rounded-xl p-4 mb-3 transition-all hover:border-on-surface/20 ${
-                    isActive ? "border-on-surface/25 bg-on-surface/[0.02]" : ""
+                  className={`group border border-on-surface/10 rounded-xl p-4 transition-all hover:border-on-surface/20 ${
+                    isActive ? "border-on-surface/25 bg-on-surface/[0.02] md:col-span-2" : ""
                   }`}
                 >
                   <div className="flex gap-4">
