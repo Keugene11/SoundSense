@@ -1,0 +1,1399 @@
+{
+  "promptVersion": "110088c",
+  "results": [
+    {
+      "testCase": "Single: Misery (pop-rock)",
+      "seeds": [
+        {
+          "title": "Misery",
+          "artist": "Maroon 5"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Sunday Morning",
+          "artist": "No Doubt",
+          "album": "Tragic Kingdom",
+          "reason": "This track features a catchy pop-rock melody with a bright, upbeat guitar line and a syncopated rhythm section, similar to the polished production and infectious hooks found in 'Misery'.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Stolen Dance",
+          "artist": "Milky Chance",
+          "album": "Sadnecessary",
+          "reason": "The song combines a groovy, laid-back beat with smooth vocals and a catchy acoustic guitar riff, echoing the melodic sensibilities and rhythmic drive of 'Misery'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Sweet Disposition",
+          "artist": "The Temper Trap",
+          "album": "Conditions",
+          "reason": "With its shimmering guitar textures and soaring vocal lines, this track captures the same anthemic and emotionally uplifting qualities present in 'Misery'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Electric Feel",
+          "artist": "MGMT",
+          "album": "Oracular Spectacular",
+          "reason": "This song features a funky bassline, catchy synth melodies, and a danceable groove, paralleling the upbeat energy and pop sensibility found in 'Misery'.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Falling for You",
+          "artist": "Colbie Caillat",
+          "album": "Breakthrough",
+          "reason": "The track's smooth vocal delivery, acoustic instrumentation, and warm production create a breezy, feel-good atmosphere akin to the melodic charm of 'Misery'.",
+          "confidence_score": 0.74
+        },
+        {
+          "title": "She Moves in Her Own Way",
+          "artist": "The Kooks",
+          "album": "Inside In / Inside Out",
+          "reason": "This song blends jangly guitars with a catchy, sing-along chorus, matching the upbeat and infectious nature of 'Misery'.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Brighter Than Sunshine",
+          "artist": "Aqualung",
+          "album": "Still Life",
+          "reason": "Featuring lush piano chords and heartfelt vocals, this track exudes a warm and hopeful emotional tone similar to the bittersweet yet uplifting mood of 'Misery'.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Young Folks",
+          "artist": "Peter Bjorn and John",
+          "album": "Writer's Block",
+          "reason": "The song's whistled melody, catchy bassline, and laid-back groove offer a playful and engaging sound that aligns with the pop sensibilities of 'Misery'.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "The Sound of Settling",
+          "artist": "Death Cab for Cutie",
+          "album": "Transatlanticism",
+          "reason": "This track features upbeat tempos, jangly guitars, and a catchy chorus, capturing the energetic and melodic qualities that make 'Misery' so appealing.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Accidentally in Love",
+          "artist": "Counting Crows",
+          "album": "Shrek 2: Motion Picture Soundtrack",
+          "reason": "With its infectious melody, bright guitar riffs, and upbeat rhythm, this song shares the pop-rock charm and emotional lift of 'Misery'.",
+          "confidence_score": 0.83
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7850000000000001,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 152.9
+      },
+      "timestamp": "2026-03-02T19:21:14.345Z"
+    },
+    {
+      "testCase": "Single: Crystals (electronic)",
+      "seeds": [
+        {
+          "title": "Crystals",
+          "artist": "Isolate.exe"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Night Drive",
+          "artist": "Timecop1983",
+          "album": "Night Drive",
+          "reason": "This track features lush synths with a nostalgic, reverb-heavy atmosphere and a steady mid-tempo beat that mirrors the ethereal soundscape of 'Crystals'.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Daydream",
+          "artist": "The Midnight",
+          "album": "Endless Summer",
+          "reason": "With its emotive saxophone lines and warm, analog synth textures, this song captures a bittersweet nostalgia similar to the sonic palette of your seed song.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Running in the Dark",
+          "artist": "FM-84",
+          "album": "Atlas",
+          "reason": "The track combines driving 80s-inspired synths with a melancholic yet hopeful melody, creating an emotional resonance akin to the atmospheric qualities of 'Crystals'.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Distance",
+          "artist": "Tycho",
+          "album": "Weather",
+          "reason": "This song's dreamy guitar lines and expansive ambient textures evoke a sense of serene introspection, aligning with the contemplative mood of 'Crystals'.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "New Divide",
+          "artist": "Linkin Park",
+          "album": "Transformers: Revenge of the Fallen – The Album",
+          "reason": "Featuring a blend of electronic elements and rock instrumentation, this track delivers a powerful and atmospheric experience similar to the layered production of 'Crystals'.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "The Killing Moon",
+          "artist": "Echo & the Bunnymen",
+          "album": "Ocean Rain",
+          "reason": "This classic track's haunting melody and lush, reverb-drenched production provide a timeless quality that complements the ethereal characteristics of your seed song.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Blinding Lights",
+          "artist": "The Weeknd",
+          "album": "After Hours",
+          "reason": "The song's retro synthwave influence and driving beat offer a modern twist on the nostalgic soundscape found in 'Crystals'.",
+          "confidence_score": 0.74
+        },
+        {
+          "title": "Midnight City",
+          "artist": "M83",
+          "album": "Hurry Up, We're Dreaming",
+          "reason": "With its soaring synth lines and anthemic chorus, this track encapsulates an expansive and uplifting mood reminiscent of the emotional depth in 'Crystals'.",
+          "confidence_score": 0.73
+        },
+        {
+          "title": "Reverie",
+          "artist": "Hammock",
+          "album": "Everything and Nothing",
+          "reason": "This ambient piece features lush, layered guitars and a tranquil atmosphere that parallels the introspective and immersive qualities of 'Crystals'.",
+          "confidence_score": 0.72
+        },
+        {
+          "title": "In the Air Tonight",
+          "artist": "Phil Collins",
+          "album": "Face Value",
+          "reason": "The song's iconic drum break and moody, atmospheric build-up create a timeless aura that resonates with the emotive sound of 'Crystals'.",
+          "confidence_score": 0.71
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7609999999999999,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Midnight City: \"With its soaring synth lines and anthemic chorus, this track encapsulates an expansive and uplifting mood reminiscent of the emotional depth in 'Crystals'.\""
+        ],
+        "reasonAvgLength": 152.7
+      },
+      "timestamp": "2026-03-02T19:21:32.834Z"
+    },
+    {
+      "testCase": "Single: Lover Girl (jazz-pop)",
+      "seeds": [
+        {
+          "title": "Lover Girl",
+          "artist": "Laufey"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Your Best American Girl",
+          "artist": "Mitski",
+          "album": "Puberty 2",
+          "reason": "This track features a mix of intimate vocals and lush instrumentation, with a bittersweet emotional core similar to Laufey's storytelling, complemented by a dynamic build-up that evokes a sense of longing.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Kiss Me",
+          "artist": "Sixpence None the Richer",
+          "album": "Sixpence None the Richer",
+          "reason": "The song's gentle acoustic guitar and soft, melodic vocals create a nostalgic and romantic atmosphere, akin to the tender and heartfelt delivery in 'Lover Girl'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Dreams Tonite",
+          "artist": "Alvvays",
+          "album": "Antisocialites",
+          "reason": "This track combines a dreamy indie-pop sound with reverb-drenched vocals and a wistful melody, capturing the same sense of yearning and warmth found in Laufey's music.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Sea Shanty for a Salty Slug",
+          "artist": "The Scary Jokes",
+          "album": "April Fools",
+          "reason": "With its quirky, lo-fi production and charmingly earnest vocals, this song offers a unique blend of whimsy and sincerity, reminiscent of the playful yet heartfelt nature of 'Lover Girl'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Sofia",
+          "artist": "Clairo",
+          "album": "Immunity",
+          "reason": "Featuring soft, breathy vocals and a laid-back, dreamy production, this track captures a sense of introspective warmth and vulnerability similar to Laufey's style.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "What Once Was",
+          "artist": "Her's",
+          "album": "Songs of Her's",
+          "reason": "The song's jangly guitars and nostalgic melodies create a sense of melancholic reflection, echoing the emotional depth and melodic charm of 'Lover Girl'.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "This track's hauntingly beautiful melody and ethereal production evoke a sense of longing and nostalgia, similar to the emotional undercurrents in Laufey's work.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "Peach",
+          "artist": "Broods",
+          "album": "Don't Feed the Pop Monster",
+          "reason": "The song features lush synths and a catchy, upbeat rhythm that contrasts with its introspective lyrics, offering a cross-genre exploration of similar emotional themes.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Heartbeats",
+          "artist": "José González",
+          "album": "Veneer",
+          "reason": "With its intricate acoustic guitar work and gentle vocal delivery, this track provides a serene and intimate listening experience, resonating with the soft and personal touch of 'Lover Girl'.",
+          "confidence_score": 0.87
+        },
+        {
+          "title": "Somebody to Anybody",
+          "artist": "Margaret Glaspy",
+          "album": "Emotions and Math",
+          "reason": "This track combines raw, emotive vocals with a stripped-back arrangement, offering a direct and honest emotional connection akin to the storytelling in 'Lover Girl'.",
+          "confidence_score": 0.79
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.82,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Sea Shanty for a Salty Slug: \"With its quirky, lo-fi production and charmingly earnest vocals, this song offers a unique blend of whimsy and sincerity, reminiscent of the playful yet heartfelt nature of 'Lover Girl'.\""
+        ],
+        "reasonAvgLength": 171.9
+      },
+      "timestamp": "2026-03-02T19:21:58.332Z"
+    },
+    {
+      "testCase": "Single: Toxicity (metal)",
+      "seeds": [
+        {
+          "title": "Toxicity",
+          "artist": "System of a Down"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Spit It Out",
+          "artist": "Slipknot",
+          "album": "Slipknot",
+          "reason": "This track features aggressive, rapid-fire vocals and a frenetic energy similar to 'Toxicity', with a strong emphasis on dynamic shifts and percussive elements.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "People = Shit",
+          "artist": "Slipknot",
+          "album": "Iowa",
+          "reason": "With its raw energy and intense vocal delivery, this track mirrors the chaotic and heavy sound of 'Toxicity', utilizing complex rhythms and aggressive guitar tones.",
+          "confidence_score": 0.88
+        },
+        {
+          "title": "Passenger",
+          "artist": "Deftones",
+          "album": "White Pony",
+          "reason": "This song features a dark, atmospheric sound with heavy guitar riffs and haunting vocal harmonies, capturing a similar emotional intensity and sonic depth as 'Toxicity'.",
+          "confidence_score": 0.87
+        },
+        {
+          "title": "Cold",
+          "artist": "Static-X",
+          "album": "Machine",
+          "reason": "The song combines industrial elements with a driving metal edge, similar to 'Toxicity', featuring a tight, rhythmic guitar riff and a powerful vocal delivery.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Bulls on Parade",
+          "artist": "Rage Against the Machine",
+          "album": "Evil Empire",
+          "reason": "This track is driven by a heavy, groove-laden guitar riff and politically charged lyrics, echoing the intensity and socially conscious themes present in 'Toxicity'.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "Judith",
+          "artist": "A Perfect Circle",
+          "album": "Mer de Noms",
+          "reason": "Featuring a blend of alternative metal and art rock, this track has dynamic vocal performances and intricate guitar work that align with the complex structures of 'Toxicity'.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Killing in the Name",
+          "artist": "Rage Against the Machine",
+          "album": "Rage Against the Machine",
+          "reason": "With its powerful riffs and politically charged lyrics, this song shares a similar energy and rebellious spirit as 'Toxicity', driven by a relentless rhythm section.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Digital Bath",
+          "artist": "Deftones",
+          "album": "White Pony",
+          "reason": "This track offers a blend of ethereal vocals and heavy guitar tones, creating a lush sonic landscape that mirrors the intense yet melodic nature of 'Toxicity'.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Duality",
+          "artist": "Slipknot",
+          "album": "Vol. 3: (The Subliminal Verses)",
+          "reason": "Featuring a mix of melodic and aggressive elements, this song captures the dynamic shifts and emotional intensity found in 'Toxicity', with intricate drum patterns and powerful guitar work.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "The Red",
+          "artist": "Chevelle",
+          "album": "Wonder What's Next",
+          "reason": "This track combines heavy guitar riffs with melodic vocal lines, reflecting the balance of aggression and melody found in 'Toxicity', and features a tight, driving rhythm section.",
+          "confidence_score": 0.84
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.85,
+        "uniqueArtists": 6,
+        "artistDiversityRatio": 0.6,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 168.1
+      },
+      "timestamp": "2026-03-02T19:22:23.439Z"
+    },
+    {
+      "testCase": "Pop-Rock meets Electronic",
+      "seeds": [
+        {
+          "title": "Misery",
+          "artist": "Maroon 5"
+        },
+        {
+          "title": "Crystals",
+          "artist": "Isolate.exe"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Electric Feel",
+          "artist": "MGMT",
+          "album": "Oracular Spectacular",
+          "reason": "This track features a catchy, upbeat rhythm with a blend of electronic and rock elements, similar to the polished production and infectious hooks found in 'Misery'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Bloodbuzz Ohio",
+          "artist": "The National",
+          "album": "High Violet",
+          "reason": "The song captures a sense of bittersweet nostalgia with its driving drum beat and baritone vocals, echoing the emotional complexity present in 'Crystals'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Sweet Disposition",
+          "artist": "The Temper Trap",
+          "album": "Conditions",
+          "reason": "With its soaring vocals and shimmering guitar lines, this track creates an uplifting yet introspective atmosphere, akin to the emotive layers found in the seed songs.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Stolen Dance",
+          "artist": "Milky Chance",
+          "album": "Sadnecessary",
+          "reason": "The song combines a laid-back groove with a catchy melody and a touch of electronic production, paralleling the pop sensibility and rhythmic appeal of 'Misery'.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Midnight City",
+          "artist": "M83",
+          "album": "Hurry Up, We're Dreaming",
+          "reason": "Featuring lush synths and a driving beat, this track creates a dreamy soundscape that aligns with the atmospheric and electronic elements present in 'Crystals'.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Young Blood",
+          "artist": "The Naked and Famous",
+          "album": "Passive Me, Aggressive You",
+          "reason": "This song delivers a high-energy, anthemic feel with its dynamic instrumentation and youthful exuberance, resonating with the upbeat yet emotionally charged nature of 'Misery'.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Take a Walk",
+          "artist": "Passion Pit",
+          "album": "Gossamer",
+          "reason": "With its rhythmic drive and vibrant synths, this track offers a pop-infused sound that captures the energetic and melodic qualities found in 'Misery'.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "This song's haunting melody and wistful lyrics evoke a sense of longing, mirroring the emotional depth and introspective nature of 'Crystals'.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "1901",
+          "artist": "Phoenix",
+          "album": "Wolfgang Amadeus Phoenix",
+          "reason": "The track features upbeat tempos and catchy guitar riffs, similar to the engaging and polished pop-rock sound of 'Misery'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Lights",
+          "artist": "Ellie Goulding",
+          "album": "Lights",
+          "reason": "With its ethereal vocals and pulsing electronic beats, this song creates a captivating atmosphere that aligns with the electronic pop elements of 'Crystals'.",
+          "confidence_score": 0.8
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7979999999999999,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 155.1
+      },
+      "timestamp": "2026-03-02T19:22:42.771Z"
+    },
+    {
+      "testCase": "Smooth/Jazzy Pop",
+      "seeds": [
+        {
+          "title": "Sunday Morning",
+          "artist": "Maroon 5"
+        },
+        {
+          "title": "Lover Girl",
+          "artist": "Laufey"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Love Like Ghosts",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "This track features gentle acoustic guitar and smooth vocal harmonies, evoking a dreamy and introspective mood similar to 'Sunday Morning' with a touch of folk warmth.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Someone New",
+          "artist": "Hozier",
+          "album": "Hozier",
+          "reason": "The song combines soulful vocals with a laid-back groove and a subtle jazz influence, capturing the emotional depth and romantic undertones present in 'Lover Girl'.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Banana Pancakes",
+          "artist": "Jack Johnson",
+          "album": "In Between Dreams",
+          "reason": "This track's relaxed acoustic guitar and warm vocal delivery create a cozy and intimate atmosphere, reminiscent of the mellow Sunday vibe of 'Sunday Morning'.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Sea Shanty for a Salty Slug",
+          "artist": "Cosmo Sheldrake",
+          "album": "The Much Much How How and I",
+          "reason": "With its whimsical arrangement and playful melodies, this song shares the imaginative and heartfelt qualities found in 'Lover Girl', featuring eclectic instrumentation.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Cigarette Daydreams",
+          "artist": "Cage the Elephant",
+          "album": "Melophobia",
+          "reason": "The song's introspective lyrics and melancholic yet hopeful acoustic sound align with the emotional territory of 'Lover Girl', enhanced by its gentle strumming and heartfelt vocals.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Heartbeats",
+          "artist": "José González",
+          "album": "Veneer",
+          "reason": "This cover features delicate fingerpicked guitar and soft, emotive vocals, evoking a sense of intimate reflection similar to the nuanced storytelling in 'Lover Girl'.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "The Only Living Boy in New York",
+          "artist": "Simon & Garfunkel",
+          "album": "Bridge Over Troubled Water",
+          "reason": "A classic track with lush harmonies and a gentle acoustic arrangement, it captures a timeless sense of nostalgia and warmth akin to 'Sunday Morning'.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "Such a Simple Thing",
+          "artist": "Ray LaMontagne",
+          "album": "Part of the Light",
+          "reason": "Featuring a soothing melody and tender vocal delivery, this track mirrors the heartfelt simplicity and emotional resonance of 'Lover Girl'.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Budapest",
+          "artist": "George Ezra",
+          "album": "Wanted on Voyage",
+          "reason": "With its catchy melody and warm, acoustic-driven sound, this song shares the laid-back and inviting energy found in 'Sunday Morning'.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "In the Aeroplane Over the Sea",
+          "artist": "Neutral Milk Hotel",
+          "album": "In the Aeroplane Over the Sea",
+          "reason": "The song's raw, emotive vocals and rich acoustic instrumentation create a poignant and nostalgic atmosphere, resonating with the emotional depth of 'Lover Girl'.",
+          "confidence_score": 0.82
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.819,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Banana Pancakes: \"This track's relaxed acoustic guitar and warm vocal delivery create a cozy and intimate atmosphere, reminiscent of the mellow Sunday vibe of 'Sunday Morning'.\""
+        ],
+        "reasonAvgLength": 158.6
+      },
+      "timestamp": "2026-03-02T19:23:19.159Z"
+    },
+    {
+      "testCase": "Confidence Anthems Cross-Language",
+      "seeds": [
+        {
+          "title": "The Man",
+          "artist": "Aloe Blacc"
+        },
+        {
+          "title": "Lo Siento BB",
+          "artist": "Tainy"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Good Life",
+          "artist": "OneRepublic",
+          "album": "Waking Up",
+          "reason": "This track features upbeat, soulful vocals and a catchy, anthemic chorus similar to 'The Man' by Aloe Blacc, combined with a polished production that includes percussive elements and a bright, uplifting melody.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Electricity",
+          "artist": "Dua Lipa & Silk City",
+          "album": "Electricity",
+          "reason": "The song combines a driving dance beat with soulful vocals and a blend of electronic and organic instrumentation, echoing the vibrant, rhythmic energy found in 'Lo Siento BB' by Tainy.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Lost in the Fire",
+          "artist": "Gesaffelstein & The Weeknd",
+          "album": "Hyperion",
+          "reason": "This track features a dark, moody electronic production with smooth, emotive vocals and an infectious beat, reminiscent of the sleek, polished sound of 'Lo Siento BB'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Home",
+          "artist": "Edward Sharpe & The Magnetic Zeros",
+          "album": "Up From Below",
+          "reason": "This song offers a nostalgic, feel-good vibe with its folk-inspired instrumentation and duet vocals, capturing the warm, hopeful essence you might find appealing from 'The Man'.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Hold My Hand",
+          "artist": "Jess Glynne",
+          "album": "I Cry When I Laugh",
+          "reason": "The track features an upbeat tempo and soulful vocal delivery with an infectious pop production, similar to the positive, uplifting energy in 'The Man'.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Sunflower",
+          "artist": "Post Malone & Swae Lee",
+          "album": "Spider-Man: Into the Spider-Verse",
+          "reason": "This track combines smooth, melodic vocals with a laid-back, catchy beat and bright production, akin to the modern pop sensibilities of 'Lo Siento BB'.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Come Over",
+          "artist": "The Internet",
+          "album": "Hive Mind",
+          "reason": "This deep cut features a chill, groovy bassline with silky vocals and a smooth blend of R&B and funk elements, offering a relaxed yet engaging listening experience.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "On Top of the World",
+          "artist": "Imagine Dragons",
+          "album": "Night Visions",
+          "reason": "The song's upbeat, infectious energy with clapping rhythms and a triumphant melody mirrors the feel-good, motivational aspect of 'The Man'.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Tadow",
+          "artist": "Masego & FKJ",
+          "album": "Tadow",
+          "reason": "This track blends smooth jazz influences with a contemporary R&B groove, featuring intricate saxophone lines and a laid-back, soulful vibe that aligns with the rhythmic complexity of 'Lo Siento BB'.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Budapest",
+          "artist": "George Ezra",
+          "album": "Wanted on Voyage",
+          "reason": "This classic track offers a warm, acoustic-driven sound with catchy hooks and rich vocal delivery, capturing a similar heartfelt and uplifting spirit as 'The Man'.",
+          "confidence_score": 0.74
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7850000000000001,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Lost in the Fire: \"This track features a dark, moody electronic production with smooth, emotive vocals and an infectious beat, reminiscent of the sleek, polished sound of 'Lo Siento BB'.\""
+        ],
+        "reasonAvgLength": 170.5
+      },
+      "timestamp": "2026-03-02T19:23:36.514Z"
+    },
+    {
+      "testCase": "Soulful Vibes",
+      "seeds": [
+        {
+          "title": "Pink + White",
+          "artist": "Frank Ocean"
+        },
+        {
+          "title": "I Thought I Saw Your Face Today",
+          "artist": "Stevie Wonder"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "See You Again",
+          "artist": "Tyler, The Creator",
+          "album": "Flower Boy",
+          "reason": "This track features lush, layered production with dreamy synths and a smooth, soulful vocal delivery, echoing the rich textures and emotional depth found in 'Pink + White'.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Borderline",
+          "artist": "Tame Impala",
+          "album": "The Slow Rush",
+          "reason": "With its warm, reverb-drenched production and introspective lyrics, this song captures a similar sense of bittersweet nostalgia and modern soulfulness.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Get You",
+          "artist": "Daniel Caesar",
+          "album": "Freudian",
+          "reason": "Featuring smooth, jazz-inflected guitar lines and a tender vocal performance, this track shares the emotive, intimate atmosphere of 'I Thought I Saw Your Face Today'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "The Night Me and Your Mama Met",
+          "artist": "Childish Gambino",
+          "album": "Awaken, My Love!",
+          "reason": "This instrumental piece offers a blend of soulful guitar, atmospheric synths, and a laid-back groove, reminiscent of the lush soundscapes and emotional depth in Frank Ocean's work.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Cigarette Song",
+          "artist": "Raury",
+          "album": "Indigo Child",
+          "reason": "This track combines acoustic elements with a soulful vocal delivery and a reflective lyrical theme, mirroring the heartfelt and introspective qualities of the seed songs.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Streetcar",
+          "artist": "Daniel Caesar",
+          "album": "Pilgrim's Paradise",
+          "reason": "The song's minimalist arrangement and emotive vocal performance create a sense of longing and introspection, akin to the emotional territory explored in 'I Thought I Saw Your Face Today'.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Don't Let Me Down",
+          "artist": "Joy Crookes",
+          "album": "Perception",
+          "reason": "This track features a soulful vocal style and rich instrumental backing, capturing the same blend of vulnerability and warmth found in Stevie Wonder's music.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Love Is Overdue",
+          "artist": "Gregory Isaacs",
+          "album": "In Person",
+          "reason": "A classic reggae track with smooth, heartfelt vocals and a soulful melody, offering a timeless quality that aligns with the emotional depth of the seed songs.",
+          "confidence_score": 0.74
+        },
+        {
+          "title": "Best Part",
+          "artist": "H.E.R.",
+          "album": "H.E.R.",
+          "reason": "Featuring a gentle acoustic guitar and a warm, expressive vocal delivery, this song shares the intimate and soulful qualities of the seed tracks.",
+          "confidence_score": 0.73
+        },
+        {
+          "title": "Untitled #3",
+          "artist": "John Vincent",
+          "album": "The Love EP",
+          "reason": "This deep cut offers a blend of smooth jazz influences and soulful vocals, creating a lush soundscape that resonates with the emotional and sonic qualities of the seed songs.",
+          "confidence_score": 0.72
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.779,
+        "uniqueArtists": 9,
+        "artistDiversityRatio": 0.9,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "The Night Me and Your Mama Met: \"This instrumental piece offers a blend of soulful guitar, atmospheric synths, and a laid-back groove, reminiscent of the lush soundscapes and emotional depth in Frank Ocean's work.\""
+        ],
+        "reasonAvgLength": 166
+      },
+      "timestamp": "2026-03-02T19:23:59.139Z"
+    },
+    {
+      "testCase": "Electronic/Synth",
+      "seeds": [
+        {
+          "title": "Midnight City",
+          "artist": "M83"
+        },
+        {
+          "title": "Crystals",
+          "artist": "Isolate.exe"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "We Own The Sky",
+          "artist": "M83",
+          "album": "Saturdays = Youth",
+          "reason": "This deep cut from M83 features lush synth layers and ethereal vocals similar to 'Midnight City', with a driving beat that evokes the same sense of expansive nostalgia.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "The Sun",
+          "artist": "The Naked and Famous",
+          "album": "Passive Me, Aggressive You",
+          "reason": "This track combines shimmering synths and anthemic choruses, capturing the same euphoric yet introspective feel as 'Midnight City'.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "The Night",
+          "artist": "School of Seven Bells",
+          "album": "Ghostory",
+          "reason": "Featuring dreamy synth textures and a propulsive rhythm, this song mirrors the atmospheric and emotional complexity found in 'Crystals'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "The Look",
+          "artist": "Metronomy",
+          "album": "The English Riviera",
+          "reason": "With its catchy synth hooks and laid-back groove, this track offers a similar blend of nostalgia and modernity as 'Midnight City'.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Dazzle",
+          "artist": "Oh Wonder",
+          "album": "Ultralife",
+          "reason": "This song features a lush production with soft vocal harmonies and a steady electronic beat, akin to the atmospheric quality of 'Crystals'.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Another Wave From You",
+          "artist": "M83",
+          "album": "Hurry Up, We're Dreaming",
+          "reason": "An instrumental track that captures the same expansive synth-driven soundscape and emotional depth as 'Midnight City'.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "New Theory",
+          "artist": "Washed Out",
+          "album": "Life of Leisure",
+          "reason": "This chillwave track features reverb-heavy vocals and lush synths, delivering a dreamy and introspective vibe similar to 'Crystals'.",
+          "confidence_score": 0.74
+        },
+        {
+          "title": "Oblivion",
+          "artist": "Grimes",
+          "album": "Visions",
+          "reason": "Combining ethereal vocals and layered synths, this track shares the futuristic yet nostalgic feel of 'Midnight City'.",
+          "confidence_score": 0.73
+        },
+        {
+          "title": "Spanish Sahara",
+          "artist": "Foals",
+          "album": "Total Life Forever",
+          "reason": "With its slow build and atmospheric soundscapes, this track evokes a similar sense of emotional depth and introspection as 'Crystals'.",
+          "confidence_score": 0.72
+        },
+        {
+          "title": "All I Want",
+          "artist": "Kodaline",
+          "album": "In a Perfect World",
+          "reason": "This song features a soaring melody and emotive vocals, capturing the bittersweet nostalgia and hope found in the seed songs.",
+          "confidence_score": 0.71
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7609999999999999,
+        "uniqueArtists": 9,
+        "artistDiversityRatio": 0.9,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "We Own The Sky - M83",
+          "Another Wave From You - M83"
+        ],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 133
+      },
+      "timestamp": "2026-03-02T19:24:17.141Z"
+    },
+    {
+      "testCase": "Heavy/Dark Rock",
+      "seeds": [
+        {
+          "title": "Toxicity",
+          "artist": "System of a Down"
+        },
+        {
+          "title": "Do I Wanna Know?",
+          "artist": "Arctic Monkeys"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Aerials",
+          "artist": "Puscifer",
+          "album": "V is for Vagina",
+          "reason": "This track features a haunting vocal delivery and a layered, atmospheric production style that echoes the introspective yet intense mood found in 'Toxicity'. The use of dynamic shifts and textured guitar work creates an engaging listening experience.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Elephant",
+          "artist": "Tame Impala",
+          "album": "Lonerism",
+          "reason": "With its driving bassline and psychedelic rock influences, 'Elephant' captures the same swagger and groove as 'Do I Wanna Know?'. The fuzz-laden guitar riffs and hypnotic rhythm section provide a powerful backdrop.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "The Way We Were",
+          "artist": "The Strokes",
+          "album": "Comedown Machine",
+          "reason": "This deep cut features a gritty guitar tone and a steady, propulsive beat, reminiscent of the raw energy and melodic sensibility of the Arctic Monkeys' work. The nostalgic yet forward-driving feel aligns well with the emotional landscape of the seed songs.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Red Eyes",
+          "artist": "The War on Drugs",
+          "album": "Lost in the Dream",
+          "reason": "The track combines a steady rhythm with lush, reverb-drenched guitars and synths, creating an expansive soundscape that mirrors the introspective and yearning quality of 'Do I Wanna Know?'.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "The Ground Walks, with Time in a Box",
+          "artist": "Modest Mouse",
+          "album": "Strangers to Ourselves",
+          "reason": "Featuring a catchy, driving rhythm and quirky, layered instrumentation, this song shares the dynamic energy and slightly off-kilter charm present in the seed tracks.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "My God Is the Sun",
+          "artist": "Queens of the Stone Age",
+          "album": "...Like Clockwork",
+          "reason": "The track's relentless rhythm and overdriven guitar riffs create a powerful, anthemic feel similar to 'Toxicity'. The raw vocal delivery and tight production enhance its intensity.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "This song's melancholic yet hopeful melody, combined with its lush instrumentation and ethereal vocal harmonies, taps into the emotional complexity found in the seed songs.",
+          "confidence_score": 0.74
+        },
+        {
+          "title": "Black Grease",
+          "artist": "The Black Angels",
+          "album": "Passover",
+          "reason": "With its gritty guitar tones and hypnotic, driving beat, this track captures the raw energy and psychedelic elements akin to 'Toxicity'. The vocal delivery adds a haunting, intense layer.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Heartbreaker",
+          "artist": "MSTRKRFT",
+          "album": "Fist of God",
+          "reason": "This electro-rock track features a pulsating beat and distorted synths that create a high-energy atmosphere, paralleling the dynamic intensity of 'Do I Wanna Know?'.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "New Born",
+          "artist": "Muse",
+          "album": "Origin of Symmetry",
+          "reason": "The song's soaring vocals, intricate guitar work, and dramatic shifts in dynamics align with the intense and expansive soundscapes present in the seed songs.",
+          "confidence_score": 0.84
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.797,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "The Way We Were: \"This deep cut features a gritty guitar tone and a steady, propulsive beat, reminiscent of the raw energy and melodic sensibility of the Arctic Monkeys' work. The nostalgic yet forward-driving feel aligns well with the emotional landscape of the seed songs.\""
+        ],
+        "reasonAvgLength": 193.5
+      },
+      "timestamp": "2026-03-02T19:24:53.269Z"
+    },
+    {
+      "testCase": "Romantic/Mellow",
+      "seeds": [
+        {
+          "title": "Best Part",
+          "artist": "Daniel Caesar"
+        },
+        {
+          "title": "Lover Girl",
+          "artist": "Laufey"
+        },
+        {
+          "title": "Sunday Morning",
+          "artist": "Maroon 5"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "The Worst",
+          "artist": "Jhené Aiko",
+          "album": "Sail Out",
+          "reason": "This track features silky smooth vocals and lush, minimalistic production with a gentle guitar backdrop, similar to the intimate and soulful vibe of 'Best Part'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Japanese Denim",
+          "artist": "Daniel Caesar",
+          "album": "Pilgrim's Paradise",
+          "reason": "This deep cut from Daniel Caesar offers a rich, soulful sound with intricate guitar work and heartfelt vocals, akin to the emotional depth found in 'Best Part'.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Streetcar",
+          "artist": "Daniel Caesar",
+          "album": "Pilgrim's Paradise",
+          "reason": "The song's mellow R&B vibe and introspective lyrics create a soothing atmosphere, reminiscent of the intimate and heartfelt nature of 'Best Part'.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Coffee",
+          "artist": "Miguel",
+          "album": "Wildheart",
+          "reason": "Miguel's 'Coffee' blends smooth R&B with a touch of rock, featuring lush instrumentation and passionate vocals that capture the romantic essence of 'Lover Girl'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Come Over",
+          "artist": "The Internet",
+          "album": "Hive Mind",
+          "reason": "This track combines neo-soul with a laid-back groove and Syd's velvety vocals, echoing the relaxed and intimate feel of 'Sunday Morning'.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Find Someone Like You",
+          "artist": "Snoh Aalegra",
+          "album": "- Ugh, those feels again",
+          "reason": "Snoh Aalegra delivers a smooth blend of R&B and soul, with lush production and emotive vocals that align with the heartfelt and soulful qualities of 'Lover Girl'.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Golden",
+          "artist": "Jill Scott",
+          "album": "Beautifully Human: Words and Sounds Vol. 2",
+          "reason": "This classic neo-soul track features warm instrumentation and uplifting vocals, capturing the positive and serene energy of 'Sunday Morning'.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Get You",
+          "artist": "Daniel Caesar",
+          "album": "Freudian",
+          "reason": "The song's sultry R&B groove and soulful duet with Kali Uchis create a rich, romantic atmosphere that mirrors the lush soundscape of 'Best Part'.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Love Galore",
+          "artist": "SZA",
+          "album": "Ctrl",
+          "reason": "This track features smooth, layered vocals and a dreamy production style, echoing the emotional and sonic depth found in 'Lover Girl'.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Say You Love Me",
+          "artist": "Jessie Ware",
+          "album": "Tough Love",
+          "reason": "Jessie Ware's soulful delivery and lush orchestration create a deeply emotional ballad, capturing the heartfelt and intimate essence of 'Best Part'.",
+          "confidence_score": 0.76
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7989999999999999,
+        "uniqueArtists": 8,
+        "artistDiversityRatio": 0.8,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Japanese Denim - Daniel Caesar",
+          "Streetcar - Daniel Caesar",
+          "Get You - Daniel Caesar"
+        ],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Streetcar: \"The song's mellow R&B vibe and introspective lyrics create a soothing atmosphere, reminiscent of the intimate and heartfelt nature of 'Best Part'.\""
+        ],
+        "reasonAvgLength": 149.5
+      },
+      "timestamp": "2026-03-02T19:25:23.241Z"
+    },
+    {
+      "testCase": "R&B / Soul",
+      "seeds": [
+        {
+          "title": "Best Part",
+          "artist": "Daniel Caesar"
+        },
+        {
+          "title": "Pink + White",
+          "artist": "Frank Ocean"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Get You Alone",
+          "artist": "Brent Faiyaz",
+          "album": "Sonder Son",
+          "reason": "Brent Faiyaz's 'Get You Alone' features lush, soulful vocals over a smooth, minimalist R&B production with warm, analog synths and gentle percussion, similar to the intimate soundscapes of the seed songs.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Loving Is Easy",
+          "artist": "Rex Orange County",
+          "album": "Apricot Princess",
+          "reason": "This track combines jazzy chord progressions with a laid-back groove and warm, inviting vocal delivery, capturing the relaxed, heartfelt emotional territory present in 'Best Part' and 'Pink + White'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "The Night Song",
+          "artist": "Ravyn Lenae",
+          "album": "Moon Shoes",
+          "reason": "Ravyn Lenae's 'The Night Song' features ethereal vocals and a dreamy production with lush harmonies and a slow, swaying rhythm, creating a tranquil and introspective mood akin to the seeds.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Japanese Denim",
+          "artist": "Daniel Caesar",
+          "album": "Freudian",
+          "reason": "Though a deep cut, this track showcases Caesar's signature blend of soulful vocals and intimate, guitar-driven arrangements, evoking the same tender and nostalgic feelings as the seeds.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Eternal Light",
+          "artist": "Free Nationals",
+          "album": "Free Nationals",
+          "reason": "Featuring a smooth, reggae-infused beat and soothing vocals, this song offers a warm, laid-back vibe with rich instrumental textures, resonating with the emotional warmth of the seed songs.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Beauty & Essex",
+          "artist": "Free Nationals, Daniel Caesar, Unknown Mortal Orchestra",
+          "album": "Free Nationals",
+          "reason": "This collaboration features a hybrid of soulful vocals and psychedelic instrumentation, blending lush harmonies and laid-back grooves, appealing to fans of the rich textures in the seed songs.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Streetcar",
+          "artist": "Daniel Caesar",
+          "album": "Pilgrim's Paradise",
+          "reason": "A deep cut with a gospel-inspired chord progression and heartfelt vocal delivery, this track mirrors the emotional depth and warmth found in 'Best Part' and 'Pink + White'.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "L$D",
+          "artist": "A$AP Rocky",
+          "album": "At.Long.Last.A$AP",
+          "reason": "This track blends psychedelic elements with smooth, melodic rap, featuring ambient synths and a relaxed tempo, capturing the dreamy and introspective qualities of the seed songs.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Cigarette Song",
+          "artist": "Raury",
+          "album": "Indigo Child",
+          "reason": "Raury's 'Cigarette Song' combines acoustic guitar with soulful vocals and a laid-back beat, evoking a sense of nostalgia and warmth similar to the emotional landscape of the seed tracks.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Violet",
+          "artist": "Daniel Caesar",
+          "album": "Freudian",
+          "reason": "A lesser-known track that features Caesar's soulful vocal delivery with smooth, jazz-influenced instrumentation, capturing the intimate and heartfelt essence of the seed songs.",
+          "confidence_score": 0.85
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8230000000000001,
+        "uniqueArtists": 8,
+        "artistDiversityRatio": 0.8,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Japanese Denim - Daniel Caesar",
+          "Streetcar - Daniel Caesar",
+          "Violet - Daniel Caesar"
+        ],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Beauty & Essex: \"This collaboration features a hybrid of soulful vocals and psychedelic instrumentation, blending lush harmonies and laid-back grooves, appealing to fans of the rich textures in the seed songs.\""
+        ],
+        "reasonAvgLength": 187
+      },
+      "timestamp": "2026-03-02T19:25:41.451Z"
+    },
+    {
+      "testCase": "Synth-Pop / Retro",
+      "seeds": [
+        {
+          "title": "Blinding Lights",
+          "artist": "The Weeknd"
+        },
+        {
+          "title": "Midnight City",
+          "artist": "M83"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Real Hero",
+          "artist": "College & Electric Youth",
+          "album": "A Real Hero",
+          "reason": "This track features a driving synthwave beat with shimmering synths and ethereal vocals, evoking a sense of nostalgic futurism similar to 'Blinding Lights' and 'Midnight City'.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "The Night",
+          "artist": "The Weeknd",
+          "album": "The Night",
+          "reason": "This deep cut from The Weeknd's early work showcases his signature blend of moody synths and haunting vocals, creating a similar emotional landscape to the seed songs.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Nightcall",
+          "artist": "Kavinsky",
+          "album": "OutRun",
+          "reason": "With its retro-futuristic synth lines and pulsating rhythm, this track captures the same cinematic and atmospheric quality that defines both seed songs.",
+          "confidence_score": 0.88
+        },
+        {
+          "title": "A Real Hero",
+          "artist": "College & Electric Youth",
+          "album": "A Real Hero",
+          "reason": "This track features a driving synthwave beat with shimmering synths and ethereal vocals, evoking a sense of nostalgic futurism similar to 'Blinding Lights' and 'Midnight City'.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "D.A.N.C.E.",
+          "artist": "Justice",
+          "album": "†",
+          "reason": "The catchy, upbeat tempo and vibrant synths in this track provide a similar energetic and nostalgic feel, with a modern twist on disco elements.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Staring at the Sun",
+          "artist": "Simple Minds",
+          "album": "Good News from the Next World",
+          "reason": "This lesser-known track by Simple Minds features lush synths and anthemic vocals, creating a dramatic and uplifting soundscape akin to the seed songs.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Runaway",
+          "artist": "Mr. Little Jeans",
+          "album": "Pocketknife",
+          "reason": "This track combines dreamy synth textures with a catchy melody and driving beat, reminiscent of the emotive and nostalgic sound of 'Blinding Lights' and 'Midnight City'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Alive",
+          "artist": "Empire of the Sun",
+          "album": "Ice on the Dune",
+          "reason": "With its vibrant synths and euphoric chorus, this song captures the same sense of uplifting nostalgia and electronic flair as the seed tracks.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "Under Your Spell",
+          "artist": "Desire",
+          "album": "II",
+          "reason": "This track features hypnotic synths and haunting vocals, creating an atmospheric and emotionally resonant experience similar to the mood of the seed songs.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "On the Regular",
+          "artist": "Shamir",
+          "album": "Ratchet",
+          "reason": "This song's infectious beat and bold synth lines provide a fresh take on the electronic pop sound, delivering a high-energy experience with a unique twist.",
+          "confidence_score": 0.81
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.834,
+        "uniqueArtists": 9,
+        "artistDiversityRatio": 0.9,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "The Night - The Weeknd"
+        ],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Runaway: \"This track combines dreamy synth textures with a catchy melody and driving beat, reminiscent of the emotive and nostalgic sound of 'Blinding Lights' and 'Midnight City'.\""
+        ],
+        "reasonAvgLength": 158.6
+      },
+      "timestamp": "2026-03-02T19:26:01.036Z"
+    },
+    {
+      "testCase": "Alt-Rock / Psychedelic",
+      "seeds": [
+        {
+          "title": "Comfortably Numb",
+          "artist": "Pink Floyd"
+        },
+        {
+          "title": "Boredom",
+          "artist": "Tyler, the Creator"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "The Great Gig in the Sky",
+          "artist": "The Alan Parsons Project",
+          "album": "Pyramid",
+          "reason": "Features lush, atmospheric production with ethereal vocal elements and a contemplative piano line, similar to the immersive soundscapes found in 'Comfortably Numb'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "A Pillow of Winds",
+          "artist": "David Gilmour",
+          "album": "David Gilmour",
+          "reason": "This track showcases Gilmour's signature guitar work with a serene, introspective vibe and mellow acoustic textures reminiscent of Pink Floyd's softer moments.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "The Less I Know the Better",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "Features a groovy bassline with psychedelic pop elements and smooth, reverb-laden vocals, capturing the exploratory spirit of 'Boredom'.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "The Night Me and Your Mama Met",
+          "artist": "Childish Gambino",
+          "album": "Awaken, My Love!",
+          "reason": "This track blends soulful, atmospheric production with emotive vocal delivery, echoing the layered and introspective qualities of Tyler's work.",
+          "confidence_score": 0.74
+        },
+        {
+          "title": "I Am the Cosmos",
+          "artist": "Chris Bell",
+          "album": "I Am the Cosmos",
+          "reason": "Features a melancholic yet hopeful melody with lush instrumentation and heartfelt vocals, akin to the bittersweet nostalgia found in 'Comfortably Numb'.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "In the Waiting Line",
+          "artist": "Zero 7",
+          "album": "Simple Things",
+          "reason": "Combines downtempo beats with soothing vocal harmonies and a dreamy soundscape, aligning with the reflective mood of 'Boredom'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "The Golden Age",
+          "artist": "Beck",
+          "album": "Sea Change",
+          "reason": "Offers a melancholic yet warm acoustic sound with introspective lyrics and lush string arrangements, reminiscent of the emotional depth in 'Comfortably Numb'.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Doin' It Right",
+          "artist": "Daft Punk",
+          "album": "Random Access Memories",
+          "reason": "This track features a hypnotic rhythm with vocoder-enhanced vocals and a minimalist electronic groove, providing a cross-genre exploration that mirrors the experimental nature of Tyler's music.",
+          "confidence_score": 0.72
+        },
+        {
+          "title": "Riders on the Storm",
+          "artist": "The Doors",
+          "album": "L.A. Woman",
+          "reason": "Combines haunting keyboard lines with a laid-back yet eerie atmosphere, capturing the dreamy and introspective qualities found in Pink Floyd's work.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Reckoner",
+          "artist": "Radiohead",
+          "album": "In Rainbows",
+          "reason": "Features intricate rhythms, ethereal guitar work, and a haunting vocal delivery, creating a rich, contemplative soundscape similar to the emotive depth in 'Comfortably Numb'.",
+          "confidence_score": 0.86
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.795,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "A Pillow of Winds: \"This track showcases Gilmour's signature guitar work with a serene, introspective vibe and mellow acoustic textures reminiscent of Pink Floyd's softer moments.\"",
+          "The Golden Age: \"Offers a melancholic yet warm acoustic sound with introspective lyrics and lush string arrangements, reminiscent of the emotional depth in 'Comfortably Numb'.\""
+        ],
+        "reasonAvgLength": 155.4
+      },
+      "timestamp": "2026-03-02T19:26:17.429Z"
+    }
+  ]
+}

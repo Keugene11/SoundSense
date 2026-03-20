@@ -1,0 +1,1371 @@
+{
+  "promptVersion": "-71a2a228",
+  "results": [
+    {
+      "testCase": "Single: Misery (pop-rock)",
+      "seeds": [
+        {
+          "title": "Misery",
+          "artist": "Maroon 5"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Too Close",
+          "artist": "Alex Clare",
+          "album": "The Lateness of the Hour",
+          "reason": "Combines a driving 4/4 beat at ~128 BPM with a mix of electronic and organic instrumentation, featuring gritty guitar riffs and soulful, powerful vocals that convey emotional tension.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Stolen Dance",
+          "artist": "Milky Chance",
+          "album": "Sadnecessary",
+          "reason": "Features a laid-back groove at ~114 BPM with acoustic guitar lines and a steady rhythmic pulse, paired with husky, emotive vocals and a catchy melodic hook.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Electric Feel",
+          "artist": "MGMT",
+          "album": "Oracular Spectacular",
+          "reason": "Blends a funky bassline with shimmering synths and a mid-tempo beat, creating a psychedelic yet accessible soundscape that supports smooth, laid-back vocals.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Pompeii",
+          "artist": "Bastille",
+          "album": "Bad Blood",
+          "reason": "Driven by an anthemic beat at ~127 BPM, this track layers rich vocal harmonies over atmospheric synths and a propulsive drum pattern, creating an uplifting yet introspective feel.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Crave You (feat. Giselle)",
+          "artist": "Flight Facilities",
+          "album": "Down to Earth",
+          "reason": "Combines a steady 4/4 beat with lush synth textures and airy female vocals, creating a dreamy and nostalgic vibe with an undercurrent of longing.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Sweet Disposition",
+          "artist": "The Temper Trap",
+          "album": "Conditions",
+          "reason": "Features a driving rhythm at ~120 BPM with jangly guitar riffs and soaring, emotive vocals, creating a sense of urgency and euphoria.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Young Blood",
+          "artist": "The Naked and Famous",
+          "album": "Passive Me, Aggressive You",
+          "reason": "Combines a punchy drumbeat with shimmering synths and dynamic vocal delivery, crafting an energetic and youthful sound that captures a sense of adventure.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Home",
+          "artist": "Edward Sharpe & The Magnetic Zeros",
+          "album": "Up from Below",
+          "reason": "Offers a folk-inspired sound with a lively 4/4 beat and call-and-response vocals, creating a warm and joyous atmosphere with a touch of nostalgia.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Take a Walk",
+          "artist": "Passion Pit",
+          "album": "Gossamer",
+          "reason": "Features a bouncy rhythm at ~125 BPM with bright synths and layered vocals, delivering a vibrant and uplifting energy that complements its introspective lyrics.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Riptide",
+          "artist": "Vance Joy",
+          "album": "Dream Your Life Away",
+          "reason": "Combines an upbeat tempo with a catchy ukulele riff and earnest vocal delivery, creating a breezy and infectious sound with a sense of adventure.",
+          "confidence_score": 0.76
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.796,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 155.8
+      },
+      "timestamp": "2026-03-02T19:53:50.296Z"
+    },
+    {
+      "testCase": "Single: Crystals (electronic)",
+      "seeds": [
+        {
+          "title": "Crystals",
+          "artist": "Isolate.exe"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "The Ghost of You",
+          "artist": "My Chemical Romance",
+          "album": "Three Cheers for Sweet Revenge",
+          "reason": "Features soaring guitar lines with a haunting melody and emotional intensity, underpinned by a driving 4/4 rhythm at ~120 BPM, creating a powerful sense of longing and urgency.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Staring at the Sun",
+          "artist": "Simple Creatures",
+          "album": "Strange Love",
+          "reason": "Combines punchy bass lines with bright synths and crisp drumming, creating an upbeat yet introspective atmosphere, with layered vocals that add a sense of depth and complexity.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "The New Year",
+          "artist": "Death Cab for Cutie",
+          "album": "Transatlanticism",
+          "reason": "Utilizes shimmering guitar textures and a steady drumbeat at ~110 BPM, with melancholic vocals that convey a sense of introspection and renewal, enhanced by subtle reverb effects.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "The Killing Moon",
+          "artist": "Echo & the Bunnymen",
+          "album": "Ocean Rain",
+          "reason": "Features lush string arrangements over a hypnotic rhythm section, with echo-laden vocals that evoke a sense of mystery and yearning, set in a minor key for added emotional depth.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "Delivers a nostalgic and ethereal sound with its gentle acoustic strumming, reverb-drenched vocals, and a slow, waltz-like tempo that enhances its hauntingly beautiful atmosphere.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Dark Days",
+          "artist": "Local Natives",
+          "album": "Sunlit Youth",
+          "reason": "Blends warm guitar tones with layered harmonies and a steady groove at ~100 BPM, creating a sun-drenched, reflective soundscape that balances optimism with a hint of melancholy.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Seventeen",
+          "artist": "Sharon Van Etten",
+          "album": "Remind Me Tomorrow",
+          "reason": "Combines driving synth bass with soaring vocals and a propulsive beat, capturing a sense of bittersweet nostalgia and youthful longing through its dynamic arrangement.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "The Less I Know The Better",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "Marries funky bass grooves with dreamy synth textures and laid-back vocals, creating a psychedelic pop vibe that is both catchy and introspective, perfect for a reflective mood.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Heartbeats",
+          "artist": "The Knife",
+          "album": "Deep Cuts",
+          "reason": "Features a pulsing electronic beat with shimmering synths and ethereal vocals, creating a danceable yet emotionally resonant track that explores themes of love and connection.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Digital Witness",
+          "artist": "St. Vincent",
+          "album": "St. Vincent",
+          "reason": "Employs angular guitar riffs and punchy brass sections over a tight, syncopated rhythm, offering a critique of modern society with its sharp, energetic delivery and art-rock sensibility.",
+          "confidence_score": 0.72
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.787,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 177
+      },
+      "timestamp": "2026-03-02T19:54:12.087Z"
+    },
+    {
+      "testCase": "Single: Lover Girl (jazz-pop)",
+      "seeds": [
+        {
+          "title": "Lover Girl",
+          "artist": "Laufey"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "Combines lush string arrangements with a delicate acoustic guitar and a gentle 6/8 rhythm, creating a wistful and nostalgic atmosphere similar to the emotional depth in 'Lover Girl'.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Slow Burn",
+          "artist": "Kacey Musgraves",
+          "album": "Golden Hour",
+          "reason": "Features a warm, analog production with soft vocal delivery over a relaxed tempo, blending gentle acoustic elements with an undercurrent of introspective lyrics.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Love Like Ghosts",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "Utilizes ethereal harmonies and a dreamy soundscape with a steady, calming rhythm that evokes a sense of longing and nostalgia.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Heartbeats",
+          "artist": "José González",
+          "album": "Veneer",
+          "reason": "Features intricate fingerpicked guitar patterns and soft, introspective vocals, creating an intimate and soothing atmosphere.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Sea Shanty for a Salty Slug",
+          "artist": "The Amazing Devil",
+          "album": "The Horror and the Wild",
+          "reason": "Blends theatrical storytelling with lush orchestration and a haunting vocal delivery, capturing a sense of adventure and emotional depth.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Pink Moon",
+          "artist": "Nick Drake",
+          "album": "Pink Moon",
+          "reason": "Delivers a minimalist acoustic arrangement with introspective lyrics and a gentle vocal delivery, creating a serene and reflective mood.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "I Will Follow You Into the Dark",
+          "artist": "Death Cab for Cutie",
+          "album": "Plans",
+          "reason": "Presents a stripped-down acoustic guitar and vocal arrangement with poignant lyrics, evoking a sense of bittersweet longing.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Holocene",
+          "artist": "Bon Iver",
+          "album": "Bon Iver, Bon Iver",
+          "reason": "Incorporates layered vocals and atmospheric instrumentation with a gentle, flowing rhythm, capturing a sense of introspective beauty.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Rivers and Roads",
+          "artist": "The Head and the Heart",
+          "album": "The Head and the Heart",
+          "reason": "Combines rich vocal harmonies with acoustic instrumentation and a gradual build-up in intensity, creating an emotionally resonant experience.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "The Stable Song",
+          "artist": "Gregory Alan Isakov",
+          "album": "That Sea, The Gambler",
+          "reason": "Features gentle acoustic guitar and subtle string arrangements with a soothing vocal delivery, evoking a sense of calm and reflection.",
+          "confidence_score": 0.81
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8160000000000001,
+        "uniqueArtists": 9,
+        "artistDiversityRatio": 0.9,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 140
+      },
+      "timestamp": "2026-03-02T19:54:27.706Z"
+    },
+    {
+      "testCase": "Single: Toxicity (metal)",
+      "seeds": [
+        {
+          "title": "Toxicity",
+          "artist": "System of a Down"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Digging the Grave",
+          "artist": "Faith No More",
+          "album": "King for a Day... Fool for a Lifetime",
+          "reason": "Features aggressive, overdriven guitar riffs with dynamic shifts between intense verses and explosive choruses, driven by a frenetic drum pattern at ~130 BPM.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "L'Via L'Viaquez",
+          "artist": "The Mars Volta",
+          "album": "Frances the Mute",
+          "reason": "Combines Latin-inspired rhythms with heavy, distorted guitar lines and complex time signatures, weaving in bilingual vocals that create a volatile, psychedelic soundscape.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Vicarious",
+          "artist": "Tool",
+          "album": "10,000 Days",
+          "reason": "Builds tension with intricate polyrhythms and a dark, brooding atmosphere, featuring heavy guitars and Maynard James Keenan's commanding vocal delivery.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Sober",
+          "artist": "Badflower",
+          "album": "OK, I'm Sick",
+          "reason": "Presents raw, emotive vocals over a gritty, grunge-influenced guitar backdrop, with a driving rhythm section that amplifies the song's intensity at ~140 BPM.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Electric Red",
+          "artist": "Meshuggah",
+          "album": "obZen",
+          "reason": "Employs complex, syncopated riffs with a relentless, mechanical precision, characterized by a heavy, down-tuned guitar tone and Jens Kidman's harsh vocal style.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "The Pot",
+          "artist": "Tool",
+          "album": "10,000 Days",
+          "reason": "Balances intricate bass lines with syncopated guitar riffs and dynamic vocal shifts, exploring themes of hypocrisy and justice with a progressive metal edge.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Blood and Thunder",
+          "artist": "Mastodon",
+          "album": "Leviathan",
+          "reason": "Combines a sludgy, heavy metal guitar tone with pounding drums and roaring vocals, creating a nautical-themed epic with a relentless drive at ~120 BPM.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "The Widow",
+          "artist": "The Mars Volta",
+          "album": "Frances the Mute",
+          "reason": "Blends haunting, soulful vocals with progressive rock instrumentation, featuring dramatic shifts in dynamics and tempo that evoke a sense of urgency and tension.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Black Bubblegum",
+          "artist": "The Dillinger Escape Plan",
+          "album": "Ire Works",
+          "reason": "Features a blend of mathcore complexity and catchy, melodic hooks, with angular guitar riffs and a tight, punchy rhythm section that propels the song forward.",
+          "confidence_score": 0.74
+        },
+        {
+          "title": "New Noise",
+          "artist": "Refused",
+          "album": "The Shape of Punk to Come",
+          "reason": "Delivers a high-energy punk rock anthem with a powerful, anthemic chorus, driven by aggressive guitar work and a frenetic tempo at ~170 BPM.",
+          "confidence_score": 0.73
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7849999999999999,
+        "uniqueArtists": 8,
+        "artistDiversityRatio": 0.8,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 156.5
+      },
+      "timestamp": "2026-03-02T19:54:46.498Z"
+    },
+    {
+      "testCase": "Pop-Rock meets Electronic",
+      "seeds": [
+        {
+          "title": "Misery",
+          "artist": "Maroon 5"
+        },
+        {
+          "title": "Crystals",
+          "artist": "Isolate.exe"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Sweet Disposition",
+          "artist": "The Temper Trap",
+          "album": "Conditions",
+          "reason": "Combines shimmering guitar riffs with ethereal vocals and a steady 4/4 beat at ~120 BPM, creating an uplifting and expansive atmosphere.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Tongue Tied",
+          "artist": "Grouplove",
+          "album": "Never Trust a Happy Song",
+          "reason": "Features bright, overdriven guitars and energetic drum patterns, complemented by layered vocal harmonies that convey a sense of exuberant nostalgia.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Electric Feel",
+          "artist": "MGMT",
+          "album": "Oracular Spectacular",
+          "reason": "Blends retro synth textures with a groovy bassline and a laid-back drum groove, creating a dreamy yet danceable vibe.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Mountain At My Gates",
+          "artist": "Foals",
+          "album": "What Went Down",
+          "reason": "Features driving guitar riffs with a syncopated rhythm section, layered under Yannis Philippakis's dynamic vocal delivery, creating a sense of urgency and intensity.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Past Lives",
+          "artist": "BØRNS",
+          "album": "Dopamine",
+          "reason": "Utilizes lush synth pads and a steady drum machine beat, with airy vocals that float above, evoking a sense of wistful yearning.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Trojans",
+          "artist": "Atlas Genius",
+          "album": "When It Was Now",
+          "reason": "Combines jangly guitar lines with a tight rhythm section and smooth vocal melodies, creating a polished indie pop sound.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Electric Love",
+          "artist": "BØRNS",
+          "album": "Dopamine",
+          "reason": "Features a vibrant mix of analog synths and reverb-drenched guitars, with soaring vocals that add a euphoric edge to the track.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Take a Walk",
+          "artist": "Passion Pit",
+          "album": "Gossamer",
+          "reason": "Incorporates punchy synth lines and upbeat percussion, with Michael Angelakos's falsetto vocals delivering introspective yet hopeful lyrics.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Young Folks",
+          "artist": "Peter Bjorn and John",
+          "album": "Writer's Block",
+          "reason": "Features a catchy whistled melody over a bouncy bassline and crisp drum beats, creating a playful and infectious indie pop tune.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "My Number",
+          "artist": "Foals",
+          "album": "Holy Fire",
+          "reason": "Showcases intricate guitar work with a danceable rhythm section, paired with catchy vocal hooks that build an energetic and engaging sound.",
+          "confidence_score": 0.76
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.805,
+        "uniqueArtists": 8,
+        "artistDiversityRatio": 0.8,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 134.8
+      },
+      "timestamp": "2026-03-02T19:55:04.707Z"
+    },
+    {
+      "testCase": "Smooth/Jazzy Pop",
+      "seeds": [
+        {
+          "title": "Sunday Morning",
+          "artist": "Maroon 5"
+        },
+        {
+          "title": "Lover Girl",
+          "artist": "Laufey"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Banana Pancakes",
+          "artist": "Jack Johnson",
+          "album": "In Between Dreams",
+          "reason": "Features laid-back acoustic guitar strumming with soft, warm vocals and a relaxed groove at ~80 BPM, evoking a cozy and intimate atmosphere.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Goodbye Yellow Brick Road",
+          "artist": "Sara Bareilles",
+          "album": "The Blessed Unrest (Deluxe Version)",
+          "reason": "Piano-driven arrangement with emotive, clear vocals and lush harmonies, capturing a nostalgic and reflective mood.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Someone New",
+          "artist": "Hozier",
+          "album": "Hozier",
+          "reason": "Combines soulful vocals with a gentle acoustic guitar and a laid-back rhythm section, creating a warm and introspective feel.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Coffee",
+          "artist": "Sylvan Esso",
+          "album": "Sylvan Esso",
+          "reason": "Features a minimalistic electronic beat with airy vocals and subtle harmonies, creating an intimate and slightly dreamy soundscape.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "Combines ethereal reverb-laden guitar lines with melancholic vocals and a slow, contemplative tempo, evoking a sense of longing and nostalgia.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "Peach",
+          "artist": "Broods",
+          "album": "Don't Feed the Pop Monster",
+          "reason": "Blends shimmering synths with smooth vocal lines and a driving, upbeat rhythm, creating a bright and uplifting atmosphere.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "River",
+          "artist": "Leon Bridges",
+          "album": "Coming Home",
+          "reason": "Features soulful vocals over a sparse, gospel-influenced arrangement with gentle guitar and subtle percussion, delivering a heartfelt and introspective mood.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Heartbeats",
+          "artist": "José González",
+          "album": "Veneer",
+          "reason": "Acoustic guitar fingerpicking with soft, intimate vocal delivery and a serene, reflective atmosphere, evoking a sense of calm and introspection.",
+          "confidence_score": 0.87
+        },
+        {
+          "title": "Bitter Sweet Symphony",
+          "artist": "The Verve",
+          "album": "Urban Hymns",
+          "reason": "Orchestral strings layered over a steady beat with emotive vocals, creating a grand and bittersweet sonic landscape.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Budapest",
+          "artist": "George Ezra",
+          "album": "Wanted on Voyage",
+          "reason": "Warm, rich baritone vocals with a simple, catchy acoustic guitar riff and a laid-back tempo, evoking a sense of wanderlust and warmth.",
+          "confidence_score": 0.82
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.827,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 132.5
+      },
+      "timestamp": "2026-03-02T19:55:21.218Z"
+    },
+    {
+      "testCase": "Confidence Anthems Cross-Language",
+      "seeds": [
+        {
+          "title": "The Man",
+          "artist": "Aloe Blacc"
+        },
+        {
+          "title": "Lo Siento BB",
+          "artist": "Tainy"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "So Good",
+          "artist": "Nao",
+          "album": "For All We Know",
+          "reason": "Features a groovy bassline and syncopated drum patterns at ~100 BPM, with Nao's silky vocals layered over shimmering synth textures, creating a feel-good atmosphere.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Electric",
+          "artist": "Alina Baraz",
+          "album": "The Color of You",
+          "reason": "Combines smooth R&B beats with lush, atmospheric synths and Alina's ethereal vocal delivery, creating a dreamy soundscape at around 95 BPM.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Baila Conmigo",
+          "artist": "Daymé Arocena",
+          "album": "Cubafonía",
+          "reason": "Merges Afro-Cuban rhythms with jazzy horns and soulful vocals, set against a lively percussion backdrop, creating an infectious groove.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Good Thing",
+          "artist": "Zedd & Kehlani",
+          "album": "Good Thing - Single",
+          "reason": "Features crisp electronic production with punchy beats and Kehlani's confident vocals, layered over a catchy synth melody at ~105 BPM.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Coffee",
+          "artist": "Miguel",
+          "album": "Wildheart",
+          "reason": "Blends sultry R&B with rock influences, featuring a warm guitar tone and smooth vocal harmonies over a laid-back rhythm section.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "After the Storm",
+          "artist": "Kali Uchis",
+          "album": "Isolation",
+          "reason": "Utilizes a retro-soul vibe with lush string arrangements and a steady bassline, complemented by Kali's velvety vocal delivery and a relaxed groove.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Lost in Yesterday",
+          "artist": "Tame Impala",
+          "album": "The Slow Rush",
+          "reason": "Combines psychedelic pop elements with a driving bassline and intricate drum patterns, all wrapped in a warm, analog production style.",
+          "confidence_score": 0.72
+        },
+        {
+          "title": "Call Me",
+          "artist": "Empress Of",
+          "album": "Us",
+          "reason": "Features vibrant synth textures and a pulsing beat at ~110 BPM, with Empress Of's dynamic vocal range creating an engaging listening experience.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Frontin'",
+          "artist": "Pharrell Williams",
+          "album": "The Neptunes Present... Clones",
+          "reason": "Delivers a smooth blend of hip-hop and R&B with a laid-back groove, featuring Pharrell's signature falsetto and a minimalist beat.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Tadow",
+          "artist": "Masego & FKJ",
+          "album": "Tadow - Single",
+          "reason": "Showcases a jazzy instrumental with a prominent saxophone line and a fluid bass groove, layered with smooth vocal improvisations over a relaxed tempo.",
+          "confidence_score": 0.84
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 140.6
+      },
+      "timestamp": "2026-03-02T19:55:37.490Z"
+    },
+    {
+      "testCase": "Soulful Vibes",
+      "seeds": [
+        {
+          "title": "Pink + White",
+          "artist": "Frank Ocean"
+        },
+        {
+          "title": "I Thought I Saw Your Face Today",
+          "artist": "Stevie Wonder"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Get Sun",
+          "artist": "Hiatus Kaiyote",
+          "album": "Mood Valiant",
+          "reason": "Features lush orchestration with a rich tapestry of strings and horns, layered over a complex rhythm section at ~94 BPM, complemented by Nai Palm's soulful and expressive vocal delivery.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Shuggie",
+          "artist": "Foxygen",
+          "album": "We Are the 21st Century Ambassadors of Peace & Magic",
+          "reason": "Blends retro-inspired psychedelic pop elements with a modern twist, featuring a dynamic structure with shifting time signatures and lush, reverb-drenched vocals.",
+          "confidence_score": 0.87
+        },
+        {
+          "title": "Borderline (An Ode to Self Care)",
+          "artist": "Solange",
+          "album": "A Seat at the Table",
+          "reason": "Weaves intricate vocal harmonies over a minimalist, groove-driven beat at ~80 BPM, creating a soothing atmosphere with its smooth bass lines and subtle keyboard textures.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "What You Won't Do for Love",
+          "artist": "Bobby Caldwell",
+          "album": "Bobby Caldwell",
+          "reason": "Showcases a smooth blend of jazz and soul with a prominent, warm electric piano and a laid-back groove at ~100 BPM, highlighted by Caldwell's velvety vocal delivery.",
+          "confidence_score": 0.88
+        },
+        {
+          "title": "Violet",
+          "artist": "Daniel Caesar",
+          "album": "Freudian",
+          "reason": "Features a gentle guitar melody paired with Caesar's tender, emotive vocals, underpinned by a sparse yet soulful arrangement that builds into a rich, harmonic climax.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "The Night Song",
+          "artist": "Ravyn Lenae",
+          "album": "Crush",
+          "reason": "Combines ethereal synth textures with a syncopated rhythm at ~90 BPM, featuring Lenae's airy and expressive vocal lines that glide effortlessly through the track.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Untitled #3",
+          "artist": "John Vincent",
+          "album": "Spaces",
+          "reason": "Utilizes ambient soundscapes with gentle piano motifs and subtle electronic elements, creating a serene and introspective atmosphere that evolves with delicate vocal harmonies.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Don't Let Me Down",
+          "artist": "Joy Crookes",
+          "album": "Perception",
+          "reason": "Blends soulful vocals with a jazzy instrumental backdrop, featuring a prominent bass line and a steady rhythm section at ~85 BPM, enriched by Crookes' emotive lyrical delivery.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Sweet Time",
+          "artist": "Raveena",
+          "album": "Lucid",
+          "reason": "Offers a dreamy soundscape with soft, flowing guitar lines and a relaxed tempo at ~75 BPM, complemented by Raveena's gentle, soothing vocal performance.",
+          "confidence_score": 0.87
+        },
+        {
+          "title": "Find Yourself",
+          "artist": "Great Dane",
+          "album": "Beta Cat",
+          "reason": "Marries lo-fi hip-hop beats with jazzy chord progressions, featuring mellow synth pads and a laid-back groove at ~80 BPM, creating a chilled, introspective vibe.",
+          "confidence_score": 0.81
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8530000000000001,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 167.5
+      },
+      "timestamp": "2026-03-02T19:55:56.009Z"
+    },
+    {
+      "testCase": "Electronic/Synth",
+      "seeds": [
+        {
+          "title": "Midnight City",
+          "artist": "M83"
+        },
+        {
+          "title": "Crystals",
+          "artist": "Isolate.exe"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Oblivion",
+          "artist": "Grimes",
+          "album": "Visions",
+          "reason": "Features ethereal synth layers over a driving 4/4 beat at ~120 BPM, with airy, haunting vocals that evoke a sense of bittersweet nostalgia.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Sleep Paralysis",
+          "artist": "Gabriel Bruce",
+          "album": "Love in Arms",
+          "reason": "Combines deep, resonant vocals with synth-driven melodies and reverb-drenched production, creating an atmosphere of eerie yet hopeful introspection.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "New Theory",
+          "artist": "Washed Out",
+          "album": "Life of Leisure",
+          "reason": "Utilizes lo-fi synth textures and a laid-back 4/4 rhythm at ~110 BPM, with soft, dreamlike vocals that convey a nostalgic, dream-pop ambiance.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Stay",
+          "artist": "Zola Blood",
+          "album": "Infinite Games",
+          "reason": "Features pulsating electronic beats with lush synth pads and emotive, echoing vocals that create a sense of longing and introspection.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Solitude",
+          "artist": "Tangerine Dream",
+          "album": "Quantum Gate",
+          "reason": "Blends ambient synthscapes with intricate electronic rhythms, evoking a serene yet expansive soundscape that mirrors the atmospheric qualities of the seeds.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "The Look",
+          "artist": "Metronomy",
+          "album": "The English Riviera",
+          "reason": "Combines catchy synth hooks with a steady 4/4 beat and a nostalgic vocal delivery, creating a blend of indie pop and electronic elements.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Midnight City",
+          "artist": "The Midnight",
+          "album": "Endless Summer",
+          "reason": "Pairs retro-inspired synth melodies with a driving beat and smooth vocal harmonies, capturing the same nostalgic yet hopeful energy as the seeds.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Dead Air",
+          "artist": "CHVRCHES",
+          "album": "The Hunger Games: Mockingjay, Pt. 1 (Original Motion Picture Soundtrack)",
+          "reason": "Features shimmering synth arpeggios over a propulsive beat with powerful, emotive vocals, creating an anthemic and uplifting atmosphere.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Frail State of Mind",
+          "artist": "The 1975",
+          "album": "Notes on a Conditional Form",
+          "reason": "Utilizes glitchy electronic beats and atmospheric synths with introspective, layered vocals, exploring themes of modern anxiety and nostalgia.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Loud Places",
+          "artist": "Jamie xx feat. Romy",
+          "album": "In Colour",
+          "reason": "Combines lush, reverb-heavy instrumentation with soulful vocal samples and a steady rhythm, creating an emotional landscape of melancholy and hope.",
+          "confidence_score": 0.81
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8049999999999999,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 142.6
+      },
+      "timestamp": "2026-03-02T19:56:21.606Z"
+    },
+    {
+      "testCase": "Heavy/Dark Rock",
+      "seeds": [
+        {
+          "title": "Toxicity",
+          "artist": "System of a Down"
+        },
+        {
+          "title": "Do I Wanna Know?",
+          "artist": "Arctic Monkeys"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Schism",
+          "artist": "Tool",
+          "album": "Lateralus",
+          "reason": "Features intricate polyrhythms and a dark, brooding atmosphere with heavy guitar riffs and complex bass lines, similar to the complexity and intensity found in 'Toxicity'.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Elephant",
+          "artist": "Tame Impala",
+          "album": "Lonerism",
+          "reason": "Drives with a fuzzy, psychedelic guitar riff and a stomping beat, paired with reverb-laden vocals, creating a hypnotic groove reminiscent of the gritty energy in 'Do I Wanna Know?'.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "The Pot",
+          "artist": "Tool",
+          "album": "10,000 Days",
+          "reason": "Combines a syncopated bass line with dynamic shifts in intensity and Maynard James Keenan's powerful vocal delivery, creating a complex and engaging soundscape.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "No One Knows",
+          "artist": "Queens of the Stone Age",
+          "album": "Songs for the Deaf",
+          "reason": "Features a driving 4/4 beat with overdriven guitar riffs and catchy hooks, layered with a sense of mystery and tension that mirrors the dark allure of 'Do I Wanna Know?'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Red Eyes",
+          "artist": "The War on Drugs",
+          "album": "Lost in the Dream",
+          "reason": "Blends a driving rhythm with lush, reverb-heavy guitar tones and a sense of expansive introspection, capturing the emotional depth and sonic richness of the seed songs.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Goliath",
+          "artist": "Karnivool",
+          "album": "Sound Awake",
+          "reason": "Utilizes odd time signatures and intricate guitar work, combined with soaring vocals, to create a progressive rock sound that aligns with the complexity and intensity of 'Toxicity'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "A Wolf at the Door",
+          "artist": "Radiohead",
+          "album": "Hail to the Thief",
+          "reason": "Features a haunting vocal delivery over a minimalist, yet tense instrumental arrangement, creating a mood of existential unease that resonates with the emotional depth of the seeds.",
+          "confidence_score": 0.73
+        },
+        {
+          "title": "Black Mambo",
+          "artist": "Glass Animals",
+          "album": "ZABA",
+          "reason": "Combines a sultry groove with psychedelic textures and a slow-burning intensity, offering a unique cross-genre experience that shares the hypnotic allure of 'Do I Wanna Know?'.",
+          "confidence_score": 0.72
+        },
+        {
+          "title": "The Bay",
+          "artist": "Metronomy",
+          "album": "The English Riviera",
+          "reason": "Marries a smooth, laid-back groove with shimmering synths and a catchy bassline, evoking a sense of cool detachment and nostalgia that parallels the mood of 'Do I Wanna Know?'.",
+          "confidence_score": 0.7
+        },
+        {
+          "title": "My God Is the Sun",
+          "artist": "Queens of the Stone Age",
+          "album": "…Like Clockwork",
+          "reason": "Delivers high-energy rock with relentless guitar riffs and a powerful vocal performance, capturing the raw intensity and dynamic shifts similar to 'Toxicity'.",
+          "confidence_score": 0.82
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.775,
+        "uniqueArtists": 8,
+        "artistDiversityRatio": 0.8,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Elephant: \"Drives with a fuzzy, psychedelic guitar riff and a stomping beat, paired with reverb-laden vocals, creating a hypnotic groove reminiscent of the gritty energy in 'Do I Wanna Know?'.\""
+        ],
+        "reasonAvgLength": 172.2
+      },
+      "timestamp": "2026-03-02T19:56:40.029Z"
+    },
+    {
+      "testCase": "Romantic/Mellow",
+      "seeds": [
+        {
+          "title": "Best Part",
+          "artist": "Daniel Caesar"
+        },
+        {
+          "title": "Lover Girl",
+          "artist": "Laufey"
+        },
+        {
+          "title": "Sunday Morning",
+          "artist": "Maroon 5"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Japanese Denim",
+          "artist": "Daniel Caesar",
+          "album": "Pilgrim's Paradise",
+          "reason": "Features smooth guitar work with a laid-back groove at ~70 BPM, accompanied by soulful vocals that explore themes of longing and intimacy.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Crush",
+          "artist": "Yuna",
+          "album": "Chapters",
+          "reason": "Combines a mellow R&B rhythm with lush string arrangements and Yuna's ethereal vocal delivery, creating a romantic atmosphere similar to 'Best Part.'",
+          "confidence_score": 0.88
+        },
+        {
+          "title": "Peach",
+          "artist": "Kevin Garrett",
+          "album": "Mellow Drama",
+          "reason": "Utilizes a gentle piano melody over a slow, steady beat at ~60 BPM, with introspective lyrics and a warm vocal tone that evoke a sense of vulnerability and hope.",
+          "confidence_score": 0.87
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "Features reverb-drenched guitars and a nostalgic melody that floats over a 6/8 time signature, creating a dreamy, wistful soundscape.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "In Your Eyes",
+          "artist": "Badbadnotgood",
+          "album": "IV",
+          "reason": "Merges jazz influences with R&B grooves, featuring a sultry saxophone line and soulful vocals, creating a warm, inviting sound.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "Untitled #3",
+          "artist": "John Vincent",
+          "album": "The Moon's Lament",
+          "reason": "Presents a minimalist arrangement with soft piano and hushed vocals, capturing a serene yet melancholic mood reminiscent of late-night reflections.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Falling",
+          "artist": "Tom Misch",
+          "album": "Geography",
+          "reason": "Combines jazz guitar riffs with a groovy bassline and laid-back drums, complemented by Misch's smooth vocal delivery, creating a relaxed yet engaging vibe.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Some",
+          "artist": "Steve Lacy",
+          "album": "Steve Lacy's Demo",
+          "reason": "Features lo-fi production with a catchy guitar hook and a relaxed vocal style, blending R&B and indie elements for a fresh, intimate sound.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Coffee",
+          "artist": "Miguel",
+          "album": "Wildheart",
+          "reason": "Merges smooth R&B rhythms with sultry vocals and a warm, analog production style, evoking a sense of intimate connection and desire.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Heartbeats",
+          "artist": "José González",
+          "album": "Veneer",
+          "reason": "Utilizes fingerpicked acoustic guitar and a soft vocal delivery to create a soothing, introspective atmosphere that resonates with themes of love and longing.",
+          "confidence_score": 0.77
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.833,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Japanese Denim - Daniel Caesar"
+        ],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Untitled #3: \"Presents a minimalist arrangement with soft piano and hushed vocals, capturing a serene yet melancholic mood reminiscent of late-night reflections.\""
+        ],
+        "reasonAvgLength": 143.9
+      },
+      "timestamp": "2026-03-02T19:56:58.105Z"
+    },
+    {
+      "testCase": "R&B / Soul",
+      "seeds": [
+        {
+          "title": "Best Part",
+          "artist": "Daniel Caesar"
+        },
+        {
+          "title": "Pink + White",
+          "artist": "Frank Ocean"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Love Again",
+          "artist": "Daniel Merriweather",
+          "album": "Love & War",
+          "reason": "Features warm, soulful vocals over a laid-back groove with lush string arrangements and gentle piano chords, creating a heartfelt and intimate atmosphere.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Wait",
+          "artist": "M83",
+          "album": "Hurry Up, We're Dreaming",
+          "reason": "Builds a dreamy soundscape with ethereal synths and a slow 6/8 rhythm, layered with reverb-drenched vocals that evoke a sense of longing and nostalgia.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Heartbeats",
+          "artist": "José González",
+          "album": "Veneer",
+          "reason": "Utilizes delicate fingerpicked acoustic guitar and soft, intimate vocals to create a sense of introspective warmth and emotional depth.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Get You",
+          "artist": "Snoh Aalegra",
+          "album": "Feels",
+          "reason": "Combines sultry, soulful vocals with a smooth R&B groove, featuring warm Rhodes piano and subtle bass lines that enhance the song's sensual vibe.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Bad Bad News",
+          "artist": "Leon Bridges",
+          "album": "Good Thing",
+          "reason": "Blends jazzy guitar riffs with a smooth R&B beat, topped with silky vocals and a touch of brass, creating a groovy yet laid-back feel.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Down for You",
+          "artist": "Cosmo's Midnight feat. Ruel",
+          "album": "What Comes Next",
+          "reason": "Features a relaxed beat with shimmering synths and smooth, soulful vocals, creating an atmosphere of breezy warmth and easy-going charm.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Come Away With Me",
+          "artist": "Norah Jones",
+          "album": "Come Away With Me",
+          "reason": "Combines gentle piano melodies with soft, soothing vocals and a subtle jazz influence, creating a warm and comforting soundscape.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Cold Little Heart",
+          "artist": "Michael Kiwanuka",
+          "album": "Love & Hate",
+          "reason": "Features expansive, soulful vocals over a rich instrumental backdrop with lush strings and a slow, building rhythm, evoking a sense of epic emotional depth.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "River",
+          "artist": "Ibeyi",
+          "album": "Ibeyi",
+          "reason": "Merges traditional Yoruba rhythms with modern electronic elements, featuring haunting harmonies and a minimalistic, yet deeply emotional arrangement.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "The Less I Know The Better",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "Infuses psychedelic rock with a funky bassline and smooth, airy vocals, creating a groove-laden track with a modern yet nostalgic feel.",
+          "confidence_score": 0.79
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8029999999999997,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 142.4
+      },
+      "timestamp": "2026-03-02T19:57:14.475Z"
+    },
+    {
+      "testCase": "Synth-Pop / Retro",
+      "seeds": [
+        {
+          "title": "Blinding Lights",
+          "artist": "The Weeknd"
+        },
+        {
+          "title": "Midnight City",
+          "artist": "M83"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Real Hero",
+          "artist": "College & Electric Youth",
+          "album": "A Real Hero",
+          "reason": "Features lush synths with a driving 4/4 beat at ~115 BPM, creating a sense of expansive nostalgia with airy, ethereal vocals that evoke a hopeful, cinematic atmosphere.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Nightcall",
+          "artist": "Kavinsky",
+          "album": "OutRun",
+          "reason": "Combines a throbbing bass line with retro-futuristic synths and a steady 4/4 beat at ~104 BPM, layered with haunting vocal effects that create a moody, nocturnal vibe.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Youth",
+          "artist": "Daughter",
+          "album": "If You Leave",
+          "reason": "Utilizes reverb-heavy guitar arpeggios and atmospheric synth pads, with delicate vocals that convey a sense of longing and introspection, creating a bittersweet emotional landscape.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "The Less I Know The Better",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "Features a groovy bassline intertwined with psychedelic synth textures and a steady 4/4 beat, with smooth, layered vocals that evoke a dreamy, nostalgic feeling.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Slow Disco",
+          "artist": "St. Vincent",
+          "album": "Masseduction",
+          "reason": "Employs lush string arrangements over a slow, steady beat at ~60 BPM, with emotive vocals and a spacious, reverb-laden production that creates an intimate yet expansive soundscape.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "Builds with gentle acoustic guitar and ambient synths, featuring echoing vocals that float over a steady rhythm, evoking a wistful and nostalgic atmosphere.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Someone New",
+          "artist": "Hozier",
+          "album": "Hozier",
+          "reason": "Combines soulful vocals with a rich, reverb-drenched guitar and a laid-back 4/4 beat, creating a warm and introspective mood that feels both intimate and expansive.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Deadwater",
+          "artist": "Wet",
+          "album": "Don't You",
+          "reason": "Features smooth, ethereal synths layered over a minimalist beat at ~90 BPM, with tender, emotive vocals that convey a sense of vulnerability and longing.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Let It Happen",
+          "artist": "VHS Collection",
+          "album": "Retrofuturism",
+          "reason": "Blends driving synth arpeggios with a propulsive 4/4 beat at ~120 BPM, featuring anthemic vocals that soar over a lush, expansive soundscape.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Take Me Out",
+          "artist": "Franz Ferdinand",
+          "album": "Franz Ferdinand",
+          "reason": "Presents a catchy, syncopated guitar riff over a tight, energetic beat at ~104 BPM, with charismatic vocals that drive a danceable, indie rock energy.",
+          "confidence_score": 0.74
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.79,
+        "uniqueArtists": 10,
+        "artistDiversityRatio": 1,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 162.1
+      },
+      "timestamp": "2026-03-02T19:57:32.499Z"
+    },
+    {
+      "testCase": "Alt-Rock / Psychedelic",
+      "seeds": [
+        {
+          "title": "Comfortably Numb",
+          "artist": "Pink Floyd"
+        },
+        {
+          "title": "Boredom",
+          "artist": "Tyler, the Creator"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Echoes",
+          "artist": "Camel",
+          "album": "Breathless",
+          "reason": "Features lush, reverb-heavy guitar solos over a steady 4/4 beat at ~110 BPM, with ethereal synth layers and emotive, introspective lyrics that create a sense of expansive introspection.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "The Great Gig in the Sky",
+          "artist": "Rick Wright",
+          "album": "Wet Dream",
+          "reason": "Blends soulful vocal improvisations with warm, analog keyboard textures and a slow, deliberate tempo, evoking a sense of bittersweet nostalgia and transcendence.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "The Soft Parade",
+          "artist": "The Doors",
+          "album": "The Soft Parade",
+          "reason": "Combines orchestral arrangements with psychedelic rock elements, featuring dynamic shifts in tempo and mood, and a haunting vocal delivery that explores themes of existential reflection.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "The World Is Yours",
+          "artist": "Nas",
+          "album": "Illmatic",
+          "reason": "Features a laid-back, jazzy piano loop over a crisp, boom-bap beat with introspective lyrics that explore themes of ambition and self-reflection, creating a contemplative atmosphere.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Cocoon",
+          "artist": "Björn Olsson",
+          "album": "Instrumental Music... To Submerge In... Or Disappear Through",
+          "reason": "Utilizes lush, reverb-drenched guitar tones and a gentle, flowing rhythm to create a dreamlike soundscape that evokes a sense of serene introspection.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "The Less I Know the Better",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "Blends groovy basslines and psychedelic synths with a steady 4/4 beat at ~118 BPM, featuring smooth, airy vocals that explore themes of longing and uncertainty.",
+          "confidence_score": 0.7
+        },
+        {
+          "title": "Mushroom",
+          "artist": "Can",
+          "album": "Tago Mago",
+          "reason": "Combines hypnotic drum patterns with fuzzy guitar riffs and experimental soundscapes, creating a trance-like atmosphere that delves into the avant-garde realm of krautrock.",
+          "confidence_score": 0.77
+        },
+        {
+          "title": "Nikes",
+          "artist": "Frank Ocean",
+          "album": "Blonde",
+          "reason": "Features ethereal vocal effects over a minimalist, ambient production with subtle chord progressions and introspective lyrics that create a sense of emotional depth and vulnerability.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Seigfried",
+          "artist": "Frank Ocean",
+          "album": "Blonde",
+          "reason": "Utilizes sparse instrumentation with layered harmonies and a slow, contemplative tempo, exploring themes of existential longing and self-discovery through poignant lyrics.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Weightless",
+          "artist": "Marconi Union",
+          "album": "Weightless (Ambient Transmissions Vol. 2)",
+          "reason": "Employs ambient textures and a calming, slow tempo with soothing synth pads and gentle melodic motifs, creating a meditative soundscape that evokes tranquility and introspection.",
+          "confidence_score": 0.68
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.7769999999999999,
+        "uniqueArtists": 9,
+        "artistDiversityRatio": 0.9,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "containsSeedSongs": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": [],
+        "reasonAvgLength": 172.8
+      },
+      "timestamp": "2026-03-02T19:57:52.113Z"
+    }
+  ]
+}

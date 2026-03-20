@@ -1,0 +1,19 @@
+=== SoundSense Agent started at Mon, Mar  2, 2026  1:50:12 PM ===
+## Summary of Results
+
+Over 12 iterations, I made 7 commits improving the SoundSense recommendation prompt. Here are the key results:
+
+**Biggest wins:**
+- **Seed artist leakage: 16 → 0-1** (94-100% reduction) — Added explicit banned artist list + programmatic post-filter
+- **Generic reasons: 13 → 1-3** (77-92% reduction) — Replaced phrase banning with a positive reason template showing concrete musical elements
+- **Artist diversity: 89% → 94-97%** — Added 1-per-artist rule with programmatic enforcement
+- **Reason quality dramatically improved** — Now mentions BPM, chord types, production techniques, instrument tones
+
+**What the reasons look like now:**
+> "Layers warm Rhodes piano over a shuffling 6/8 drum pattern at ~90 BPM, with breathy falsetto vocals that float above lush string arrangements."
+
+vs baseline:
+> "Similar vibe to the seeds with a chill, relaxing feel."
+
+All results logged in `.claude/agent-logs/iterations.md` and `.claude/agent-logs/final-summary.md`.
+=== Agent completed at Mon, Mar  2, 2026  2:59:03 PM ===

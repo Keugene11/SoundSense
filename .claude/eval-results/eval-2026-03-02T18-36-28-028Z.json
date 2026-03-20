@@ -1,0 +1,792 @@
+{
+  "promptVersion": "-7031b73b",
+  "results": [
+    {
+      "testCase": "Indie Rock Mix",
+      "seeds": [
+        {
+          "title": "Do I Wanna Know?",
+          "artist": "Arctic Monkeys"
+        },
+        {
+          "title": "Somebody Else",
+          "artist": "The 1975"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "The Less I Know The Better",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "This track shares the sultry, bass-driven groove and introspective lyrics found in the seed songs, with a psychedelic twist.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Why'd You Only Call Me When You're High?",
+          "artist": "Arctic Monkeys",
+          "album": "AM",
+          "reason": "A deep cut from the same album as 'Do I Wanna Know?', this song features a similar moody atmosphere and catchy hook.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Love It If We Made It",
+          "artist": "The 1975",
+          "album": "A Brief Inquiry Into Online Relationships",
+          "reason": "Another track by The 1975 that combines poignant lyrics with lush production, capturing the emotional depth of 'Somebody Else'.",
+          "confidence_score": 0.88
+        },
+        {
+          "title": "Breezeblocks",
+          "artist": "alt-J",
+          "album": "An Awesome Wave",
+          "reason": "This song offers a unique blend of indie rock and electronic elements, with a dark, infectious energy reminiscent of the seed songs.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Dark Red",
+          "artist": "Steve Lacy",
+          "album": "Steve Lacy's Demo",
+          "reason": "With its lo-fi production and introspective lyrics, this track captures a similar emotional vulnerability and groove.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Electric Feel",
+          "artist": "MGMT",
+          "album": "Oracular Spectacular",
+          "reason": "This song's irresistible bassline and dreamy, nostalgic vibe align well with the sonic qualities of the seeds.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Everything Is Embarrassing",
+          "artist": "Sky Ferreira",
+          "album": "Ghost",
+          "reason": "Sky Ferreira's track combines a melancholic pop sensibility with lush production, akin to the emotional territory of the seeds.",
+          "confidence_score": 0.76
+        },
+        {
+          "title": "Night Time",
+          "artist": "The xx",
+          "album": "xx",
+          "reason": "The xx create a minimalist yet emotionally charged soundscape that mirrors the intimate and moody feel of the seed songs.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "The Night We Met",
+          "artist": "Lord Huron",
+          "album": "Strange Trails",
+          "reason": "This track offers a hauntingly beautiful melody and reflective lyrics, sharing the emotional depth and atmosphere of the seeds.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Sparks",
+          "artist": "Beach House",
+          "album": "Depression Cherry",
+          "reason": "Beach House's dreamy, reverb-drenched sound and introspective lyrics resonate with the moody and atmospheric qualities of the seeds.",
+          "confidence_score": 0.8
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.817,
+        "uniqueArtists": 10,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Why'd You Only Call Me When You're High? - Arctic Monkeys",
+          "Love It If We Made It - The 1975"
+        ],
+        "duplicates": [],
+        "suspiciouslyGeneric": []
+      },
+      "timestamp": "2026-03-02T18:33:38.247Z"
+    },
+    {
+      "testCase": "Hip-Hop Chill",
+      "seeds": [
+        {
+          "title": "Self Care",
+          "artist": "Mac Miller"
+        },
+        {
+          "title": "Boredom",
+          "artist": "Tyler, the Creator"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "RENTAL",
+          "artist": "BROCKHAMPTON",
+          "album": "Saturation III",
+          "reason": "This track shares a laid-back yet introspective vibe with 'Self Care' and 'Boredom', featuring smooth production and a blend of rap and melodic elements.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Riot!",
+          "artist": "Earl Sweatshirt",
+          "album": "Some Rap Songs",
+          "reason": "Earl Sweatshirt's 'Riot!' captures a similar introspective and experimental sound, with jazzy influences and a reflective mood.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Find Me",
+          "artist": "Syd",
+          "album": "Fin",
+          "reason": "Syd's 'Find Me' offers a smooth, soulful vibe with introspective lyrics, akin to the emotional territory of the seed songs.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Dapper",
+          "artist": "Domo Genesis feat. Anderson .Paak",
+          "album": "Genesis",
+          "reason": "This track combines a laid-back groove with introspective lyrics and features Anderson .Paak, capturing the same chill yet thoughtful energy.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "Under the Sun",
+          "artist": "Dreamville, J. Cole, Lute & DaBaby",
+          "album": "Revenge of the Dreamers III",
+          "reason": "With its soulful production and collaborative spirit, this track resonates with the community-driven vibe of Tyler's work.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Peach Fuzz",
+          "artist": "Tyler, the Creator",
+          "album": "Peach Fuzz - Single",
+          "reason": "A lesser-known gem by Tyler, this track features smooth, jazzy production and introspective lyrics, perfect for fans of 'Boredom'.",
+          "confidence_score": 0.86
+        },
+        {
+          "title": "Bubblin",
+          "artist": "Anderson .Paak",
+          "album": "Bubblin - Single",
+          "reason": "This track features dynamic production and charismatic delivery, offering an energetic yet sophisticated vibe similar to the seeds.",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Weight",
+          "artist": "BROCKHAMPTON",
+          "album": "Iridescence",
+          "reason": "The introspective lyrics and atmospheric production of 'Weight' echo the reflective and emotional depth found in 'Self Care'.",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "The Waters",
+          "artist": "Mick Jenkins",
+          "album": "The Water[s]",
+          "reason": "Mick Jenkins' 'The Waters' offers a blend of introspective lyricism and smooth, jazzy beats, resonating with the contemplative nature of the seed tracks.",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Electric Relaxation",
+          "artist": "A Tribe Called Quest",
+          "album": "Midnight Marauders",
+          "reason": "This classic track features laid-back, jazzy production and smooth flows, a timeless piece that complements the vibe of the seed songs.",
+          "confidence_score": 0.76
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8140000000000001,
+        "uniqueArtists": 9,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Peach Fuzz - Tyler, the Creator"
+        ],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Peach Fuzz: \"A lesser-known gem by Tyler, this track features smooth, jazzy production and introspective lyrics, perfect for fans of 'Boredom'.\""
+        ]
+      },
+      "timestamp": "2026-03-02T18:33:57.633Z"
+    },
+    {
+      "testCase": "Electronic / Synth",
+      "seeds": [
+        {
+          "title": "Midnight City",
+          "artist": "M83"
+        },
+        {
+          "title": "The Less I Know the Better",
+          "artist": "Tame Impala"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Raconte-Moi Une Histoire",
+          "artist": "M83",
+          "album": "Hurry Up, We're Dreaming",
+          "reason": "This track from the same album as 'Midnight City' offers a whimsical and dreamy atmosphere with lush synths and a captivating narrative, echoing the ethereal quality of the seed songs.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Eventually",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "Another track from Tame Impala's 'Currents' album, 'Eventually' showcases Kevin Parker's signature psychedelic production with a poignant emotional core, mirroring the introspective yet vibrant feel of the seeds.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Feels Like We Only Go Backwards",
+          "artist": "Tame Impala",
+          "album": "Lonerism",
+          "reason": "A deep cut from Tame Impala's earlier work, this song features lush, swirling synths and a hypnotic groove that align with the dreamy yet driving nature of the seed songs.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Go! (feat. Kelsey Lu)",
+          "artist": "The Chemical Brothers",
+          "album": "Born In The Echoes",
+          "reason": "With its infectious beat and shimmering synths, this track delivers a high-energy, euphoric vibe that complements the anthemic quality of 'Midnight City' and 'The Less I Know the Better'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Real Love Baby",
+          "artist": "Father John Misty",
+          "album": "Real Love Baby - Single",
+          "reason": "This track offers a warm, psychedelic sound with a nostalgic feel, capturing the emotive and retro-inspired essence of Tame Impala's work.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Electric Feel",
+          "artist": "MGMT",
+          "album": "Oracular Spectacular",
+          "reason": "This song shares the synth-driven, psychedelic pop elements of the seeds, with a catchy groove and an upbeat, electrifying energy.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Sunset Lover",
+          "artist": "Petit Biscuit",
+          "album": "Petit Biscuit",
+          "reason": "A lesser-known gem in the chillwave genre, this track features lush, atmospheric synths and a dreamy vibe that aligns with the ethereal quality of 'Midnight City'.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "A Real Hero",
+          "artist": "College & Electric Youth",
+          "album": "A Real Hero",
+          "reason": "This track became iconic for its role in the 'Drive' soundtrack, offering a nostalgic synthwave sound with emotional depth, paralleling the cinematic feel of 'Midnight City'.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Time to Walk Away",
+          "artist": "Washed Out",
+          "album": "Purple Noon",
+          "reason": "Washed Out's 'Time to Walk Away' provides a lush, dreamy soundscape with a laid-back tempo, reminiscent of the chillwave elements found in M83's music.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "New Theory",
+          "artist": "Washed Out",
+          "album": "Life of Leisure",
+          "reason": "This track embodies the chillwave aesthetic with its hazy, nostalgic sound, offering a similar emotional resonance and sonic texture to the seed songs.",
+          "confidence_score": 0.77
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.788,
+        "uniqueArtists": 8,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Raconte-Moi Une Histoire - M83",
+          "Eventually - Tame Impala",
+          "Feels Like We Only Go Backwards - Tame Impala"
+        ],
+        "duplicates": [],
+        "suspiciouslyGeneric": []
+      },
+      "timestamp": "2026-03-02T18:34:23.153Z"
+    },
+    {
+      "testCase": "R&B / Soul",
+      "seeds": [
+        {
+          "title": "Best Part",
+          "artist": "Daniel Caesar"
+        },
+        {
+          "title": "Pink + White",
+          "artist": "Frank Ocean"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Get You",
+          "artist": "Daniel Caesar",
+          "album": "Freudian",
+          "reason": "A deep cut from Daniel Caesar himself, this track features the same smooth, soulful vocals and lush instrumentation that make 'Best Part' so captivating.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Ivy",
+          "artist": "Frank Ocean",
+          "album": "Blonde",
+          "reason": "This track from Frank Ocean's 'Blonde' shares the introspective lyrics and ethereal production style found in 'Pink + White'.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Find Someone Like You",
+          "artist": "Snoh Aalegra",
+          "album": "Ugh, those feels again",
+          "reason": "Snoh Aalegra's sultry voice and the song's lush, R&B-infused production echo the emotional depth and sonic warmth of the seed tracks.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Love Again",
+          "artist": "RAYE",
+          "album": "Euphoric Sad Songs",
+          "reason": "RAYE's 'Love Again' offers a blend of heartfelt lyrics and smooth production, resonating with the emotional and sonic qualities of the seed songs.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Japanese Denim",
+          "artist": "Daniel Caesar",
+          "album": "Pilgrim's Paradise",
+          "reason": "With its intimate storytelling and gentle guitar work, this track captures the same soulful essence that defines 'Best Part'.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Love Galore",
+          "artist": "SZA featuring Travis Scott",
+          "album": "Ctrl",
+          "reason": "SZA's dreamy vocals and the track's mellow vibe align with the smooth, emotional resonance of the seed songs.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Tadow",
+          "artist": "Masego & FKJ",
+          "album": "Tadow - Single",
+          "reason": "This cross-genre gem blends jazz, R&B, and electronic elements, creating a laid-back groove that mirrors the chill yet emotive atmosphere of the seed tracks.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "River",
+          "artist": "Leon Bridges",
+          "album": "Coming Home",
+          "reason": "Leon Bridges' classic soul sound and the song's heartfelt delivery offer a timeless quality that complements the emotional depth of the seed songs.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "Streetcar",
+          "artist": "Daniel Caesar",
+          "album": "Pilgrim's Paradise",
+          "reason": "Another gem from Daniel Caesar, this track features a haunting melody and introspective lyrics, akin to the mood of 'Best Part'.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "See You Again",
+          "artist": "Tyler, The Creator featuring Kali Uchis",
+          "album": "Flower Boy",
+          "reason": "With its dreamy production and heartfelt lyrics, this collaboration captures the emotional and sonic essence of the seed tracks.",
+          "confidence_score": 0.8
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8450000000000001,
+        "uniqueArtists": 8,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Get You - Daniel Caesar",
+          "Ivy - Frank Ocean",
+          "Japanese Denim - Daniel Caesar",
+          "Streetcar - Daniel Caesar"
+        ],
+        "duplicates": [],
+        "suspiciouslyGeneric": []
+      },
+      "timestamp": "2026-03-02T18:34:45.265Z"
+    },
+    {
+      "testCase": "Classic Rock",
+      "seeds": [
+        {
+          "title": "Comfortably Numb",
+          "artist": "Pink Floyd"
+        },
+        {
+          "title": "Baba O'Riley",
+          "artist": "The Who"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Echoes",
+          "artist": "Pink Floyd",
+          "album": "Meddle",
+          "reason": "This track is a deep cut from Pink Floyd, offering an expansive soundscape similar to 'Comfortably Numb,' with its ethereal guitar work and atmospheric production.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "The Song Is Over",
+          "artist": "The Who",
+          "album": "Who's Next",
+          "reason": "A lesser-known gem from The Who, it shares the grandiose and emotionally charged build-up found in 'Baba O'Riley,' complete with sweeping piano and powerful vocals.",
+          "confidence_score": 0.88
+        },
+        {
+          "title": "Astronomy Domine",
+          "artist": "Pink Floyd",
+          "album": "The Piper at the Gates of Dawn",
+          "reason": "This track showcases Pink Floyd's early psychedelic sound, with a spacey and immersive quality that echoes the exploratory nature of 'Comfortably Numb.'",
+          "confidence_score": 0.87
+        },
+        {
+          "title": "I Talk to the Wind",
+          "artist": "King Crimson",
+          "album": "In the Court of the Crimson King",
+          "reason": "King Crimson's track offers a serene, yet complex soundscape with lush instrumentation, reminiscent of the introspective and layered nature of 'Comfortably Numb.'",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "A Dream Within a Dream",
+          "artist": "The Alan Parsons Project",
+          "album": "Tales of Mystery and Imagination",
+          "reason": "This song features a rich, cinematic sound with progressive rock elements, similar to the epic and atmospheric feel of 'Baba O'Riley.'",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Lady Fantasy",
+          "artist": "Camel",
+          "album": "Mirage",
+          "reason": "Camel offers a lesser-known progressive rock masterpiece with intricate guitar work and dynamic shifts, akin to the dramatic tension in 'Comfortably Numb.'",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "The Cinema Show",
+          "artist": "Genesis",
+          "album": "Selling England by the Pound",
+          "reason": "This track captures the epic storytelling and complex arrangements found in 'Baba O'Riley,' with a blend of acoustic and electric textures.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "A Salty Dog",
+          "artist": "Procol Harum",
+          "album": "A Salty Dog",
+          "reason": "Procol Harum's track offers a majestic and haunting quality, with orchestral elements reminiscent of the emotive depth in 'Comfortably Numb.'",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "The Great Gig in the Sky",
+          "artist": "Pink Floyd",
+          "album": "The Dark Side of the Moon",
+          "reason": "This track is a classic Pink Floyd piece that might have been overlooked, featuring soulful vocal improvisation and a powerful emotional journey.",
+          "confidence_score": 0.72
+        },
+        {
+          "title": "Child in Time",
+          "artist": "Deep Purple",
+          "album": "Deep Purple in Rock",
+          "reason": "This song shares the epic scale and emotional intensity of the seed tracks, with soaring vocals and dramatic instrumental crescendos.",
+          "confidence_score": 0.7
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.807,
+        "uniqueArtists": 8,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Echoes - Pink Floyd",
+          "The Song Is Over - The Who",
+          "Astronomy Domine - Pink Floyd",
+          "The Great Gig in the Sky - Pink Floyd"
+        ],
+        "duplicates": [],
+        "suspiciouslyGeneric": []
+      },
+      "timestamp": "2026-03-02T18:35:12.193Z"
+    },
+    {
+      "testCase": "Pop Mainstream",
+      "seeds": [
+        {
+          "title": "Blinding Lights",
+          "artist": "The Weeknd"
+        },
+        {
+          "title": "Levitating",
+          "artist": "Dua Lipa"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Electricity",
+          "artist": "Dua Lipa & Silk City",
+          "album": "Electricity",
+          "reason": "This track features Dua Lipa's signature vocal style paired with a vibrant, danceable beat reminiscent of the retro-pop vibes found in 'Blinding Lights' and 'Levitating'.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Starry Night",
+          "artist": "Peggy Gou",
+          "album": "Moment EP",
+          "reason": "With its infectious groove and nostalgic synths, this track captures the same upbeat energy and retro feel that define both seed songs.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Physical",
+          "artist": "Dua Lipa",
+          "album": "Future Nostalgia",
+          "reason": "A deep cut from the same album as 'Levitating', this song's high-energy synth-pop sound and catchy hooks are perfect for fans of both seeds.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "In Your Eyes",
+          "artist": "The Weeknd",
+          "album": "After Hours",
+          "reason": "Another track from 'After Hours', it features a similar 80s-inspired production, blending synthwave elements with a modern pop sensibility.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Your Love (Déjà Vu)",
+          "artist": "Glass Animals",
+          "album": "Dreamland",
+          "reason": "This track offers a lush, synth-driven soundscape with a catchy melody that aligns with the vibrant and nostalgic energy of the seed songs.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Say So",
+          "artist": "Doja Cat",
+          "album": "Hot Pink",
+          "reason": "With its upbeat disco-inspired groove and catchy hooks, this track shares the same infectious energy and retro vibe as the seed songs.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Midnight City",
+          "artist": "M83",
+          "album": "Hurry Up, We're Dreaming",
+          "reason": "This track's soaring synths and driving beat offer a similar euphoric and nostalgic feel, perfect for fans of 'Blinding Lights'.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Little Dark Age",
+          "artist": "MGMT",
+          "album": "Little Dark Age",
+          "reason": "Combining dark synth-pop with catchy melodies, this track's mood and production style resonate with the retro-futuristic aesthetic of the seeds.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "The Less I Know The Better",
+          "artist": "Tame Impala",
+          "album": "Currents",
+          "reason": "This song's infectious bassline and psychedelic pop sound offer a genre-crossing experience with a similar emotional depth and groove.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "I Feel It Coming",
+          "artist": "The Weeknd feat. Daft Punk",
+          "album": "Starboy",
+          "reason": "A classic track that might have been missed, it features The Weeknd's smooth vocals over Daft Punk's retro-inspired production, capturing the essence of the seed songs.",
+          "confidence_score": 0.85
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8399999999999999,
+        "uniqueArtists": 10,
+        "hasReasons": true,
+        "containsSeedArtists": [
+          "Physical - Dua Lipa",
+          "In Your Eyes - The Weeknd"
+        ],
+        "duplicates": [],
+        "suspiciouslyGeneric": [
+          "Physical: \"A deep cut from the same album as 'Levitating', this song's high-energy synth-pop sound and catchy hooks are perfect for fans of both seeds.\"",
+          "Midnight City: \"This track's soaring synths and driving beat offer a similar euphoric and nostalgic feel, perfect for fans of 'Blinding Lights'.\""
+        ]
+      },
+      "timestamp": "2026-03-02T18:35:34.755Z"
+    },
+    {
+      "testCase": "Jazz / Neo-Soul",
+      "seeds": [
+        {
+          "title": "Black Gold",
+          "artist": "Esperanza Spalding"
+        },
+        {
+          "title": "Doo Wop (That Thing)",
+          "artist": "Lauryn Hill"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Crown Royal",
+          "artist": "Jill Scott",
+          "album": "The Real Thing: Words and Sounds Vol. 3",
+          "reason": "Jill Scott's 'Crown Royal' shares the sultry, jazz-inflected soul that Esperanza Spalding embodies, with a rich vocal delivery and a groove that feels both intimate and powerful.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Golden",
+          "artist": "Jill Scott",
+          "album": "Beautifully Human: Words and Sounds Vol. 2",
+          "reason": "This track blends neo-soul with a jazz-conscious arrangement, much like Esperanza Spalding's work, and its uplifting message parallels the empowering themes in Lauryn Hill's music.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Afro Blue",
+          "artist": "Robert Glasper Experiment feat. Erykah Badu",
+          "album": "Black Radio",
+          "reason": "The fusion of jazz and soul in this track mirrors the sophisticated blend found in 'Black Gold', with Erykah Badu's vocals adding a layer of depth akin to Lauryn Hill's prowess.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Tell Me",
+          "artist": "Groove Theory",
+          "album": "Groove Theory",
+          "reason": "This 90s R&B classic features a smooth, jazzy production and soulful vocals, resonating with the blend of styles found in both seed songs.",
+          "confidence_score": 0.75
+        },
+        {
+          "title": "The Healer",
+          "artist": "Erykah Badu",
+          "album": "New Amerykah Part One (4th World War)",
+          "reason": "Erykah Badu's track combines hip-hop beats with soulful, introspective lyrics, echoing the fusion of genres and thoughtful lyricism present in Lauryn Hill's work.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Be Free",
+          "artist": "J. Cole",
+          "album": "2014 Forest Hills Drive",
+          "reason": "J. Cole's 'Be Free' captures emotional depth and social consciousness, akin to Lauryn Hill's impactful lyricism, set against a backdrop of soulful instrumentation.",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Don't Let Me Be Misunderstood",
+          "artist": "Nina Simone",
+          "album": "Nina Simone Sings the Blues",
+          "reason": "Nina Simone's classic combines jazz, blues, and soul with a powerful, socially conscious message, resonating with the themes and musicality of both seed songs.",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Lady",
+          "artist": "D'Angelo",
+          "album": "Brown Sugar",
+          "reason": "This neo-soul gem features lush instrumentation and smooth vocals, reminiscent of the sophisticated soundscapes found in Esperanza Spalding's music.",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Inner City Blues (Make Me Wanna Holler)",
+          "artist": "Marvin Gaye",
+          "album": "What's Going On",
+          "reason": "Marvin Gaye's socially aware lyrics and soulful delivery on this track mirror the themes and emotional depth found in Lauryn Hill's music.",
+          "confidence_score": 0.9
+        },
+        {
+          "title": "Lost Ones",
+          "artist": "Jazmine Sullivan",
+          "album": "Heaux Tales",
+          "reason": "Jazmine Sullivan's 'Lost Ones' features a raw, emotional vocal performance and introspective lyrics, similar to the honest storytelling of Lauryn Hill.",
+          "confidence_score": 0.77
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8220000000000001,
+        "uniqueArtists": 9,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": []
+      },
+      "timestamp": "2026-03-02T18:35:58.608Z"
+    },
+    {
+      "testCase": "Metal / Heavy",
+      "seeds": [
+        {
+          "title": "The Pretender",
+          "artist": "Foo Fighters"
+        },
+        {
+          "title": "Toxicity",
+          "artist": "System of a Down"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "No One Knows",
+          "artist": "Queens of the Stone Age",
+          "album": "Songs for the Deaf",
+          "reason": "This track features a powerful blend of hard rock and alternative metal, with driving riffs and a relentless energy that mirrors the intensity of both Foo Fighters and System of a Down.",
+          "confidence_score": 0.85
+        },
+        {
+          "title": "Vicarious",
+          "artist": "Tool",
+          "album": "10,000 Days",
+          "reason": "Tool's 'Vicarious' offers a complex, rhythmically intricate sound and dark, introspective lyrics that align with the intense and thought-provoking nature of 'Toxicity.'",
+          "confidence_score": 0.82
+        },
+        {
+          "title": "Bleed American",
+          "artist": "Jimmy Eat World",
+          "album": "Bleed American",
+          "reason": "This song captures the early 2000s rock scene with its anthemic chorus and powerful guitar work, similar to the high-energy delivery of 'The Pretender.'",
+          "confidence_score": 0.78
+        },
+        {
+          "title": "Stinkfist",
+          "artist": "Tool",
+          "album": "Ænima",
+          "reason": "With its intense and dynamic sound, 'Stinkfist' shares the heavy, layered production and intricate rhythms found in 'Toxicity.'",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Judith",
+          "artist": "A Perfect Circle",
+          "album": "Mer de Noms",
+          "reason": "A Perfect Circle's 'Judith' combines aggressive guitar riffs with haunting melodies, offering a similar emotional depth and sonic intensity as the seed songs.",
+          "confidence_score": 0.83
+        },
+        {
+          "title": "My Own Summer (Shove It)",
+          "artist": "Deftones",
+          "album": "Around the Fur",
+          "reason": "Deftones deliver a blend of alternative metal and atmospheric soundscapes, akin to the dynamic shifts and raw energy in 'Toxicity.'",
+          "confidence_score": 0.81
+        },
+        {
+          "title": "Sober",
+          "artist": "Tool",
+          "album": "Undertow",
+          "reason": "This track provides a dark, brooding atmosphere and complex musicianship, echoing the intensity and thematic depth of 'Toxicity.'",
+          "confidence_score": 0.79
+        },
+        {
+          "title": "Cochise",
+          "artist": "Audioslave",
+          "album": "Audioslave",
+          "reason": "With its explosive opening riff and powerful vocals, 'Cochise' captures the same high-octane rock energy found in 'The Pretender.'",
+          "confidence_score": 0.84
+        },
+        {
+          "title": "The Red",
+          "artist": "Chevelle",
+          "album": "Wonder What's Next",
+          "reason": "Chevelle's 'The Red' combines heavy, driving guitar lines with emotionally charged vocals, much like the intensity of 'Toxicity.'",
+          "confidence_score": 0.8
+        },
+        {
+          "title": "Slither",
+          "artist": "Velvet Revolver",
+          "album": "Contraband",
+          "reason": "This track features a gritty rock sound with anthemic energy, reminiscent of the powerful riffs and dynamic vocals in 'The Pretender.'",
+          "confidence_score": 0.82
+        }
+      ],
+      "metrics": {
+        "count": 10,
+        "avgConfidence": 0.8140000000000001,
+        "uniqueArtists": 8,
+        "hasReasons": true,
+        "containsSeedArtists": [],
+        "duplicates": [],
+        "suspiciouslyGeneric": []
+      },
+      "timestamp": "2026-03-02T18:36:28.027Z"
+    }
+  ]
+}
