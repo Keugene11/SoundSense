@@ -5,10 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard" },
   { href: "/discover", label: "Discover" },
-  { href: "/recommendations", label: "Recommendations" },
-  { href: "/connect", label: "Connect" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -17,7 +14,7 @@ export function NavSidebar() {
 
   return (
     <nav className="flex w-64 flex-col gap-1 border-r bg-muted/30 p-4">
-      <Link href="/dashboard" className="mb-6 text-xl font-bold">
+      <Link href="/discover" className="mb-6 text-xl font-bold">
         SoundSense
       </Link>
       {navItems.map((item) => (
