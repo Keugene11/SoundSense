@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { getSessionUserId } from "@/lib/session";
-import { insertSeedSong, deleteSeedSong } from "@/lib/store";
 import {
   lookupSeedSong,
   extractYouTubeVideoId,
@@ -29,9 +27,18 @@ function parseYouTubeTitle(rawTitle: string, rawArtist: string) {
   return { title: ytTitle, artist: channelArtist };
 }
 
+function makeSeed(title: string, artist: string) {
+  return {
+    id: crypto.randomUUID(),
+    user_id: "anonymous",
+    title,
+    artist,
+    created_at: new Date().toISOString(),
+  };
+}
+
 export async function POST(request: Request) {
   try {
-    const userId = await getSessionUserId();
     const { query } = await request.json();
     if (!query || typeof query !== "string" || !query.trim()) {
       return NextResponse.json({ error: "Search query is required" }, { status: 400 });
@@ -50,12 +57,10 @@ export async function POST(request: Request) {
         );
       }
 
-      const seeds = [];
-      for (const item of items) {
+      const seeds = items.map((item) => {
         const { title, artist } = parseYouTubeTitle(item.title, item.channelTitle);
-        const seed = await insertSeedSong(userId, title, artist);
-        seeds.push(seed);
-      }
+        return makeSeed(title, artist);
+      });
 
       return NextResponse.json({ seeds });
     }
@@ -88,41 +93,34 @@ export async function POST(request: Request) {
         }
       }
     } else {
-      const lookup = await lookupSeedSong(input, "");
+      // Free text — try YouTube lookup, fall back to raw input
+      const lookup = await lookupSeedSong(input, "").catch(() => null);
       if (lookup) {
         ({ title, artist } = parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist));
       } else {
-        title = input;
-        artist = "";
+        // Parse "Song by Artist" or "Artist - Song" patterns
+        const byMatch = input.match(/^(.+?)\s+(?:by|[-–—])\s+(.+)$/i);
+        if (byMatch) {
+          title = byMatch[1].trim();
+          artist = byMatch[2].trim();
+        } else {
+          title = input;
+          artist = "";
+        }
       }
     }
 
-    const seed = await insertSeedSong(userId, title, artist);
-    return NextResponse.json({ seed });
+    return NextResponse.json({ seed: makeSeed(title, artist) });
   } catch (error) {
     console.error("Seeds POST error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to add seed song" },
+      { error: error instanceof Error ? error.message : "Failed to find song" },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(request: Request) {
-  try {
-    const userId = await getSessionUserId();
-    const { id } = await request.json();
-    if (!id || typeof id !== "string") {
-      return NextResponse.json({ error: "Seed ID is required" }, { status: 400 });
-    }
-
-    await deleteSeedSong(id, userId);
-    return NextResponse.json({ deleted: true });
-  } catch (error) {
-    console.error("Seeds DELETE error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete seed" },
-      { status: 500 }
-    );
-  }
+export async function DELETE() {
+  // Seeds are client-side only now, no DB to delete from
+  return NextResponse.json({ deleted: true });
 }
