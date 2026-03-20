@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 
 const COOKIE_NAME = "soundsense_session";
 
@@ -7,7 +6,7 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   if (!request.cookies.get(COOKIE_NAME)) {
-    response.cookies.set(COOKIE_NAME, uuidv4(), {
+    response.cookies.set(COOKIE_NAME, crypto.randomUUID(), {
       httpOnly: true,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 365, // 1 year
