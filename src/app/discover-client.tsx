@@ -52,109 +52,120 @@ export function DiscoverClient() {
   const hasResults = recommendations.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header area */}
-      <div className={`flex flex-col items-center px-6 transition-all duration-500 ${hasResults ? "pt-12 pb-8" : "pt-32 pb-20 flex-1 justify-center"}`}>
-        <div className="w-full max-w-md">
-          {/* Title */}
-          <h1 className={`font-bold tracking-tight text-center leading-[1.1] mb-2 transition-all duration-500 ${hasResults ? "text-2xl" : "text-5xl"}`}>
-            SoundSense
-          </h1>
-          {!hasResults && (
-            <p className="text-[14px] text-on-surface/40 text-center mb-12">
-              Paste a YouTube link or type a song name
+    <div className="min-h-screen">
+      {/* Hero / Input */}
+      {!hasResults && !generating && (
+        <div className="flex flex-col items-center justify-center min-h-screen px-6">
+          <div className="w-full max-w-lg animate-slideInUp">
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-center leading-[1.1] mb-4">
+              SoundSense
+            </h1>
+            <p className="text-[15px] text-on-surface/40 text-center mb-14">
+              Paste a YouTube link or type a song name.
             </p>
-          )}
 
-          {/* Input */}
-          <div className="flex gap-3 items-end">
-            <div className="flex-1">
-              {!hasResults && (
-                <label className="block text-[11px] uppercase tracking-[0.15em] text-on-surface/40 mb-2">
-                  Song
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[11px] uppercase tracking-[0.15em] text-on-surface/40 mb-3">
+                  Seed song
                 </label>
-              )}
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-                placeholder="Paste YouTube URL or type a song..."
-                disabled={generating}
-                className="w-full bg-transparent border-b border-on-surface/20 pb-2.5 text-[15px] text-on-surface placeholder-on-surface/25 focus:outline-none focus:border-on-surface/50 transition-colors disabled:opacity-30"
-              />
-            </div>
-            <button
-              onClick={handleSubmit}
-              disabled={!input.trim() || generating}
-              className="shrink-0 px-5 py-2 bg-on-surface text-surface font-medium rounded-full text-[13px] hover:opacity-80 transition-all disabled:opacity-15 disabled:cursor-not-allowed"
-            >
-              {generating ? "..." : "Go"}
-            </button>
-          </div>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
+                  placeholder="e.g. Toxicity by System of a Down"
+                  className="w-full bg-transparent border-b border-on-surface/20 pb-3 text-lg text-on-surface placeholder-on-surface/20 focus:outline-none focus:border-on-surface/50 transition-colors"
+                />
+              </div>
 
-          {/* Current seed label */}
-          {seedLabel && (
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-[12px] text-on-surface/30">Seed:</span>
-              <span className="text-[13px] text-on-surface/60 truncate">{seedLabel}</span>
-              {!generating && (
-                <button
-                  onClick={() => { setSeedLabel(null); setRecommendations([]); }}
-                  className="text-on-surface/25 hover:text-on-surface/60 transition-colors text-sm ml-auto"
-                >
-                  Clear
-                </button>
-              )}
+              <button
+                onClick={handleSubmit}
+                disabled={!input.trim()}
+                className="w-full py-3.5 bg-on-surface text-surface font-medium rounded-full text-sm hover:opacity-85 transition-all disabled:opacity-15 disabled:cursor-not-allowed"
+              >
+                Get recommendations
+              </button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Loading */}
       {generating && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 pb-20">
-          <div className="w-5 h-5 border-2 border-on-surface/15 border-t-on-surface/50 rounded-full animate-spin" />
-          <p className="text-[13px] text-on-surface/30">Finding songs you&apos;ll love...</p>
+        <div className="flex flex-col items-center justify-center min-h-screen px-6 gap-4">
+          <div className="w-6 h-6 border-2 border-on-surface/15 border-t-on-surface/50 rounded-full animate-spin" />
+          <p className="text-[14px] text-on-surface/35">
+            Finding songs based on <span className="text-on-surface/60">{seedLabel}</span>
+          </p>
+          <p className="text-[12px] text-on-surface/20">This can take up to 30 seconds</p>
         </div>
       )}
 
       {/* Results */}
       {hasResults && !generating && (
-        <div className="max-w-md mx-auto w-full px-6 pb-16">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[11px] uppercase tracking-[0.15em] text-on-surface/35">
-              {recommendations.length} results
-            </p>
-            {recommendations.some((r) => r.video_id) && activeIndex === null && (
-              <button
-                onClick={() => {
-                  const first = recommendations.findIndex((r) => r.video_id);
-                  if (first !== -1) setActiveIndex(first);
-                }}
-                className="text-[12px] text-on-surface/40 hover:text-on-surface/70 transition-colors"
-              >
-                Play all
-              </button>
-            )}
+        <div className="max-w-2xl mx-auto px-4 md:px-8 pt-8 pb-20">
+          {/* Top bar */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">SoundSense</h1>
+              <p className="text-[13px] text-on-surface/35 mt-0.5">
+                Based on <span className="text-on-surface/60">{seedLabel}</span>
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSeedLabel(null);
+                setRecommendations([]);
+                setActiveIndex(null);
+              }}
+              className="px-4 py-1.5 border border-on-surface/15 text-on-surface/50 rounded-full text-[13px] hover:border-on-surface/30 hover:text-on-surface/70 transition-all"
+            >
+              New search
+            </button>
           </div>
 
+          {/* Try another inline */}
+          <div className="flex gap-2 items-center mb-8">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              placeholder="Try another song..."
+              className="flex-1 bg-transparent border-b border-on-surface/10 pb-2 text-[14px] text-on-surface placeholder-on-surface/20 focus:outline-none focus:border-on-surface/40 transition-colors"
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!input.trim()}
+              className="shrink-0 px-4 py-1.5 bg-on-surface text-surface font-medium rounded-full text-[12px] hover:opacity-85 transition-all disabled:opacity-15 disabled:cursor-not-allowed"
+            >
+              Go
+            </button>
+          </div>
+
+          {/* Song cards */}
           <div className="stagger">
             {recommendations.map((rec, i) => {
               const isActive = activeIndex === i;
               return (
                 <div
                   key={rec.id}
-                  className={`py-3.5 transition-all ${
-                    i < recommendations.length - 1 ? "border-b border-on-surface/8" : ""
-                  } ${isActive ? "bg-on-surface/[0.02] -mx-3 px-3 rounded-lg border-transparent" : ""}`}
+                  className={`group border border-on-surface/10 rounded-xl p-4 mb-3 transition-all hover:border-on-surface/20 ${
+                    isActive ? "border-on-surface/25 bg-on-surface/[0.02]" : ""
+                  }`}
                 >
-                  <div className="flex items-center gap-3.5">
+                  <div className="flex gap-4">
                     {/* Thumbnail */}
                     <button
                       onClick={() => {
@@ -162,53 +173,72 @@ export function DiscoverClient() {
                         setActiveIndex(isActive ? null : i);
                       }}
                       disabled={!rec.video_id}
-                      className="relative shrink-0 w-10 h-10 rounded-md overflow-hidden bg-on-surface/5 group disabled:cursor-default"
+                      className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-on-surface/5 disabled:cursor-default"
                     >
                       {rec.thumbnail_url ? (
                         <Image
                           src={rec.thumbnail_url}
                           alt=""
-                          width={40}
-                          height={40}
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover"
                           unoptimized
                         />
                       ) : (
-                        <span className="flex items-center justify-center w-full h-full text-on-surface/15 text-sm">
+                        <span className="flex items-center justify-center w-full h-full text-on-surface/15 text-xl">
                           &#9835;
                         </span>
                       )}
-                      {rec.video_id && !isActive && (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
-                          <span className="text-white text-[10px]">&#9654;</span>
+                      {rec.video_id && (
+                        <div className={`absolute inset-0 flex items-center justify-center transition-all ${
+                          isActive
+                            ? "bg-black/50"
+                            : "bg-black/0 group-hover:bg-black/40"
+                        }`}>
+                          <span className={`text-white text-sm transition-opacity ${
+                            isActive
+                              ? "opacity-100"
+                              : "opacity-0 group-hover:opacity-100"
+                          }`}>
+                            {isActive ? "■" : "▶"}
+                          </span>
                         </div>
                       )}
                     </button>
 
                     {/* Song info */}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-medium text-on-surface leading-tight truncate">
-                        {rec.title}
-                      </p>
-                      <p className="text-[12px] text-on-surface/35 truncate">
-                        {rec.artist}
-                      </p>
-                    </div>
+                    <div className="min-w-0 flex-1 py-0.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-[15px] font-medium text-on-surface leading-snug truncate">
+                            {rec.title}
+                          </p>
+                          <p className="text-[13px] text-on-surface/40 mt-0.5">
+                            {rec.artist}
+                            {rec.album && (
+                              <span className="text-on-surface/20"> &middot; {rec.album}</span>
+                            )}
+                          </p>
+                        </div>
+                        {rec.confidence_score && rec.confidence_score >= 0.7 && (
+                          <span className="shrink-0 text-[11px] text-on-surface/25 border border-on-surface/10 rounded-full px-2 py-0.5">
+                            {Math.round(rec.confidence_score * 100)}%
+                          </span>
+                        )}
+                      </div>
 
-                    <span className="shrink-0 text-[11px] text-on-surface/20 tabular-nums">
-                      {rec.confidence_score ? `${Math.round(rec.confidence_score * 100)}%` : ""}
-                    </span>
+                      {rec.reason && (
+                        <p className="mt-2 text-[12px] text-on-surface/35 leading-relaxed line-clamp-2">
+                          {rec.reason}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  {rec.reason && (
-                    <p className="mt-1.5 text-[12px] text-on-surface/30 leading-relaxed pl-[54px]">
-                      {rec.reason}
-                    </p>
-                  )}
-
+                  {/* Player */}
                   {isActive && rec.video_id && (
-                    <div className="mt-3 pl-[54px] animate-fadeIn">
-                      <div className="aspect-video w-full max-w-xs overflow-hidden rounded-md">
+                    <div className="mt-4 animate-fadeIn">
+                      <div className="aspect-video w-full overflow-hidden rounded-lg">
                         <YouTubePlayer videoId={rec.video_id} onEnded={playNext} />
                       </div>
                     </div>
