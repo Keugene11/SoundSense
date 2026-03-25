@@ -81,15 +81,18 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       callbackRefs.current = { onEnded, onReady, onPlay, onPause, onProgress };
     });
 
+    const isReady = () =>
+      playerRef.current && typeof playerRef.current.playVideo === "function";
+
     useImperativeHandle(ref, () => ({
-      play: () => playerRef.current?.playVideo(),
-      pause: () => playerRef.current?.pauseVideo(),
-      seekTo: (seconds: number) => playerRef.current?.seekTo(seconds, true),
-      getDuration: () => playerRef.current?.getDuration() ?? 0,
-      getCurrentTime: () => playerRef.current?.getCurrentTime() ?? 0,
-      setVolume: (volume: number) => playerRef.current?.setVolume(volume),
-      mute: () => playerRef.current?.mute(),
-      unmute: () => playerRef.current?.unMute(),
+      play: () => { if (isReady()) playerRef.current!.playVideo(); },
+      pause: () => { if (isReady()) playerRef.current!.pauseVideo(); },
+      seekTo: (seconds: number) => { if (isReady()) playerRef.current!.seekTo(seconds, true); },
+      getDuration: () => (isReady() ? playerRef.current!.getDuration() : 0),
+      getCurrentTime: () => (isReady() ? playerRef.current!.getCurrentTime() : 0),
+      setVolume: (volume: number) => { if (isReady()) playerRef.current!.setVolume(volume); },
+      mute: () => { if (isReady()) playerRef.current!.mute(); },
+      unmute: () => { if (isReady()) playerRef.current!.unMute(); },
     }));
 
     const startProgressTracking = useCallback(() => {
