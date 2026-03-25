@@ -10,7 +10,10 @@ import {
   Volume2,
   Volume1,
   VolumeX,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
+import type { TrackFeedback } from "./playlist-track-list";
 import { YouTubePlayer, type YouTubePlayerHandle } from "./youtube-player";
 import type { Recommendation } from "@/types/database";
 
@@ -24,6 +27,8 @@ interface PlaylistPlayerProps {
   onPrev: () => void;
   onEnded: () => void;
   onTrackReady?: () => void;
+  currentFeedback: TrackFeedback;
+  onFeedback: (feedback: TrackFeedback) => void;
 }
 
 function formatTime(seconds: number): string {
@@ -42,6 +47,8 @@ export function PlaylistPlayer({
   onPrev,
   onEnded,
   onTrackReady,
+  currentFeedback,
+  onFeedback,
 }: PlaylistPlayerProps) {
   const handleRef = useRef<YouTubePlayerHandle | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -199,6 +206,26 @@ export function PlaylistPlayer({
                 {currentTrack.artist}
               </p>
             </div>
+            <button
+              onClick={() => onFeedback(currentFeedback === "liked" ? null : "liked")}
+              className={`p-2 rounded-full shrink-0 transition-colors ${
+                currentFeedback === "liked"
+                  ? "text-green-500"
+                  : "text-muted-foreground hover:text-green-500"
+              }`}
+            >
+              <ThumbsUp size={16} fill={currentFeedback === "liked" ? "currentColor" : "none"} />
+            </button>
+            <button
+              onClick={() => onFeedback(currentFeedback === "disliked" ? null : "disliked")}
+              className={`p-2 rounded-full shrink-0 transition-colors ${
+                currentFeedback === "disliked"
+                  ? "text-red-500"
+                  : "text-muted-foreground hover:text-red-500"
+              }`}
+            >
+              <ThumbsDown size={16} fill={currentFeedback === "disliked" ? "currentColor" : "none"} />
+            </button>
           </div>
 
           {/* Center: Controls + time */}

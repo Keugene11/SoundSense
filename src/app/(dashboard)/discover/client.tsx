@@ -335,9 +335,7 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
             tracks={recommendations}
             currentIndex={currentIndex}
             isPlaying={isPlaying}
-            feedback={feedback}
             onTrackClick={playIndex}
-            onFeedback={handleFeedback}
           />
         </div>
       )}
@@ -353,6 +351,12 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
           onNext={playNext}
           onPrev={playPrev}
           onEnded={playNext}
+          currentFeedback={currentIndex !== null ? (feedback[recommendations[currentIndex]?.id] ?? null) : null}
+          onFeedback={(fb) => {
+            if (currentIndex !== null) {
+              handleFeedback(recommendations[currentIndex].id, fb);
+            }
+          }}
         />
       )}
     </div>
