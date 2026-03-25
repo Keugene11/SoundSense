@@ -62,6 +62,58 @@ async function lastfmRequest(params: Record<string, string>): Promise<Record<str
   return data;
 }
 
+/**
+ * Get similar artists from Last.fm. Useful as fallback when track-level
+ * similarity returns nothing (obscure/underground artists).
+ */
+export async function getSimilarArtistsLFM(
+  artist: string,
+  limit = 20
+): Promise<string[]> {
+  try {
+    const data = await lastfmRequest({
+      method: "artist.getSimilar",
+      artist,
+      limit: String(limit),
+    });
+
+    const similar = (data.similarartists as Record<string, unknown>)?.artist;
+    if (!Array.isArray(similar)) return [];
+
+    return similar.map((a: Record<string, unknown>) => (a.name as string) || "").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Search Last.fm for tracks by artist name. Fallback for when
+ * track.getSimilar returns nothing — at least finds tracks in the same space.
+ */
+export async function getArtistTopTracks(
+  artist: string,
+  limit = 20
+): Promise<{ title: string; artist: string; listeners: number }[]> {
+  try {
+    const data = await lastfmRequest({
+      method: "artist.getTopTracks",
+      artist,
+      limit: String(limit),
+    });
+
+    const tracks = (data.toptracks as Record<string, unknown>)?.track;
+    if (!Array.isArray(tracks)) return [];
+
+    return tracks.map((t: Record<string, unknown>) => ({
+      title: (t.name as string) || "",
+      artist: ((t.artist as Record<string, unknown>)?.name as string) || artist,
+      listeners: parseInt(String(t.listeners || "0"), 10),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export async function getSimilarTracks(
   artist: string,
   track: string,

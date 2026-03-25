@@ -1,6 +1,6 @@
 import { getSessionUserId } from "@/lib/session";
 import { generateFromSeeds } from "@/lib/anthropic/recommendations";
-import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity, getGenreTagsForSeeds, searchTrack } from "@/lib/lastfm";
+import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity, getGenreTagsForSeeds, searchTrack, getSimilarArtistsLFM, getArtistTopTracks } from "@/lib/lastfm";
 import { searchYouTubeRace, lookupSeedSong, extractYouTubeVideoId, getVideoDetails } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
@@ -125,6 +125,35 @@ export async function POST(req: NextRequest) {
       if (!seenArtists.has(lower) && !seedArtistLower.has(lower)) {
         seenArtists.add(lower);
         similarArtists.push(name);
+      }
+    }
+
+    // Fallback: if no candidates and no similar artists, try Last.fm artist-level similarity
+    if (lastfmCandidates.length === 0 && similarArtists.length === 0 && seedArtists.length > 0) {
+      const fallbackResults = await Promise.all(
+        seedArtists.map(async (artist) => {
+          const [lfmSimilar, topTracks] = await Promise.all([
+            getSimilarArtistsLFM(artist, 15).catch(() => []),
+            getArtistTopTracks(artist, 10).catch(() => []),
+          ]);
+          return { lfmSimilar, topTracks };
+        })
+      );
+
+      for (const { lfmSimilar, topTracks } of fallbackResults) {
+        for (const name of lfmSimilar) {
+          const lower = name.toLowerCase();
+          if (!seenArtists.has(lower) && !seedArtistLower.has(lower)) {
+            seenArtists.add(lower);
+            similarArtists.push(name);
+          }
+        }
+        // Add artist top tracks as candidates (with low match score)
+        for (const t of topTracks) {
+          if (!seedArtistLower.has(t.artist.toLowerCase())) {
+            lastfmCandidates.push({ title: t.title, artist: t.artist, matchScore: 0.3, url: "" });
+          }
+        }
       }
     }
 
