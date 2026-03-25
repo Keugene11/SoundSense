@@ -15,6 +15,9 @@ export interface YouTubePlayerHandle {
   seekTo: (seconds: number) => void;
   getDuration: () => number;
   getCurrentTime: () => number;
+  setVolume: (volume: number) => void;
+  mute: () => void;
+  unmute: () => void;
 }
 
 interface YouTubePlayerProps {
@@ -84,6 +87,9 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       seekTo: (seconds: number) => playerRef.current?.seekTo(seconds, true),
       getDuration: () => playerRef.current?.getDuration() ?? 0,
       getCurrentTime: () => playerRef.current?.getCurrentTime() ?? 0,
+      setVolume: (volume: number) => playerRef.current?.setVolume(volume),
+      mute: () => playerRef.current?.mute(),
+      unmute: () => playerRef.current?.unMute(),
     }));
 
     const startProgressTracking = useCallback(() => {
