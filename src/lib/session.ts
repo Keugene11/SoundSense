@@ -1,17 +1,23 @@
-import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
 
-const COOKIE_NAME = "soundsense_session";
-
-/** Read the anonymous session user ID from the cookie. */
+/** Get the authenticated user's ID. Falls back to "anonymous" if not logged in. */
 export async function getSessionUserId(): Promise<string> {
-  const cookieStore = await cookies();
-  const session = cookieStore.get(COOKIE_NAME);
-  if (session?.value) {
-    return session.value;
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id ?? "anonymous";
+  } catch {
+    return "anonymous";
   }
+}
 
-  // Fallback: on the very first request the middleware sets the cookie
-  // but the server component may not see it yet. Use a stable fallback
-  // that will be replaced on the next request once the cookie lands.
-  return "anonymous";
+/** Get the authenticated user's info. */
+export async function getSessionUser() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  } catch {
+    return null;
+  }
 }
