@@ -185,44 +185,50 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
 
       {/* Seed input */}
       <div className="space-y-3">
-        <div className="flex gap-2">
-          <Input
-            placeholder="Song name or YouTube link"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addSeed();
-              }
-            }}
-          />
-          <Button
-            variant="outline"
-            onClick={addSeed}
-            disabled={!input.trim() || adding}
-          >
-            {adding ? "Finding..." : seeds.length > 0 ? "Replace" : "Add"}
-          </Button>
-        </div>
-
-        {seeds.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {seeds.map((seed) => (
-              <span
-                key={seed.id}
-                className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm"
-              >
-                {seed.title}
-                {seed.artist && ` - ${seed.artist}`}
-                <button
-                  onClick={() => removeSeed(seed.id)}
-                  className="ml-1 text-muted-foreground hover:text-foreground"
-                >
-                  &times;
-                </button>
-              </span>
-            ))}
+        {seeds.length === 0 ? (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Song name or YouTube link"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addSeed();
+                }
+              }}
+              disabled={adding}
+            />
+            <Button
+              variant="outline"
+              onClick={addSeed}
+              disabled={!input.trim() || adding}
+            >
+              {adding ? "Finding..." : "Add"}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-muted-foreground">Based on</p>
+              <p className="truncate font-semibold">
+                {seeds[0].title}
+                {seeds[0].artist && (
+                  <span className="font-normal text-muted-foreground">
+                    {" "}by {seeds[0].artist}
+                  </span>
+                )}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                removeSeed(seeds[0].id);
+              }}
+            >
+              Change
+            </Button>
           </div>
         )}
 
