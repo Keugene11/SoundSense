@@ -56,12 +56,13 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      if (data.seeds) {
-        setSeeds([data.seeds[0]]);
-        toast.success(`Added "${data.seeds[0].title}"`);
-      } else {
-        setSeeds([data.seed]);
-      }
+      const seed = data.seeds ? data.seeds[0] : data.seed;
+      setSeeds([seed]);
+      toast.success(
+        seed.artist
+          ? `Found "${seed.title}" by ${seed.artist}`
+          : `Found "${seed.title}"`
+      );
     } catch {
       toast.error("Failed to save seed song");
     } finally {
