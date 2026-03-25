@@ -124,3 +124,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Equalizer animation for currently playing track */
+@keyframes equalizer-1 {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+@keyframes equalizer-2 {
+  0%, 100% { height: 12px; }
+  50% { height: 4px; }
+}
+@keyframes equalizer-3 {
+  0%, 100% { height: 8px; }
+  50% { height: 14px; }
+}
+.animate-equalizer-1 {
+  animation: equalizer-1 0.6s ease-in-out infinite;
+}
+.animate-equalizer-2 {
+  animation: equalizer-2 0.6s ease-in-out infinite 0.2s;
+}
+.animate-equalizer-3 {
+  animation: equalizer-3 0.6s ease-in-out infinite 0.4s;
+}

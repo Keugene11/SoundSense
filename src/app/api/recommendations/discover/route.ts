@@ -1,6 +1,6 @@
 import { getSessionUserId } from "@/lib/session";
 import { generateFromSeeds } from "@/lib/anthropic/recommendations";
-import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity } from "@/lib/lastfm";
+import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity, getGenreTagsForSeeds } from "@/lib/lastfm";
 import { searchYouTubeRace, lookupSeedSong, extractYouTubeVideoId, getVideoDetails } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     // Phase 1: Enrich seeds + get candidates in parallel
     const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
 
-    const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists] = await Promise.all([
+    const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists, genreTags] = await Promise.all([
       Promise.all(
         seeds.map(async (seed) => {
           const lookup = await lookupSeedSong(seed.title, seed.artist);
@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
       getCandidatesForSeeds(seeds).catch(() => [] as { title: string; artist: string; matchScore: number }[]),
       getSimilarArtistsTD(seedArtists).catch(() => [] as string[]),
       getSimilarArtistsLB(seedArtists).catch(() => [] as string[]),
+      getGenreTagsForSeeds(seeds).catch(() => [] as string[]),
     ]);
 
     // Dedupe similar artists
@@ -122,7 +123,8 @@ export async function POST(req: NextRequest) {
       10,
       { previouslyRecommended: [], recentListens: [], topArtists: [], preferences: null },
       lastfmCandidates.length > 0 ? lastfmCandidates : undefined,
-      similarArtists.length > 0 ? similarArtists : undefined
+      similarArtists.length > 0 ? similarArtists : undefined,
+      genreTags.length > 0 ? genreTags : undefined
     );
 
     // Phase 3: YouTube search + verification

@@ -1,6 +1,6 @@
 import { getSessionUserId } from "@/lib/session";
 import { generateRecommendations } from "@/lib/anthropic/recommendations";
-import { getSimilarTracks, verifyTrackExists, titleSimilarity } from "@/lib/lastfm";
+import { getSimilarTracks, verifyTrackExists, titleSimilarity, getGenreTagsForSeeds } from "@/lib/lastfm";
 import { searchYTMusic } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
@@ -51,12 +51,13 @@ export async function POST() {
     const similarArtists: string[] = [];
 
     // Run Last.fm candidates + TasteDive + ListenBrainz in parallel
-    const [lastfmResult, tdArtists, lbArtists] = await Promise.all([
+    const [lastfmResult, tdArtists, lbArtists, genreTags] = await Promise.all([
       Promise.allSettled(
         recentSeeds.map((t) => getSimilarTracks(t.artist!, t.title, 20))
       ).catch(() => [] as PromiseSettledResult<{ title: string; artist: string; matchScore: number; url: string }[]>[]),
       getSimilarArtistsTD(seedArtists),
       getSimilarArtistsLB(seedArtists),
+      getGenreTagsForSeeds(recentSeeds.map((t) => ({ title: t.title, artist: t.artist! }))),
     ]);
 
     // Process Last.fm candidates
@@ -98,7 +99,8 @@ export async function POST() {
       defaultPrefs,
       10,
       lastfmCandidates.length > 0 ? lastfmCandidates : undefined,
-      similarArtists.length > 0 ? similarArtists : undefined
+      similarArtists.length > 0 ? similarArtists : undefined,
+      genreTags.length > 0 ? genreTags : undefined
     );
 
     // Search YouTube Music and verify songs — run all verification sources concurrently per rec

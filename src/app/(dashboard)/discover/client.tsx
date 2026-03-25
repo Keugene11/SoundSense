@@ -3,8 +3,10 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { RecommendationCard } from "@/components/recommendation-card";
+import { PlaylistPlayer } from "@/components/playlist-player";
+import { PlaylistTrackList } from "@/components/playlist-track-list";
 import { toast } from "sonner";
+import { Loader2, Sparkles } from "lucide-react";
 import type { Recommendation, SeedSong } from "@/types/database";
 
 interface DiscoverClientProps {
@@ -16,26 +18,20 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
   const [input, setInput] = useState("");
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   // Playlist state
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Get playable recommendations (those with video_id)
   const playableIndices = recommendations
     .map((rec, i) => (rec.video_id ? i : -1))
     .filter((i) => i !== -1);
-
-  const currentRec =
-    currentIndex !== null ? recommendations[currentIndex] : null;
-
-  const [adding, setAdding] = useState(false);
 
   const addSeed = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    // Remove existing seed first if one exists
     if (seeds.length > 0) {
       for (const s of seeds) {
         try {
@@ -61,7 +57,6 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       if (data.seeds) {
-        // Playlist — take only the first song
         setSeeds([data.seeds[0]]);
         toast.success(`Added "${data.seeds[0].title}"`);
       } else {
@@ -76,14 +71,12 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
 
   const removeSeed = async (id: string) => {
     setSeeds((prev) => prev.filter((s) => s.id !== id));
-
     try {
-      const res = await fetch("/api/seeds", {
+      await fetch("/api/seeds", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      if (!res.ok) throw new Error();
     } catch {
       toast.error("Failed to remove seed song");
     }
@@ -107,15 +100,19 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
         }),
       });
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error);
-      }
+      if (!res.ok) throw new Error(data.error);
 
       setRecommendations(data.recommendations);
-      toast.success(
-        `Generated ${data.recommendations.length} recommendations`
+      toast.success(`Generated ${data.recommendations.length} recommendations`);
+
+      // Auto-play the first playable track
+      const firstPlayable = data.recommendations.findIndex(
+        (r: Recommendation) => r.video_id
       );
+      if (firstPlayable !== -1) {
+        setCurrentIndex(firstPlayable);
+        setIsPlaying(true);
+      }
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to generate"
@@ -129,23 +126,28 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
   const playIndex = useCallback(
     (index: number) => {
       if (recommendations[index]?.video_id) {
-        setCurrentIndex(index);
-        setIsPlaying(true);
+        if (currentIndex === index) {
+          setIsPlaying((prev) => !prev);
+        } else {
+          setCurrentIndex(index);
+          setIsPlaying(true);
+        }
       }
     },
-    [recommendations]
+    [recommendations, currentIndex]
   );
 
   const playNext = useCallback(() => {
     if (currentIndex === null) return;
     const nextPlayable = playableIndices.find((i) => i > currentIndex);
     if (nextPlayable !== undefined) {
-      playIndex(nextPlayable);
+      setCurrentIndex(nextPlayable);
+      setIsPlaying(true);
     } else {
       setIsPlaying(false);
       setCurrentIndex(null);
     }
-  }, [currentIndex, playableIndices, playIndex]);
+  }, [currentIndex, playableIndices]);
 
   const playPrev = useCallback(() => {
     if (currentIndex === null) return;
@@ -153,33 +155,35 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
       .reverse()
       .find((i) => i < currentIndex);
     if (prevPlayable !== undefined) {
-      playIndex(prevPlayable);
+      setCurrentIndex(prevPlayable);
+      setIsPlaying(true);
     }
-  }, [currentIndex, playableIndices, playIndex]);
+  }, [currentIndex, playableIndices]);
 
-  const togglePlay = () => {
+  const handlePlay = useCallback(() => {
     if (currentIndex === null && playableIndices.length > 0) {
-      playIndex(playableIndices[0]);
-    } else {
-      setIsPlaying(!isPlaying);
+      setCurrentIndex(playableIndices[0]);
     }
-  };
+    setIsPlaying(true);
+  }, [currentIndex, playableIndices]);
 
-  const hasPlayable = playableIndices.length > 0;
-  const currentPlayablePos =
-    currentIndex !== null ? playableIndices.indexOf(currentIndex) : -1;
-  const hasPrev = currentPlayablePos > 0;
-  const hasNext = currentPlayablePos < playableIndices.length - 1;
+  const handlePause = useCallback(() => {
+    setIsPlaying(false);
+  }, []);
+
+  const hasPlaylist = recommendations.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${hasPlaylist && currentIndex !== null ? "pb-24" : ""}`}>
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Discover</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Discover</h1>
         <p className="mt-1 text-muted-foreground">
-          Enter a song you like and get personalized recommendations.
+          Enter a song you like and we&apos;ll create a playlist for you.
         </p>
       </div>
 
+      {/* Seed input */}
       <div className="space-y-3">
         <div className="flex gap-2">
           <Input
@@ -193,7 +197,11 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
               }
             }}
           />
-          <Button variant="outline" onClick={addSeed} disabled={!input.trim() || adding}>
+          <Button
+            variant="outline"
+            onClick={addSeed}
+            disabled={!input.trim() || adding}
+          >
             {adding ? "Finding..." : seeds.length > 0 ? "Replace" : "Add"}
           </Button>
         </div>
@@ -221,77 +229,56 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
         <Button
           onClick={handleGenerate}
           disabled={generating || seeds.length === 0}
+          className="gap-2"
         >
-          {generating ? "Generating..." : "Generate Recommendations"}
+          {generating ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Generating playlist...
+            </>
+          ) : (
+            <>
+              <Sparkles size={16} />
+              Generate Playlist
+            </>
+          )}
         </Button>
       </div>
 
-      {/* Playlist Player */}
-      {recommendations.length > 0 && hasPlayable && (
-        <div className="rounded-lg border bg-card p-4 space-y-3">
+      {/* Playlist */}
+      {hasPlaylist && (
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={playPrev}
-                disabled={!hasPrev}
-              >
-                &#9664;&#9664; Prev
-              </Button>
-              <Button size="sm" onClick={togglePlay}>
-                {isPlaying && currentIndex !== null ? "Pause" : "Play"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={playNext}
-                disabled={!hasNext}
-              >
-                Next &#9654;&#9654;
-              </Button>
-            </div>
-            {currentRec && (
-              <p className="text-sm text-muted-foreground truncate ml-3">
-                Now playing: <span className="font-medium text-foreground">{currentRec.title}</span>
-                {currentRec.artist && ` - ${currentRec.artist}`}
-                {" "}({currentPlayablePos + 1}/{playableIndices.length})
-              </p>
-            )}
-            {!currentRec && (
-              <p className="text-sm text-muted-foreground">
-                {playableIndices.length} playable tracks
-              </p>
-            )}
+            <h2 className="text-lg font-semibold">
+              Your Playlist
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                {playableIndices.length} tracks
+              </span>
+            </h2>
           </div>
 
+          <PlaylistTrackList
+            tracks={recommendations}
+            currentIndex={currentIndex}
+            isPlaying={isPlaying}
+            onTrackClick={playIndex}
+          />
         </div>
       )}
 
-      {recommendations.length > 0 && (
-        <div className="grid gap-4">
-          {recommendations.map((rec, i) => (
-            <RecommendationCard
-              key={rec.id}
-              rec={rec}
-              isActive={currentIndex === i && isPlaying}
-              onPlay={
-                rec.video_id
-                  ? () => {
-                      if (currentIndex === i && isPlaying) {
-                        setIsPlaying(false);
-                      } else {
-                        playIndex(i);
-                      }
-                    }
-                  : undefined
-              }
-              onEnded={playNext}
-            />
-          ))}
-        </div>
+      {/* Bottom player bar */}
+      {hasPlaylist && currentIndex !== null && (
+        <PlaylistPlayer
+          tracks={recommendations}
+          currentIndex={currentIndex}
+          isPlaying={isPlaying}
+          onPlay={handlePlay}
+          onPause={handlePause}
+          onNext={playNext}
+          onPrev={playPrev}
+          onEnded={playNext}
+        />
       )}
-
     </div>
   );
 }

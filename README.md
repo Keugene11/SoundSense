@@ -1,23 +1,20 @@
 # SoundSense
 
-AI-powered music discovery that connects to your YouTube Music account, analyzes your listening patterns, and generates personalized song recommendations. No sign-up required -- just open the app and start discovering music.
+AI-powered music discovery app. Enter a song you like, get 10 personalized recommendations — every one verified to be real and playable. No sign-up required.
 
 ## How It Works
 
-1. **Connect YouTube Music** — import your listening history via OAuth
-2. **Enter a seed song** — or let the AI work from your full listening history
-3. **Get recommendations** — 10 verified songs with explanations of why you'll love each one
-4. **Listen inline** — play recommendations directly with the built-in YouTube player
-
-Every recommendation is verified across YouTube, Last.fm, MusicBrainz, ListenBrainz, and Odesli to ensure every song is real and playable.
+1. **Enter a seed song** — type a song name or paste a YouTube link
+2. **AI generates recommendations** — Claude analyzes your seed and pulls candidates from multiple music databases
+3. **Every song is verified** — cross-checked across YouTube, Last.fm, TasteDive, and ListenBrainz
+4. **Listen inline** — play recommendations directly with the built-in YouTube player and playlist controls
 
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router) + TypeScript
-- **UI:** Tailwind CSS 4 + shadcn/ui + Recharts
+- **UI:** Tailwind CSS 4 + shadcn/ui
 - **Database:** Supabase (Postgres)
-- **AI:** Anthropic Claude (Claude Sonnet)
-- **Python Service:** FastAPI microservice for YouTube Music sync & Last.fm
+- **AI:** Anthropic Claude (Claude Haiku 4.5)
 - **Testing:** Vitest + React Testing Library
 
 ## External Services
@@ -25,11 +22,10 @@ Every recommendation is verified across YouTube, Last.fm, MusicBrainz, ListenBra
 | Service | Purpose |
 |---------|---------|
 | Anthropic Claude | AI recommendation generation |
-| YouTube Data API | Video search, metadata, playback |
-| Last.fm (via Python service) | Similar tracks, artist verification |
+| YouTube Data API | Video search, metadata, inline playback |
+| Last.fm | Similar tracks, genre tags, artist verification |
 | TasteDive | Similar artist discovery |
-| ListenBrainz / MusicBrainz | Artist similarity, track verification |
-| Odesli (song.link) | Cross-platform availability |
+| ListenBrainz | Artist similarity |
 
 ## Getting Started
 
@@ -37,7 +33,6 @@ Every recommendation is verified across YouTube, Last.fm, MusicBrainz, ListenBra
 
 - Node.js 18+
 - pnpm
-- Python 3.x (for the FastAPI microservice)
 - Supabase project
 
 ### Setup
@@ -60,27 +55,17 @@ ANTHROPIC_API_KEY=
 # YouTube
 YOUTUBE_API_KEY=
 
-# Python microservice (YouTube Music sync + Last.fm)
-PYTHON_SERVICE_URL=http://localhost:8000
-
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Optional
 TASTEDIVE_API_KEY=
-ODESLI_API_KEY=
 ```
 
 ### Run
 
 ```bash
-# Next.js app
 pnpm dev
-
-# Python microservice (separate terminal)
-cd python-service
-pip install -r requirements.txt
-uvicorn main:app --reload
 ```
 
 ### Test
@@ -96,15 +81,11 @@ pnpm lint
 src/
   app/
     (dashboard)/
-      dashboard/             -- Listening stats & analytics
       discover/              -- Seed-based recommendations + playlist player
-      recommendations/       -- History-based recommendations
-      connect/               -- YouTube Music OAuth flow
-      settings/              -- Preferences & YouTube Music connection
+      settings/              -- User preferences
     api/
       recommendations/       -- AI generation, discover, backfill
       seeds/                 -- Seed song management
-      youtube-music/         -- Sync, search, OAuth, device-code
       preferences/           -- User preference management
   components/                -- UI components (shadcn + custom)
   lib/
@@ -114,32 +95,7 @@ src/
     lastfm.ts                -- Last.fm verification & candidates
     tastedive.ts             -- Similar artist discovery
     listenbrainz.ts          -- ListenBrainz artist similarity
-    musicbrainz.ts           -- MusicBrainz track verification
-    odesli.ts                -- Cross-platform availability
     session.ts               -- Anonymous session management
     store.ts                 -- Supabase queries
   types/                     -- TypeScript types
-
-python-service/
-  routers/
-    oauth.py                 -- YouTube Music device-code OAuth
-    history.py               -- Recently played tracks
-    library.py               -- Library songs
-    search.py                -- YouTube Music search
-    lastfm.py                -- Last.fm integration
-  services/
-    ytmusic.py               -- ytmusicapi wrapper
-    credentials.py           -- Credential storage
 ```
-
-## Database Schema
-
-| Table | Purpose |
-|-------|---------|
-| profiles | Session identity & YouTube Music connection status |
-| yt_music_credentials | OAuth tokens for YouTube Music |
-| listening_history | Synced tracks with metadata |
-| user_preferences | Favorite genres, mood, discovery level, excluded artists |
-| recommendations | AI-generated recommendations with status |
-| seed_songs | User's current seed songs for discovery |
-| sync_log | Sync operation history & error tracking |

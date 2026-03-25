@@ -1,5 +1,5 @@
-const PYTHON_SERVICE_URL =
-  process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
+const LASTFM_API_KEY = process.env.LASTFM_API_KEY || "";
+const LASTFM_BASE_URL = "https://ws.audioscrobbler.com/2.0/";
 
 export interface LastfmTrack {
   title: string;
@@ -8,30 +8,30 @@ export interface LastfmTrack {
   url: string;
 }
 
-interface LastfmSimilarTracksResponse {
-  tracks: { title: string; artist: string; match_score: number; url: string }[];
-}
-
-interface LastfmSimilarArtistsResponse {
-  artists: { name: string; match_score: number; url: string }[];
-}
-
-async function fetchLastfm<T>(path: string): Promise<T> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch(`${PYTHON_SERVICE_URL}${path}`, {
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(error.detail || "Last.fm service error");
-    }
-    return res.json();
-  } finally {
-    clearTimeout(timeout);
+async function lastfmRequest(params: Record<string, string>): Promise<Record<string, unknown>> {
+  if (!LASTFM_API_KEY) {
+    throw new Error("LASTFM_API_KEY not configured");
   }
+
+  const searchParams = new URLSearchParams({
+    ...params,
+    api_key: LASTFM_API_KEY,
+    format: "json",
+  });
+
+  const res = await fetch(`${LASTFM_BASE_URL}?${searchParams}`, {
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Last.fm API error: ${res.statusText}`);
+  }
+
+  const data = await res.json();
+  if (data.error) {
+    throw new Error(`Last.fm error ${data.error}: ${data.message || ""}`);
+  }
+  return data;
 }
 
 export async function getSimilarTracks(
@@ -39,15 +39,21 @@ export async function getSimilarTracks(
   track: string,
   limit = 30
 ): Promise<LastfmTrack[]> {
-  const params = new URLSearchParams({ artist, track, limit: String(limit) });
-  const data = await fetchLastfm<LastfmSimilarTracksResponse>(
-    `/api/lastfm/similar-tracks?${params}`
-  );
-  return data.tracks.map((t) => ({
-    title: t.title,
-    artist: t.artist,
-    matchScore: t.match_score,
-    url: t.url,
+  const data = await lastfmRequest({
+    method: "track.getSimilar",
+    artist,
+    track,
+    limit: String(limit),
+  });
+
+  const similar = (data.similartracks as Record<string, unknown>)?.track;
+  if (!Array.isArray(similar)) return [];
+
+  return similar.map((t: Record<string, unknown>) => ({
+    title: (t.name as string) || "",
+    artist: ((t.artist as Record<string, unknown>)?.name as string) || "",
+    matchScore: parseFloat(String(t.match || 0)),
+    url: (t.url as string) || "",
   }));
 }
 
@@ -55,47 +61,44 @@ export async function getSimilarArtists(
   artist: string,
   limit = 20
 ): Promise<{ name: string; matchScore: number }[]> {
-  const params = new URLSearchParams({ artist, limit: String(limit) });
-  const data = await fetchLastfm<LastfmSimilarArtistsResponse>(
-    `/api/lastfm/similar-artists?${params}`
-  );
-  return data.artists.map((a) => ({
-    name: a.name,
-    matchScore: a.match_score,
+  const data = await lastfmRequest({
+    method: "artist.getSimilar",
+    artist,
+    limit: String(limit),
+  });
+
+  const similar = (data.similarartists as Record<string, unknown>)?.artist;
+  if (!Array.isArray(similar)) return [];
+
+  return similar.map((a: Record<string, unknown>) => ({
+    name: (a.name as string) || "",
+    matchScore: parseFloat(String(a.match || 0)),
   }));
 }
 
-interface TrackInfoResponse {
-  exists: boolean;
-  track: { title: string; artist: string; listeners: number; playcount: number; url: string } | null;
-}
-
-/**
- * Check if a track exists on Last.fm. Returns existence + listener count.
- */
 export async function verifyTrackExists(
   artist: string,
   track: string
 ): Promise<{ exists: boolean; listeners: number }> {
   try {
-    const params = new URLSearchParams({ artist, track });
-    const data = await fetchLastfm<TrackInfoResponse>(
-      `/api/lastfm/track-info?${params}`
-    );
+    const data = await lastfmRequest({
+      method: "track.getInfo",
+      artist,
+      track,
+    });
+
+    const trackData = data.track as Record<string, unknown> | undefined;
+    if (!trackData) return { exists: false, listeners: 0 };
+
     return {
-      exists: data.exists,
-      listeners: data.track?.listeners ?? 0,
+      exists: true,
+      listeners: parseInt(String(trackData.listeners || 0), 10),
     };
   } catch {
-    // If the service is down, assume it exists (don't block recs)
     return { exists: true, listeners: 0 };
   }
 }
 
-/**
- * Normalize a string for fuzzy comparison: lowercase, strip punctuation,
- * remove common suffixes like "(Official Video)", "ft.", "feat.", etc.
- */
 function normalize(s: string): string {
   return s
     .toLowerCase()
@@ -107,10 +110,6 @@ function normalize(s: string): string {
     .trim();
 }
 
-/**
- * Check how similar two strings are (0 = no match, 1 = identical).
- * Uses token overlap (Jaccard-like) which handles word reordering.
- */
 export function titleSimilarity(a: string, b: string): number {
   const tokensA = new Set(normalize(a).split(" ").filter(Boolean));
   const tokensB = new Set(normalize(b).split(" ").filter(Boolean));
@@ -122,17 +121,10 @@ export function titleSimilarity(a: string, b: string): number {
   return overlap / Math.max(tokensA.size, tokensB.size);
 }
 
-/**
- * Verify a recommendation is real by checking:
- * 1. YouTube result title similarity (did YouTube find the actual song?)
- * 2. Last.fm track existence (does Last.fm know this song?)
- * Returns a confidence that the song is real (0-1).
- */
 export async function verifyRecommendation(
   rec: { title: string; artist: string },
   youtubeResultTitle: string | null
 ): Promise<{ verified: boolean; verificationScore: number }> {
-  // Check YouTube title similarity
   let ytScore = 0;
   if (youtubeResultTitle) {
     const recStr = `${rec.title} ${rec.artist}`;
@@ -142,16 +134,89 @@ export async function verifyRecommendation(
     );
   }
 
-  // Check Last.fm existence
   const lastfm = await verifyTrackExists(rec.artist, rec.title);
   const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
 
-  // A rec is verified if either source confirms it strongly
   const verificationScore = Math.max(ytScore, lastfmScore);
   return {
     verified: verificationScore >= 0.35,
     verificationScore,
   };
+}
+
+export async function getArtistTopTags(
+  artist: string,
+  limit = 5
+): Promise<string[]> {
+  try {
+    const data = await lastfmRequest({
+      method: "artist.getTopTags",
+      artist,
+      autocorrect: "1",
+    });
+
+    const tags = (data.toptags as Record<string, unknown>)?.tag;
+    if (!Array.isArray(tags)) return [];
+
+    return tags
+      .slice(0, limit)
+      .map((t: Record<string, unknown>) => (t.name as string) || "")
+      .filter((name) => name.length > 0 && name.toLowerCase() !== "seen live");
+  } catch {
+    return [];
+  }
+}
+
+export async function getTrackTopTags(
+  artist: string,
+  track: string,
+  limit = 5
+): Promise<string[]> {
+  try {
+    const data = await lastfmRequest({
+      method: "track.getTopTags",
+      artist,
+      track,
+      autocorrect: "1",
+    });
+
+    const tags = (data.toptags as Record<string, unknown>)?.tag;
+    if (!Array.isArray(tags)) return [];
+
+    return tags
+      .slice(0, limit)
+      .map((t: Record<string, unknown>) => (t.name as string) || "")
+      .filter((name) => name.length > 0 && name.toLowerCase() !== "seen live");
+  } catch {
+    return [];
+  }
+}
+
+export async function getGenreTagsForSeeds(
+  seeds: { title: string; artist: string }[]
+): Promise<string[]> {
+  const results = await Promise.allSettled(
+    seeds.flatMap((seed) => [
+      seed.artist ? getArtistTopTags(seed.artist, 5) : Promise.resolve([]),
+      seed.title && seed.artist
+        ? getTrackTopTags(seed.artist, seed.title, 5)
+        : Promise.resolve([]),
+    ])
+  );
+
+  const seen = new Set<string>();
+  const tags: string[] = [];
+  for (const result of results) {
+    if (result.status !== "fulfilled") continue;
+    for (const tag of result.value) {
+      const lower = tag.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        tags.push(tag);
+      }
+    }
+  }
+  return tags;
 }
 
 export async function getCandidatesForSeeds(
@@ -166,7 +231,6 @@ export async function getCandidatesForSeeds(
     seeds.map((s) => `${s.title.toLowerCase()}|${s.artist.toLowerCase()}`)
   );
 
-  // Build a set of all seed artists (splitting collabs) so we can exclude them
   const seedArtists = new Set(
     seeds.flatMap((s) =>
       s.artist
@@ -184,7 +248,6 @@ export async function getCandidatesForSeeds(
       const key = `${track.title.toLowerCase()}|${track.artist.toLowerCase()}`;
       if (seen.has(key) || seedKeys.has(key)) continue;
 
-      // Skip tracks by seed artists
       const trackArtists = track.artist
         .split(/(?:,\s*|\s+(?:feat\.?|ft\.?|x|&|and|with|y)\s+)/i)
         .map((a) => a.trim().toLowerCase());
@@ -195,7 +258,6 @@ export async function getCandidatesForSeeds(
     }
   }
 
-  // Sort by match score descending
   candidates.sort((a, b) => b.matchScore - a.matchScore);
   return candidates;
 }

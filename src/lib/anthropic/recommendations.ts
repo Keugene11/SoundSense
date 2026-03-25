@@ -45,7 +45,7 @@ async function callAI(prompt: string, count: number): Promise<AIRecommendation[]
     messages: [
       { role: "user", content: prompt },
     ],
-    temperature: 0.5,
+    temperature: 0.7,
   });
 
   const textBlock = response.content.find((block) => block.type === "text");
@@ -72,7 +72,8 @@ export async function generateRecommendations(
   preferences: UserPreferences,
   _count: number = 10,
   candidates?: CandidateTrack[],
-  similarArtists?: string[]
+  similarArtists?: string[],
+  genreTags?: string[]
 ): Promise<AIRecommendation[]> {
   const recentTracks = history.slice(0, 50).map((t) => ({
     title: t.title,
@@ -95,16 +96,15 @@ export async function generateRecommendations(
 
   let candidateSection = "";
   if (candidates?.length) {
-    const halfCount = Math.ceil(requestCount * 0.5);
     const candidateList = candidates
       .slice(0, 40)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
 These songs are confirmed similar based on REAL listener behavior on Last.fm.
-You MUST select at least ${Math.min(halfCount, candidates.length)} of your recommendations from this list.
-These are VERIFIED REAL songs — prioritize them heavily.
-The remaining ${requestCount - Math.min(halfCount, candidates.length)} can be wildcards not on this list, but ONLY if you are 100% certain they are real songs with EXACT correct spelling.
+These are VERIFIED REAL songs — you may pick from this list, but ONLY if they match the user's genre and style.
+Do NOT pick songs from this list that don't fit the genre/mood — genre match is more important than being on this list.
+Any picks from this list must use the EXACT title and artist spelling shown.
 
 ${candidateList}
 `;
@@ -113,8 +113,17 @@ ${candidateList}
   let similarArtistsSection = "";
   if (similarArtists?.length) {
     similarArtistsSection = `\n## Similar Artists (from TasteDive and ListenBrainz)
-Use these as inspiration for your wildcard picks (songs NOT from the verified list above):
+Use these as inspiration — but only if they fit the genre and style:
 ${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
+`;
+  }
+
+  let genreSection = "";
+  if (genreTags?.length) {
+    genreSection = `\n## Genre DNA (from Last.fm tags)
+These tags describe the user's core sound — every recommendation MUST fit within or adjacent to these genres:
+${genreTags.map((t) => `- ${t}`).join("\n")}
+Use these tags as your PRIMARY filter. If a song doesn't match this sonic territory, don't recommend it.
 `;
   }
 
@@ -125,7 +134,7 @@ ${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
 - Mood: ${preferences.mood}
 - Discovery level: ${preferences.discovery_level}/100 (0=very familiar, 100=very adventurous)
 - Excluded artists: ${preferences.exclude_artists.length > 0 ? preferences.exclude_artists.join(", ") : "None"}
-
+${genreSection}
 ## Top Artists (by play count)
 ${topArtists.map((a) => `- ${a.name} (${a.count} plays)`).join("\n")}
 
@@ -134,6 +143,7 @@ ${recentTracks.map((t) => `- "${t.title}" by ${t.artist}${t.album ? ` (${t.album
 ${candidateSection}${similarArtistsSection}
 ## Instructions
 - Suggest ${requestCount} songs the user would likely enjoy
+- GENRE MATCH IS THE #1 PRIORITY — every song must fit the user's genre/style profile
 - Mix familiar artists with new discoveries based on discovery_level
 - Do NOT recommend songs already in their history
 - Do NOT recommend songs by excluded artists
@@ -169,7 +179,8 @@ export async function generateFromSeeds(
   _count: number = 10,
   context?: SeedContext,
   candidates?: CandidateTrack[],
-  similarArtists?: string[]
+  similarArtists?: string[],
+  genreTags?: string[]
 ): Promise<AIRecommendation[]> {
   const seedList = seeds
     .map((s) => {
@@ -217,16 +228,15 @@ ${context.previouslyRecommended.map((s) => `- ${s}`).join("\n")}
 
   let candidateSection = "";
   if (candidates?.length) {
-    const halfCount = Math.ceil(requestCount * 0.5);
     const candidateList = candidates
       .slice(0, 40)
       .map((c) => `- "${c.title}" by ${c.artist} (similarity: ${(c.matchScore * 100).toFixed(0)}%)`)
       .join("\n");
     candidateSection = `\n## Verified Similar Songs (from collaborative listening data)
 These songs are confirmed similar to the seeds based on REAL listener behavior on Last.fm.
-You MUST select at least ${Math.min(halfCount, candidates.length)} of your recommendations from this list.
-These are VERIFIED REAL songs — prioritize them heavily.
-The remaining ${requestCount - Math.min(halfCount, candidates.length)} can be wildcards not on this list, but ONLY if you are 100% certain they are real, commercially released songs with the EXACT correct title and artist spelling.
+These are VERIFIED REAL songs — you may pick from this list, but ONLY if they match the genre and style of the seeds.
+Do NOT pick songs from this list that don't fit the genre/mood — genre match is more important than being on this list.
+Any picks from this list must use the EXACT title and artist spelling shown.
 
 ${candidateList}
 `;
@@ -235,8 +245,17 @@ ${candidateList}
   let similarArtistsSection = "";
   if (similarArtists?.length) {
     similarArtistsSection = `\n## Similar Artists (from TasteDive and ListenBrainz)
-Use these as inspiration for your wildcard picks (songs NOT from the verified list above):
+Use these as inspiration — but only if they fit the genre and style of the seeds:
 ${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
+`;
+  }
+
+  let genreSection = "";
+  if (genreTags?.length) {
+    genreSection = `\n## Genre DNA (from Last.fm tags for the seed songs)
+These tags describe the seeds' core sound — every recommendation MUST fit within or adjacent to these genres:
+${genreTags.map((t) => `- ${t}`).join("\n")}
+Use these tags as your PRIMARY filter. If a song doesn't match this sonic territory, don't recommend it.
 `;
   }
 
@@ -261,7 +280,7 @@ ${similarArtists.slice(0, 30).map((a) => `- ${a}`).join("\n")}
 ${seedList}
 
 IMPORTANT: Use the "YouTube match" line (if present) to identify the ACTUAL song. The user may have misspelled the title or artist — the YouTube match shows what song they actually mean. Base your recommendations on the REAL song, not a literal interpretation of the user's text.
-${bannedArtistsLine}${candidateSection}${similarArtistsSection}${contextSections}${avoidSection}
+${bannedArtistsLine}${genreSection}${candidateSection}${similarArtistsSection}${contextSections}${avoidSection}
 ## Your Analysis Process
 First, analyze the seeds carefully:
 1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
@@ -271,11 +290,11 @@ First, analyze the seeds carefully:
 5. What would someone who loves ALL of these songs be searching for but can't quite find?
 
 ## Recommendation Strategy
-Generate exactly ${requestCount} recommendations.${candidates?.length ? `
-- At least ${Math.min(Math.ceil(requestCount * 0.5), candidates.length)} MUST come from the Verified Similar Songs list above
-- The rest can be wildcards NOT on the list — be creative and adventurous with these picks${similarArtists?.length ? `, using the Similar Artists list for inspiration` : ""}
+Generate exactly ${requestCount} recommendations.
+IMPORTANT: Genre and style match is the #1 priority. Every song must sound like it belongs in the same playlist as the seeds.${candidates?.length ? `
+- You may pick from the Verified Similar Songs list, but ONLY ones that match the genre/style of the seeds
 - For songs from the verified list, use the EXACT title and artist spelling shown
-- Wildcard picks MUST be real songs you're certain exist` : `
+- All other picks should be songs you're certain exist and that match the seeds' genre` : `
 - 5-7 songs: **Deep cuts** — album tracks, B-sides, or lesser-known singles. AVOID mega-hits with 500M+ streams.
 - 4-5 songs: **Lesser-known artists** in the same sonic space (artists most people haven't heard of)
 - 3-4 songs: **Cross-genre gems** that share the same emotional DNA but come from a totally different genre
