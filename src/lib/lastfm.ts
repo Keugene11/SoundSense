@@ -251,7 +251,7 @@ export async function getCandidatesForSeeds(
   seeds: { title: string; artist: string }[]
 ): Promise<LastfmTrack[]> {
   const results = await Promise.allSettled(
-    seeds.map((seed) => getSimilarTracks(seed.artist, seed.title, 30))
+    seeds.map((seed) => getSimilarTracks(seed.artist, seed.title, 50))
   );
 
   const seen = new Set<string>();

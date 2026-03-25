@@ -21,26 +21,19 @@ interface SeedContext {
   } | null;
 }
 
-const SYSTEM_PROMPT = `You are a world-class music curator — think of yourself as the person behind the best "Discover Weekly" playlists. You have deep knowledge of:
-- Music theory (chord progressions, time signatures, key signatures)
-- Production techniques (lo-fi, overdriven, reverb-drenched, crisp, analog warmth)
-- Genre genealogy (how genres evolved, split, and cross-pollinated)
-- Artist networks (collaborators, influences, contemporaries, proteges)
-- Cultural context (scenes, movements, eras, regional sounds)
+const SYSTEM_PROMPT = `You are a music curator who builds perfect playlists. You know real songs deeply — not just hits, but album tracks, B-sides, and underground gems.
 
-You recommend songs that make people say "holy shit, how did you know I'd love this?" — not songs that make them say "oh yeah, I already know that one."
-
-CRITICAL RULES:
-- Every song you recommend MUST be a real song that actually exists. Never invent songs or artists.
-- If you are not 100% certain a song exists, do NOT include it. It is better to recommend fewer songs than to recommend fake ones.
-- Never recommend a song the user has already heard, liked, or been recommended before.
-- Never recommend the seed songs themselves.
-- NEVER recommend ANY song by a seed artist. If the user gives you "Toxicity" by System of a Down, do NOT recommend other System of a Down songs. The user already knows that artist — show them something NEW.`;
+RULES:
+1. Every song MUST be real. If you're not 100% sure it exists with that exact title and artist, don't include it.
+2. Never recommend the seed songs or ANY song by the seed artists.
+3. One song per artist max.
+4. Prioritize songs from the "Verified Similar Songs" list when provided — those are confirmed real songs that real listeners play alongside the seeds.
+5. For any song NOT from the verified list, you must be absolutely certain it's real. When in doubt, leave it out.`;
 
 async function callAI(prompt: string, count: number): Promise<AIRecommendation[]> {
   const response = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 6000,
+    model: "claude-sonnet-4-6",
+    max_tokens: 4000,
     system: SYSTEM_PROMPT,
     messages: [
       { role: "user", content: prompt },
@@ -275,45 +268,21 @@ Use these tags as your PRIMARY filter. If a song doesn't match this sonic territ
     ? `\n## BANNED ARTISTS (do NOT recommend any song by these artists — not even as a featured artist):\n${seedArtists.map((a) => `- ${a}`).join("\n")}\nThe user already knows these artists. Recommending their other songs is lazy curation. Show the user something NEW. This includes songs where they appear as a featured artist (feat.), collaborator, or under any variation of their name.\n`
     : "";
 
-  const prompt = `A user wants music recommendations based on these seed songs:
+  const prompt = `Recommend ${requestCount} songs based on these seeds:
 
 ${seedList}
-
-IMPORTANT: Use the "YouTube match" line (if present) to identify the ACTUAL song. The user may have misspelled the title or artist — the YouTube match shows what song they actually mean. Base your recommendations on the REAL song, not a literal interpretation of the user's text.
 ${bannedArtistsLine}${genreSection}${candidateSection}${similarArtistsSection}${contextSections}${avoidSection}
-## Your Analysis Process
-First, analyze the seeds carefully:
-1. What SPECIFIC sonic qualities connect these songs? (not just "rock" — think: "fuzzy guitar tone with reverb-heavy vocals and a driving 4/4 beat at ~120 BPM")
-2. What emotional territory do they occupy? (not just "sad" — think: "bittersweet nostalgia with an undercurrent of hope")
-3. What era/scene/movement do they connect to?
-4. If the seeds span different genres/languages/eras, what is the BRIDGE between them? Find songs that live at that intersection — don't just recommend from each genre separately.
-5. What would someone who loves ALL of these songs be searching for but can't quite find?
+PRIORITIES:
+1. Every song must ACTUALLY EXIST with the exact title and artist you provide. This is the most important rule.
+2. ${candidates?.length ? "Strongly prefer songs from the Verified Similar Songs list — use their EXACT spelling. Fill remaining slots with songs you're 100% certain are real." : "Only recommend songs you are 100% certain are real. When in doubt, leave it out."}
+3. Songs should match the vibe, energy, and genre of the seeds — they should feel like they belong on the same playlist.
+4. No songs by the seed artists. No songs already recommended. One song per artist max.
+5. Mix well-known tracks with deeper cuts. Avoid the most obvious/overplayed hits.
 
-## Recommendation Strategy
-Generate exactly ${requestCount} recommendations.
-IMPORTANT: Genre and style match is the #1 priority. Every song must sound like it belongs in the same playlist as the seeds.${candidates?.length ? `
-- You may pick from the Verified Similar Songs list, but ONLY ones that match the genre/style of the seeds
-- For songs from the verified list, use the EXACT title and artist spelling shown
-- All other picks should be songs you're certain exist and that match the seeds' genre` : `
-- 5-7 songs: **Deep cuts** — album tracks, B-sides, or lesser-known singles. AVOID mega-hits with 500M+ streams.
-- 4-5 songs: **Lesser-known artists** in the same sonic space (artists most people haven't heard of)
-- 3-4 songs: **Cross-genre gems** that share the same emotional DNA but come from a totally different genre
-- 2-3 songs: **Wildcards** — surprising picks that share a subtle quality with the seeds`}
+For each song, write a short reason (1 sentence) explaining why it fits — mention a specific musical quality.
 
-## Hard Rules
-- Every song MUST actually exist — real title, real artist, real release. Use EXACT official spelling. Double-check that the title belongs to the artist you're crediting — do NOT attribute a song to the wrong artist.
-- NEVER invent or guess at song titles. If you can't recall the EXACT title AND the correct artist, skip it.
-- NEVER recommend the seed songs themselves
-- NEVER recommend ANY song by ANY of the seed artists. The user already knows those artists. Zero exceptions.
-- NEVER recommend songs from the "already recommended" list above
-- Maximum 1 song per artist in your recommendations. Every recommendation should be from a DIFFERENT artist.
-- Match the ENERGY and MOOD, not just the genre
-- Each reason must describe what the song DOES musically, naming 2-3 concrete elements (e.g., BPM, key, chord types, production effects, instrument tones, vocal techniques, rhythmic patterns). Do NOT use comparison clichés like "reminiscent of", "akin to", "echoing", "similar to". Example: "Layers warm Rhodes piano over a shuffling 6/8 drum pattern at ~90 BPM, with breathy falsetto vocals that float above lush string arrangements."
-- Confidence: 0.85+ = "you will love this", 0.7-0.85 = "strong match", 0.55-0.7 = "adventurous but trust me"
+Respond with ONLY a JSON array: [{"title": "", "artist": "", "album": "", "reason": "", "confidence_score": 0.0}]`;
 
-Respond with a JSON array of objects: title (string), artist (string), album (string, optional), reason (string, 1-2 sentences naming specific musical elements), confidence_score (number 0-1).
-
-Return ONLY the JSON array, no other text.`;
 
   const results = await callAI(prompt, requestCount);
 
