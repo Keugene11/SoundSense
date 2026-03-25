@@ -22,10 +22,9 @@ export function PlaylistTrackList({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className="grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2 border-b border-border text-xs text-muted-foreground uppercase tracking-wide">
+      <div className="grid grid-cols-[40px_1fr] items-center gap-3 px-4 py-2 border-b border-border text-xs text-muted-foreground uppercase tracking-wide">
         <span className="text-center">#</span>
         <span>Title</span>
-        <span className="pr-2">Match</span>
       </div>
 
       {/* Tracks */}
@@ -41,7 +40,7 @@ export function PlaylistTrackList({
               onClick={() => hasVideo && onTrackClick(index)}
               disabled={!hasVideo}
               className={`
-                w-full grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2.5
+                w-full grid grid-cols-[40px_1fr] items-center gap-3 px-4 py-2.5
                 text-left transition-colors group
                 ${isActive ? "bg-accent" : "hover:bg-accent/50"}
                 ${!hasVideo ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
@@ -100,14 +99,6 @@ export function PlaylistTrackList({
                 </div>
               </div>
 
-              {/* Match score */}
-              <div className="pr-2">
-                {track.confidence_score && (
-                  <span className="text-xs text-muted-foreground">
-                    {Math.round(track.confidence_score * 100)}%
-                  </span>
-                )}
-              </div>
             </button>
           );
         })}
