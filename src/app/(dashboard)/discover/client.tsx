@@ -358,7 +358,7 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
               </>
             )}
           </Button>
-          {(likedCount > 0 || dislikedCount > 0) && (
+          {isLoggedIn && (likedCount > 0 || dislikedCount > 0) && (
             <p className="text-xs text-muted-foreground">
               Your taste profile: {likedCount} liked, {dislikedCount} disliked
             </p>
