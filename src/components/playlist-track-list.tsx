@@ -112,34 +112,34 @@ export function PlaylistTrackList({
               </button>
 
               {/* Like / Dislike */}
-              <div className="flex items-center gap-1 pr-1">
+              <div className="flex items-center gap-2 pr-1">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onFeedback(track.id, fb === "liked" ? null : "liked");
                   }}
-                  className={`p-1.5 rounded-full transition-colors ${
+                  className={`p-2 rounded-full transition-colors ${
                     fb === "liked"
-                      ? "text-green-500"
-                      : "text-muted-foreground/40 hover:text-foreground opacity-0 group-hover:opacity-100"
-                  } ${fb === "liked" ? "opacity-100" : ""}`}
+                      ? "text-green-500 bg-green-500/10"
+                      : "text-muted-foreground hover:text-green-500 hover:bg-green-500/10"
+                  }`}
                   title="Like"
                 >
-                  <ThumbsUp size={14} fill={fb === "liked" ? "currentColor" : "none"} />
+                  <ThumbsUp size={16} fill={fb === "liked" ? "currentColor" : "none"} />
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onFeedback(track.id, fb === "disliked" ? null : "disliked");
                   }}
-                  className={`p-1.5 rounded-full transition-colors ${
+                  className={`p-2 rounded-full transition-colors ${
                     fb === "disliked"
-                      ? "text-red-500"
-                      : "text-muted-foreground/40 hover:text-foreground opacity-0 group-hover:opacity-100"
-                  } ${fb === "disliked" ? "opacity-100" : ""}`}
+                      ? "text-red-500 bg-red-500/10"
+                      : "text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                  }`}
                   title="Dislike"
                 >
-                  <ThumbsDown size={14} fill={fb === "disliked" ? "currentColor" : "none"} />
+                  <ThumbsDown size={16} fill={fb === "disliked" ? "currentColor" : "none"} />
                 </button>
               </div>
             </div>
