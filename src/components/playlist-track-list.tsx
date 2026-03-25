@@ -94,7 +94,6 @@ export function PlaylistTrackList({
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {track.artist}
-                    {track.album && ` \u00B7 ${track.album}`}
                   </p>
                 </div>
               </div>
