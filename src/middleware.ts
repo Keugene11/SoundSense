@@ -31,26 +31,26 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Allow login page, auth callback, and API routes without auth
+  // Public routes — no auth required
   if (
+    pathname === "/" ||
     pathname === "/login" ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/api/")
   ) {
+    // Redirect logged-in users away from login to discover
+    if (pathname === "/login" && user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/discover";
+      return NextResponse.redirect(url);
+    }
     return supabaseResponse;
   }
 
-  // Redirect unauthenticated users to login
+  // Protected routes — require auth
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-
-  // Redirect authenticated users away from login
-  if (pathname === "/login" && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/discover";
     return NextResponse.redirect(url);
   }
 
