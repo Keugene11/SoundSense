@@ -8,6 +8,34 @@ export interface LastfmTrack {
   url: string;
 }
 
+/**
+ * Search Last.fm for a track by name. Returns real songs only — no ambient/nature content.
+ * Great for resolving vague user input like "no one noticed" into "No One Noticed by The Marías".
+ */
+export async function searchTrack(
+  query: string,
+  limit = 5
+): Promise<{ title: string; artist: string; listeners: number }[]> {
+  try {
+    const data = await lastfmRequest({
+      method: "track.search",
+      track: query,
+      limit: String(limit),
+    });
+
+    const results = (data.results as Record<string, unknown>)?.trackmatches as Record<string, unknown> | undefined;
+    const tracks = (results?.track ?? []) as Array<Record<string, unknown>>;
+
+    return tracks.map((t) => ({
+      title: (t.name as string) || "",
+      artist: (t.artist as string) || "",
+      listeners: parseInt((t.listeners as string) || "0", 10),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 async function lastfmRequest(params: Record<string, string>): Promise<Record<string, unknown>> {
   if (!LASTFM_API_KEY) {
     throw new Error("LASTFM_API_KEY not configured");

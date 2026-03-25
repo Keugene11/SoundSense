@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import {
-  lookupSeedSong,
   extractYouTubeVideoId,
   extractYouTubePlaylistId,
   getVideoDetails,
   getPlaylistItems,
 } from "@/lib/youtube-music";
+import { searchTrack } from "@/lib/lastfm";
 
 function parseYouTubeTitle(rawTitle: string, rawArtist: string) {
   const ytTitle = rawTitle
@@ -93,20 +93,23 @@ export async function POST(request: Request) {
         }
       }
     } else {
-      // Free text — try YouTube lookup, fall back to raw input
-      const lookup = await lookupSeedSong(input, "").catch(() => null);
-      if (lookup) {
-        ({ title, artist } = parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist));
+      // Free text — parse "Song by Artist" or "Artist - Song" first
+      const byMatch = input.match(/^(.+?)\s+(?:by|[-–—])\s+(.+)$/i);
+      const parsedTitle = byMatch ? byMatch[1].trim() : input;
+      const parsedArtist = byMatch ? byMatch[2].trim() : "";
+
+      // Use Last.fm track search — only returns real songs, no ambient/nature content
+      const searchQuery = parsedArtist ? `${parsedTitle} ${parsedArtist}` : parsedTitle;
+      const lastfmResults = await searchTrack(searchQuery, 5).catch(() => []);
+
+      if (lastfmResults.length > 0) {
+        // Pick the most popular result (highest listeners)
+        const best = lastfmResults.reduce((a, b) => (b.listeners > a.listeners ? b : a));
+        title = best.title;
+        artist = best.artist;
       } else {
-        // Parse "Song by Artist" or "Artist - Song" patterns
-        const byMatch = input.match(/^(.+?)\s+(?:by|[-–—])\s+(.+)$/i);
-        if (byMatch) {
-          title = byMatch[1].trim();
-          artist = byMatch[2].trim();
-        } else {
-          title = input;
-          artist = "";
-        }
+        title = parsedTitle;
+        artist = parsedArtist;
       }
     }
 

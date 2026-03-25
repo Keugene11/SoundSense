@@ -1,6 +1,6 @@
 import { getSessionUserId } from "@/lib/session";
 import { generateFromSeeds } from "@/lib/anthropic/recommendations";
-import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity, getGenreTagsForSeeds } from "@/lib/lastfm";
+import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity, getGenreTagsForSeeds, searchTrack } from "@/lib/lastfm";
 import { searchYouTubeRace, lookupSeedSong, extractYouTubeVideoId, getVideoDetails } from "@/lib/youtube-music";
 import { getSimilarArtistsTD } from "@/lib/tastedive";
 import { getSimilarArtistsLB } from "@/lib/listenbrainz";
@@ -49,19 +49,26 @@ async function resolveSeed(query: string): Promise<{ title: string; artist: stri
     return { title: query, artist: "" };
   }
 
-  // Free text — try YouTube lookup
-  const lookup = await lookupSeedSong(query, "");
+  // Free text — parse "Song by Artist" pattern first
+  const byMatch = query.match(/^(.+?)\s+(?:by|[-–—])\s+(.+)$/i);
+  const parsedTitle = byMatch ? byMatch[1].trim() : query;
+  const parsedArtist = byMatch ? byMatch[2].trim() : "";
+
+  // Use Last.fm to resolve to a real song
+  const searchQuery = parsedArtist ? `${parsedTitle} ${parsedArtist}` : parsedTitle;
+  const lastfmResults = await searchTrack(searchQuery, 5).catch(() => []);
+  if (lastfmResults.length > 0) {
+    const best = lastfmResults.reduce((a, b) => (b.listeners > a.listeners ? b : a));
+    return { title: best.title, artist: best.artist };
+  }
+
+  // Fallback to YouTube lookup
+  const lookup = await lookupSeedSong(parsedTitle, parsedArtist);
   if (lookup) {
     return parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist);
   }
 
-  // Last resort: split on " - " or " by "
-  const byMatch = query.match(/^(.+?)\s+(?:by|[-–—])\s+(.+)$/i);
-  if (byMatch) {
-    return { title: byMatch[1].trim(), artist: byMatch[2].trim() };
-  }
-
-  return { title: query, artist: "" };
+  return { title: parsedTitle, artist: parsedArtist };
 }
 
 export async function POST(req: NextRequest) {
