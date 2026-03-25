@@ -186,13 +186,17 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
       {/* Seed input */}
       <div className="space-y-3">
         {seeds.length > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Based on{" "}
-            <span className="font-medium text-foreground">
-              {seeds[0].title}
-              {seeds[0].artist && ` by ${seeds[0].artist}`}
-            </span>
-          </p>
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Generating based on</p>
+              <p className="truncate text-sm font-semibold mt-0.5">
+                {seeds[0].title}
+                {seeds[0].artist && (
+                  <span className="font-normal text-muted-foreground"> &middot; {seeds[0].artist}</span>
+                )}
+              </p>
+            </div>
+          </div>
         )}
         <div className="flex gap-2">
           <Input
