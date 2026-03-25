@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlaylistPlayer } from "@/components/playlist-player";
 import { PlaylistTrackList, type TrackFeedback } from "@/components/playlist-track-list";
-import { toast } from "sonner";
+
 import { Loader2, Sparkles } from "lucide-react";
 import type { Recommendation, SeedSong } from "@/types/database";
 
@@ -155,13 +155,8 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
       if (!res.ok) throw new Error(data.error);
       const seed = data.seeds ? data.seeds[0] : data.seed;
       setSeeds([seed]);
-      toast.success(
-        seed.artist
-          ? `Found "${seed.title}" by ${seed.artist}`
-          : `Found "${seed.title}"`
-      );
+
     } catch {
-      toast.error("Failed to save seed song");
     } finally {
       setAdding(false);
     }
@@ -176,13 +171,11 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
         body: JSON.stringify({ id }),
       });
     } catch {
-      toast.error("Failed to remove seed song");
     }
   };
 
   const handleGenerate = async () => {
     if (seeds.length === 0) {
-      toast.error("Add at least one song");
       return;
     }
 
@@ -221,7 +214,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
       if (!res.ok) throw new Error(data.error);
 
       setRecommendations(data.recommendations);
-      toast.success(`Generated ${data.recommendations.length} recommendations`);
 
       // Auto-play the first playable track
       const firstPlayable = data.recommendations.findIndex(
@@ -232,9 +224,7 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
         setIsPlaying(true);
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to generate"
-      );
+      console.error(error);
     } finally {
       setGenerating(false);
     }
