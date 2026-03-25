@@ -1,32 +1,31 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
+    const code = searchParams.get("code");
+    if (!code) {
+      router.push("/login?error=no_code");
+      return;
+    }
+
     const supabase = createClient();
-
-    // The browser client automatically picks up the auth code from the URL
-    // and exchanges it using the PKCE code_verifier it stored earlier
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") {
+    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+      if (error) {
+        console.error("Auth exchange error:", error.message);
+        router.push("/login?error=auth");
+      } else {
         router.push("/discover");
         router.refresh();
       }
     });
-
-    // Also handle the case where the session is already set
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.push("/discover");
-        router.refresh();
-      }
-    });
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
