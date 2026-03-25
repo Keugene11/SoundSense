@@ -48,12 +48,29 @@ export async function searchYTMusicPublic(
 }
 
 /**
+ * Simple token-overlap similarity for matching YouTube results to expected songs.
+ */
+function tokenSimilarity(a: string, b: string): number {
+  const normalize = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+  const tokensA = new Set(normalize(a).split(" ").filter(Boolean));
+  const tokensB = new Set(normalize(b).split(" ").filter(Boolean));
+  if (tokensA.size === 0 || tokensB.size === 0) return 0;
+  let overlap = 0;
+  for (const t of tokensA) if (tokensB.has(t)) overlap++;
+  return overlap / Math.max(tokensA.size, tokensB.size);
+}
+
+/**
  * Search YouTube via the Data API v3 (requires YOUTUBE_API_KEY env var).
- * Returns { videoId, thumbnail } or null.
+ * Scores all results against the expected title+artist and picks the best match.
+ * Returns { videoId, thumbnail, resultTitle } or null.
  */
 export async function searchYouTubeDirect(
-  query: string
-): Promise<{ videoId: string; thumbnail: string | null } | null> {
+  query: string,
+  expectedTitle?: string,
+  expectedArtist?: string
+): Promise<{ videoId: string; thumbnail: string | null; resultTitle: string } | null> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     console.warn("YOUTUBE_API_KEY not set — cannot search YouTube");
@@ -85,22 +102,43 @@ export async function searchYouTubeDirect(
     }
 
     const data = await res.json();
-    const items = data.items ?? [];
-
-    // Skip Shorts and pick the first real music video/audio
-    const item = items.find((item: { snippet: { title: string } }) => {
+    const items = (data.items ?? []).filter((item: { snippet: { title: string } }) => {
       const title = item.snippet.title.toLowerCase();
       return !title.includes("#short") && !title.includes("shorts");
-    }) ?? items[0];
+    });
 
-    if (!item) return null;
+    if (items.length === 0) return null;
+
+    // Score each result against what we expect
+    const expected = expectedTitle && expectedArtist
+      ? `${expectedTitle} ${expectedArtist}`
+      : query;
+
+    let bestItem = items[0];
+    let bestScore = 0;
+
+    for (const item of items) {
+      const ytTitle = item.snippet.title;
+      const ytChannel = item.snippet.channelTitle || "";
+      const combined = `${ytTitle} ${ytChannel}`;
+      const score = Math.max(
+        tokenSimilarity(expected, combined),
+        tokenSimilarity(expected, ytTitle),
+        expectedTitle ? tokenSimilarity(expectedTitle, ytTitle) : 0
+      );
+      if (score > bestScore) {
+        bestScore = score;
+        bestItem = item;
+      }
+    }
 
     return {
-      videoId: item.id.videoId,
+      videoId: bestItem.id.videoId,
+      resultTitle: bestItem.snippet.title,
       thumbnail:
-        item.snippet.thumbnails?.medium?.url ||
-        item.snippet.thumbnails?.default?.url ||
-        `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`,
+        bestItem.snippet.thumbnails?.medium?.url ||
+        bestItem.snippet.thumbnails?.default?.url ||
+        `https://i.ytimg.com/vi/${bestItem.id.videoId}/mqdefault.jpg`,
     };
   } catch (e) {
     console.error("YouTube search failed:", e);
@@ -191,10 +229,13 @@ interface YouTubeSearchResult {
 
 /**
  * Race all available YouTube search methods in parallel.
+ * Passes expected title/artist for smarter result picking.
  * Returns the best result, preferring YTMusicPublic (has title metadata for verification).
  */
 export async function searchYouTubeRace(
-  query: string
+  query: string,
+  expectedTitle?: string,
+  expectedArtist?: string
 ): Promise<YouTubeSearchResult | null> {
   const ytMusicP: Promise<YouTubeSearchResult | null> = searchYTMusicPublic(query, "songs", 1)
     .then(({ results }: { results: Record<string, unknown>[] }) => {
@@ -209,9 +250,9 @@ export async function searchYouTubeRace(
     })
     .catch(() => null);
 
-  const ytDirectP: Promise<YouTubeSearchResult | null> = searchYouTubeDirect(query)
+  const ytDirectP: Promise<YouTubeSearchResult | null> = searchYouTubeDirect(query, expectedTitle, expectedArtist)
     .then((r) =>
-      r ? { videoId: r.videoId, thumbnail: r.thumbnail, resultTitle: null } : null
+      r ? { videoId: r.videoId, thumbnail: r.thumbnail, resultTitle: r.resultTitle } : null
     )
     .catch(() => null);
 

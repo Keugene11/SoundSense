@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
         const searchQuery = `${rec.title} ${rec.artist}`;
 
         const [ytResult, lastfm] = await Promise.all([
-          searchYouTubeRace(searchQuery),
+          searchYouTubeRace(searchQuery, rec.title, rec.artist),
           verifyTrackExists(rec.artist, rec.title),
         ]);
 
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
           reason: rec.reason,
           confidence_score: rec.confidence_score,
           status: "pending" as const,
-          _verified: verificationScore >= 0.35,
+          _verified: verificationScore >= 0.5,
           _verificationScore: verificationScore,
         };
       })
