@@ -88,6 +88,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Provide a song name or YouTube URL" }, { status: 400 });
     }
 
+    // User feedback from previous sessions
+    const liked: string[] = Array.isArray(body.liked) ? body.liked.slice(0, 50) : [];
+    const disliked: string[] = Array.isArray(body.disliked) ? body.disliked.slice(0, 50) : [];
+
     // Phase 1: Enrich seeds + get candidates in parallel
     const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
 
@@ -128,10 +132,12 @@ export async function POST(req: NextRequest) {
     const aiRecs = await generateFromSeeds(
       enrichedSeeds,
       10,
-      { previouslyRecommended: [], recentListens: [], topArtists: [], preferences: null },
+      { previouslyRecommended: disliked, recentListens: [], topArtists: [], preferences: null },
       lastfmCandidates.length > 0 ? lastfmCandidates : undefined,
       similarArtists.length > 0 ? similarArtists : undefined,
-      genreTags.length > 0 ? genreTags : undefined
+      genreTags.length > 0 ? genreTags : undefined,
+      liked.length > 0 ? liked : undefined,
+      disliked.length > 0 ? disliked : undefined
     );
 
     // Phase 3: YouTube search + verification

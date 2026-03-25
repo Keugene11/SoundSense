@@ -1,21 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import { Play, Pause, Music } from "lucide-react";
+import { Play, Pause, Music, ThumbsUp, ThumbsDown } from "lucide-react";
 import type { Recommendation } from "@/types/database";
+
+export type TrackFeedback = "liked" | "disliked" | null;
 
 interface PlaylistTrackListProps {
   tracks: Recommendation[];
   currentIndex: number | null;
   isPlaying: boolean;
+  feedback: Record<string, TrackFeedback>;
   onTrackClick: (index: number) => void;
+  onFeedback: (trackId: string, feedback: TrackFeedback) => void;
 }
 
 export function PlaylistTrackList({
   tracks,
   currentIndex,
   isPlaying,
+  feedback,
   onTrackClick,
+  onFeedback,
 }: PlaylistTrackListProps) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -23,7 +29,7 @@ export function PlaylistTrackList({
       <div className="grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2 border-b border-border text-xs text-muted-foreground uppercase tracking-wide">
         <span className="text-center">#</span>
         <span>Title</span>
-        <span className="pr-2">Match</span>
+        <span className="pr-2" />
       </div>
 
       {/* Tracks */}
@@ -32,21 +38,24 @@ export function PlaylistTrackList({
           const isActive = currentIndex === index;
           const isCurrentlyPlaying = isActive && isPlaying;
           const hasVideo = !!track.video_id;
+          const fb = feedback[track.id] ?? null;
 
           return (
-            <button
+            <div
               key={track.id}
-              onClick={() => hasVideo && onTrackClick(index)}
-              disabled={!hasVideo}
               className={`
-                w-full grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2.5
-                text-left transition-colors group
+                grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2.5
+                transition-colors group
                 ${isActive ? "bg-accent" : "hover:bg-accent/50"}
-                ${!hasVideo ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
+                ${!hasVideo ? "opacity-40" : ""}
               `}
             >
               {/* Track number / play indicator */}
-              <div className="flex items-center justify-center">
+              <button
+                onClick={() => hasVideo && onTrackClick(index)}
+                disabled={!hasVideo}
+                className="flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+              >
                 {isCurrentlyPlaying ? (
                   <div className="flex items-end gap-[2px] h-4">
                     <span className="w-[3px] bg-foreground rounded-full animate-equalizer-1" />
@@ -65,10 +74,14 @@ export function PlaylistTrackList({
                     )}
                   </>
                 )}
-              </div>
+              </button>
 
-              {/* Song info */}
-              <div className="flex items-center gap-3 min-w-0">
+              {/* Song info — clicking plays */}
+              <button
+                onClick={() => hasVideo && onTrackClick(index)}
+                disabled={!hasVideo}
+                className="flex items-center gap-3 min-w-0 text-left cursor-pointer disabled:cursor-not-allowed"
+              >
                 {track.thumbnail_url ? (
                   <Image
                     src={track.thumbnail_url}
@@ -96,17 +109,40 @@ export function PlaylistTrackList({
                     {track.album && ` \u00B7 ${track.album}`}
                   </p>
                 </div>
-              </div>
+              </button>
 
-              {/* Match score */}
-              <div className="pr-2">
-                {track.confidence_score && (
-                  <span className="text-xs text-muted-foreground">
-                    {Math.round(track.confidence_score * 100)}%
-                  </span>
-                )}
+              {/* Like / Dislike */}
+              <div className="flex items-center gap-1 pr-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFeedback(track.id, fb === "liked" ? null : "liked");
+                  }}
+                  className={`p-1.5 rounded-full transition-colors ${
+                    fb === "liked"
+                      ? "text-green-500"
+                      : "text-muted-foreground/40 hover:text-foreground opacity-0 group-hover:opacity-100"
+                  } ${fb === "liked" ? "opacity-100" : ""}`}
+                  title="Like"
+                >
+                  <ThumbsUp size={14} fill={fb === "liked" ? "currentColor" : "none"} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFeedback(track.id, fb === "disliked" ? null : "disliked");
+                  }}
+                  className={`p-1.5 rounded-full transition-colors ${
+                    fb === "disliked"
+                      ? "text-red-500"
+                      : "text-muted-foreground/40 hover:text-foreground opacity-0 group-hover:opacity-100"
+                  } ${fb === "disliked" ? "opacity-100" : ""}`}
+                  title="Dislike"
+                >
+                  <ThumbsDown size={14} fill={fb === "disliked" ? "currentColor" : "none"} />
+                </button>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>

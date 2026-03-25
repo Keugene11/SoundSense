@@ -1,16 +1,40 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlaylistPlayer } from "@/components/playlist-player";
-import { PlaylistTrackList } from "@/components/playlist-track-list";
+import { PlaylistTrackList, type TrackFeedback } from "@/components/playlist-track-list";
 import { toast } from "sonner";
 import { Loader2, Sparkles } from "lucide-react";
 import type { Recommendation, SeedSong } from "@/types/database";
 
 interface DiscoverClientProps {
   initialSeeds: SeedSong[];
+}
+
+interface FeedbackEntry {
+  title: string;
+  artist: string;
+  feedback: "liked" | "disliked";
+}
+
+const FEEDBACK_KEY = "soundsense_feedback";
+
+function loadFeedbackHistory(): FeedbackEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveFeedbackHistory(entries: FeedbackEntry[]) {
+  try {
+    // Keep last 100 entries
+    localStorage.setItem(FEEDBACK_KEY, JSON.stringify(entries.slice(-100)));
+  } catch {}
 }
 
 export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
@@ -24,9 +48,47 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Feedback state: trackId -> liked/disliked/null
+  const [feedback, setFeedback] = useState<Record<string, TrackFeedback>>({});
+  const [feedbackHistory, setFeedbackHistory] = useState<FeedbackEntry[]>([]);
+
+  // Load feedback history from localStorage on mount
+  useEffect(() => {
+    setFeedbackHistory(loadFeedbackHistory());
+  }, []);
+
   const playableIndices = recommendations
     .map((rec, i) => (rec.video_id ? i : -1))
     .filter((i) => i !== -1);
+
+  const handleFeedback = useCallback(
+    (trackId: string, fb: TrackFeedback) => {
+      setFeedback((prev) => ({ ...prev, [trackId]: fb }));
+
+      // Find the track and update persistent history
+      const track = recommendations.find((r) => r.id === trackId);
+      if (!track) return;
+
+      setFeedbackHistory((prev) => {
+        // Remove any existing entry for this song
+        const filtered = prev.filter(
+          (e) =>
+            !(
+              e.title.toLowerCase() === track.title.toLowerCase() &&
+              e.artist.toLowerCase() === track.artist.toLowerCase()
+            )
+        );
+        // Add new entry if not null
+        const updated =
+          fb !== null
+            ? [...filtered, { title: track.title, artist: track.artist, feedback: fb }]
+            : filtered;
+        saveFeedbackHistory(updated);
+        return updated;
+      });
+    },
+    [recommendations]
+  );
 
   const addSeed = async () => {
     const trimmed = input.trim();
@@ -92,12 +154,20 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
     setGenerating(true);
     setCurrentIndex(null);
     setIsPlaying(false);
+    setFeedback({});
+
+    // Build feedback context from history
+    const liked = feedbackHistory.filter((e) => e.feedback === "liked");
+    const disliked = feedbackHistory.filter((e) => e.feedback === "disliked");
+
     try {
       const res = await fetch("/api/recommendations/discover", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           seeds: seeds.map((s) => ({ title: s.title, artist: s.artist })),
+          liked: liked.map((e) => `${e.title} by ${e.artist}`),
+          disliked: disliked.map((e) => `${e.title} by ${e.artist}`),
         }),
       });
       const data = await res.json();
@@ -173,6 +243,8 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
   }, []);
 
   const hasPlaylist = recommendations.length > 0;
+  const likedCount = feedbackHistory.filter((e) => e.feedback === "liked").length;
+  const dislikedCount = feedbackHistory.filter((e) => e.feedback === "disliked").length;
 
   return (
     <div className={`space-y-6 ${hasPlaylist && currentIndex !== null ? "pb-24" : ""}`}>
@@ -221,23 +293,30 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
           </Button>
         </div>
 
-        <Button
-          onClick={handleGenerate}
-          disabled={generating || seeds.length === 0}
-          className="gap-2"
-        >
-          {generating ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Generating playlist...
-            </>
-          ) : (
-            <>
-              <Sparkles size={16} />
-              Generate Playlist
-            </>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleGenerate}
+            disabled={generating || seeds.length === 0}
+            className="gap-2"
+          >
+            {generating ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Generating playlist...
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} />
+                Generate Playlist
+              </>
+            )}
+          </Button>
+          {(likedCount > 0 || dislikedCount > 0) && (
+            <p className="text-xs text-muted-foreground">
+              Your taste profile: {likedCount} liked, {dislikedCount} disliked
+            </p>
           )}
-        </Button>
+        </div>
       </div>
 
       {/* Playlist */}
@@ -256,7 +335,9 @@ export function DiscoverClient({ initialSeeds }: DiscoverClientProps) {
             tracks={recommendations}
             currentIndex={currentIndex}
             isPlaying={isPlaying}
+            feedback={feedback}
             onTrackClick={playIndex}
+            onFeedback={handleFeedback}
           />
         </div>
       )}

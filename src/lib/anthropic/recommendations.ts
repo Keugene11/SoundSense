@@ -173,7 +173,9 @@ export async function generateFromSeeds(
   context?: SeedContext,
   candidates?: CandidateTrack[],
   similarArtists?: string[],
-  genreTags?: string[]
+  genreTags?: string[],
+  likedSongs?: string[],
+  dislikedSongs?: string[]
 ): Promise<AIRecommendation[]> {
   const seedList = seeds
     .map((s) => {
@@ -268,16 +270,29 @@ Use these tags as your PRIMARY filter. If a song doesn't match this sonic territ
     ? `\n## BANNED ARTISTS (do NOT recommend any song by these artists — not even as a featured artist):\n${seedArtists.map((a) => `- ${a}`).join("\n")}\nThe user already knows these artists. Recommending their other songs is lazy curation. Show the user something NEW. This includes songs where they appear as a featured artist (feat.), collaborator, or under any variation of their name.\n`
     : "";
 
+  let feedbackSection = "";
+  if (likedSongs?.length || dislikedSongs?.length) {
+    feedbackSection += "\n## User Taste Feedback\n";
+    if (likedSongs?.length) {
+      feedbackSection += `Songs they LIKED (recommend more like these):\n${likedSongs.map((s) => `- ${s}`).join("\n")}\n`;
+    }
+    if (dislikedSongs?.length) {
+      feedbackSection += `Songs they DISLIKED (avoid anything similar to these):\n${dislikedSongs.map((s) => `- ${s}`).join("\n")}\n`;
+    }
+  }
+
   const prompt = `Recommend ${requestCount} songs based on these seeds:
 
 ${seedList}
-${bannedArtistsLine}${genreSection}${candidateSection}${similarArtistsSection}${contextSections}${avoidSection}
+${bannedArtistsLine}${genreSection}${candidateSection}${similarArtistsSection}${feedbackSection}${contextSections}${avoidSection}
 PRIORITIES:
 1. Every song must ACTUALLY EXIST with the exact title and artist you provide. This is the most important rule.
 2. ${candidates?.length ? "Strongly prefer songs from the Verified Similar Songs list — use their EXACT spelling. Fill remaining slots with songs you're 100% certain are real." : "Only recommend songs you are 100% certain are real. When in doubt, leave it out."}
 3. Songs should match the vibe, energy, and genre of the seeds — they should feel like they belong on the same playlist.
 4. No songs by the seed artists. No songs already recommended. One song per artist max.
 5. Mix well-known tracks with deeper cuts. Avoid the most obvious/overplayed hits.
+${likedSongs?.length ? "6. Pay close attention to what the user liked — lean into that sound and energy." : ""}
+${dislikedSongs?.length ? "7. Avoid songs that sound like the disliked ones. Do NOT recommend any disliked song again." : ""}
 
 For each song, write a short reason (1 sentence) explaining why it fits — mention a specific musical quality.
 
