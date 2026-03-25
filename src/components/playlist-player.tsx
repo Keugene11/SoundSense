@@ -43,38 +43,51 @@ export function PlaylistPlayer({
   onEnded,
   onTrackReady,
 }: PlaylistPlayerProps) {
-  const playerRef = useRef<YouTubePlayerHandle>(null);
+  const handleRef = useRef<YouTubePlayerHandle | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(80);
   const [muted, setMuted] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
   const progressRef = useRef<HTMLDivElement>(null);
   const prevVolume = useRef(80);
 
   const currentTrack =
     currentIndex !== null ? tracks[currentIndex] : null;
 
+  // Reset ready state when track changes
+  useEffect(() => {
+    setPlayerReady(false);
+    handleRef.current = null;
+  }, [currentIndex]);
+
+  const onPlayerReady = useCallback((handle: YouTubePlayerHandle) => {
+    handleRef.current = handle;
+    setPlayerReady(true);
+    onTrackReady?.();
+  }, [onTrackReady]);
+
   // Sync play/pause state with player
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerReady || !handleRef.current) return;
     if (isPlaying) {
-      playerRef.current.play();
+      handleRef.current.play();
     } else {
-      playerRef.current.pause();
+      handleRef.current.pause();
     }
-  }, [isPlaying]);
+  }, [isPlaying, playerReady]);
 
   // Sync volume with player
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerReady || !handleRef.current) return;
     if (muted) {
-      playerRef.current.mute();
+      handleRef.current.mute();
     } else {
-      playerRef.current.unmute();
-      playerRef.current.setVolume(volume);
+      handleRef.current.unmute();
+      handleRef.current.setVolume(volume);
     }
-  }, [volume, muted]);
+  }, [volume, muted, playerReady]);
 
   const handleProgress = useCallback((time: number, dur: number) => {
     if (!isSeeking) {
@@ -85,14 +98,13 @@ export function PlaylistPlayer({
 
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!progressRef.current || !playerRef.current || duration === 0) return;
+      if (!progressRef.current || !handleRef.current || duration === 0) return;
       const rect = progressRef.current.getBoundingClientRect();
       const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       const seekTime = fraction * duration;
       setCurrentTime(seekTime);
       setIsSeeking(true);
-      playerRef.current.seekTo(seekTime);
-      // Allow progress updates again after a short delay
+      handleRef.current.seekTo(seekTime);
       setTimeout(() => setIsSeeking(false), 600);
     },
     [duration]
@@ -136,11 +148,10 @@ export function PlaylistPlayer({
       {currentTrack.video_id && (
         <YouTubePlayer
           key={currentTrack.video_id + "-" + currentIndex}
-          ref={playerRef}
           videoId={currentTrack.video_id}
           hidden
           onEnded={onEnded}
-          onReady={onTrackReady}
+          onReady={onPlayerReady}
           onProgress={handleProgress}
           onPlay={onPlay}
           onPause={onPause}

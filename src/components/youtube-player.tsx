@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 declare global {
   interface Window {
@@ -24,7 +24,7 @@ interface YouTubePlayerProps {
   videoId: string;
   hidden?: boolean;
   onEnded?: () => void;
-  onReady?: () => void;
+  onReady?: (handle: YouTubePlayerHandle) => void;
   onPlay?: () => void;
   onPause?: () => void;
   onProgress?: (currentTime: number, duration: number) => void;
@@ -70,127 +70,127 @@ function onApiReady(cb: () => void) {
   }
 }
 
-export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
-  function YouTubePlayer({ videoId, hidden, onEnded, onReady, onPlay, onPause, onProgress }, ref) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const playerRef = useRef<YT.Player | null>(null);
-    const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-    const callbackRefs = useRef({ onEnded, onReady, onPlay, onPause, onProgress });
+function makeHandle(player: YT.Player): YouTubePlayerHandle {
+  return {
+    play: () => { try { player.playVideo(); } catch {} },
+    pause: () => { try { player.pauseVideo(); } catch {} },
+    seekTo: (s) => { try { player.seekTo(s, true); } catch {} },
+    getDuration: () => { try { return player.getDuration(); } catch { return 0; } },
+    getCurrentTime: () => { try { return player.getCurrentTime(); } catch { return 0; } },
+    setVolume: (v) => { try { player.setVolume(v); } catch {} },
+    mute: () => { try { player.mute(); } catch {} },
+    unmute: () => { try { player.unMute(); } catch {} },
+  };
+}
 
-    useEffect(() => {
-      callbackRefs.current = { onEnded, onReady, onPlay, onPause, onProgress };
-    });
+export function YouTubePlayer({ videoId, hidden, onEnded, onReady, onPlay, onPause, onProgress }: YouTubePlayerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<YT.Player | null>(null);
+  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const callbackRefs = useRef({ onEnded, onReady, onPlay, onPause, onProgress });
 
-    const isReady = () =>
-      playerRef.current && typeof playerRef.current.playVideo === "function";
+  useEffect(() => {
+    callbackRefs.current = { onEnded, onReady, onPlay, onPause, onProgress };
+  });
 
-    useImperativeHandle(ref, () => ({
-      play: () => { if (isReady()) playerRef.current!.playVideo(); },
-      pause: () => { if (isReady()) playerRef.current!.pauseVideo(); },
-      seekTo: (seconds: number) => { if (isReady()) playerRef.current!.seekTo(seconds, true); },
-      getDuration: () => (isReady() ? playerRef.current!.getDuration() : 0),
-      getCurrentTime: () => (isReady() ? playerRef.current!.getCurrentTime() : 0),
-      setVolume: (volume: number) => { if (isReady()) playerRef.current!.setVolume(volume); },
-      mute: () => { if (isReady()) playerRef.current!.mute(); },
-      unmute: () => { if (isReady()) playerRef.current!.unMute(); },
-    }));
-
-    const startProgressTracking = useCallback(() => {
-      if (progressInterval.current) clearInterval(progressInterval.current);
-      progressInterval.current = setInterval(() => {
-        if (playerRef.current) {
-          const current = playerRef.current.getCurrentTime?.() ?? 0;
-          const duration = playerRef.current.getDuration?.() ?? 0;
+  const startProgressTracking = useCallback(() => {
+    if (progressInterval.current) clearInterval(progressInterval.current);
+    progressInterval.current = setInterval(() => {
+      const p = playerRef.current;
+      if (p) {
+        try {
+          const current = p.getCurrentTime();
+          const duration = p.getDuration();
           if (duration > 0) {
             callbackRefs.current.onProgress?.(current, duration);
           }
-        }
-      }, 500);
-    }, []);
-
-    const stopProgressTracking = useCallback(() => {
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-        progressInterval.current = null;
-      }
-    }, []);
-
-    const initPlayer = useCallback(() => {
-      if (!containerRef.current) return;
-
-      if (playerRef.current) {
-        try {
-          playerRef.current.destroy();
         } catch {}
-        playerRef.current = null;
       }
-      stopProgressTracking();
+    }, 500);
+  }, []);
 
-      const div = document.createElement("div");
-      containerRef.current.innerHTML = "";
-      containerRef.current.appendChild(div);
+  const stopProgressTracking = useCallback(() => {
+    if (progressInterval.current) {
+      clearInterval(progressInterval.current);
+      progressInterval.current = null;
+    }
+  }, []);
 
-      playerRef.current = new window.YT.Player(div, {
-        videoId,
-        height: hidden ? "1" : "100%",
-        width: hidden ? "1" : "100%",
-        playerVars: {
-          autoplay: 1,
-          modestbranding: 1,
-          rel: 0,
-          origin: window.location.origin,
-        },
-        events: {
-          onReady: (event: YT.PlayerEvent) => {
-            if (!hidden) {
-              const iframe = event.target.getIframe();
+  const initPlayer = useCallback(() => {
+    if (!containerRef.current) return;
+
+    if (playerRef.current) {
+      try { playerRef.current.destroy(); } catch {}
+      playerRef.current = null;
+    }
+    stopProgressTracking();
+
+    const div = document.createElement("div");
+    containerRef.current.innerHTML = "";
+    containerRef.current.appendChild(div);
+
+    playerRef.current = new window.YT.Player(div, {
+      videoId,
+      height: hidden ? "1" : "100%",
+      width: hidden ? "1" : "100%",
+      playerVars: {
+        autoplay: 1,
+        modestbranding: 1,
+        rel: 0,
+        origin: window.location.origin,
+      },
+      events: {
+        onReady: () => {
+          if (!hidden && playerRef.current) {
+            try {
+              const iframe = playerRef.current.getIframe();
               iframe.style.width = "100%";
               iframe.style.height = "100%";
-            }
-            callbackRefs.current.onReady?.();
-          },
-          onStateChange: (event: YT.OnStateChangeEvent) => {
-            if (event.data === window.YT.PlayerState.ENDED) {
-              stopProgressTracking();
-              callbackRefs.current.onEnded?.();
-            } else if (event.data === window.YT.PlayerState.PLAYING) {
-              startProgressTracking();
-              callbackRefs.current.onPlay?.();
-            } else if (event.data === window.YT.PlayerState.PAUSED) {
-              stopProgressTracking();
-              callbackRefs.current.onPause?.();
-            }
-          },
+            } catch {}
+          }
+          if (playerRef.current) {
+            callbackRefs.current.onReady?.(makeHandle(playerRef.current));
+          }
         },
-      });
-    }, [videoId, hidden, startProgressTracking, stopProgressTracking]);
+        onStateChange: (event: YT.OnStateChangeEvent) => {
+          if (event.data === window.YT.PlayerState.ENDED) {
+            stopProgressTracking();
+            callbackRefs.current.onEnded?.();
+          } else if (event.data === window.YT.PlayerState.PLAYING) {
+            startProgressTracking();
+            callbackRefs.current.onPlay?.();
+          } else if (event.data === window.YT.PlayerState.PAUSED) {
+            stopProgressTracking();
+            callbackRefs.current.onPause?.();
+          }
+        },
+      },
+    });
+  }, [videoId, hidden, startProgressTracking, stopProgressTracking]);
 
-    useEffect(() => {
-      onApiReady(initPlayer);
+  useEffect(() => {
+    onApiReady(initPlayer);
 
-      return () => {
-        stopProgressTracking();
-        if (playerRef.current) {
-          try {
-            playerRef.current.destroy();
-          } catch {}
-          playerRef.current = null;
-        }
-      };
-    }, [initPlayer, stopProgressTracking]);
+    return () => {
+      stopProgressTracking();
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
+      }
+    };
+  }, [initPlayer, stopProgressTracking]);
 
-    if (hidden) {
-      return (
-        <div className="fixed -top-[9999px] -left-[9999px] w-px h-px overflow-hidden" aria-hidden>
-          <div ref={containerRef} />
-        </div>
-      );
-    }
-
+  if (hidden) {
     return (
-      <div className="aspect-video w-full max-w-sm overflow-hidden rounded-md">
-        <div ref={containerRef} className="h-full w-full" />
+      <div className="fixed -top-[9999px] -left-[9999px] w-px h-px overflow-hidden" aria-hidden>
+        <div ref={containerRef} />
       </div>
     );
   }
-);
+
+  return (
+    <div className="aspect-video w-full max-w-sm overflow-hidden rounded-md">
+      <div ref={containerRef} className="h-full w-full" />
+    </div>
+  );
+}
