@@ -14,8 +14,6 @@ interface DiscoverClientProps {
   isLoggedIn: boolean;
 }
 
-const PENDING_SEED_KEY = "soundsense_pending_seed";
-
 interface FeedbackEntry {
   title: string;
   artist: string;
@@ -59,38 +57,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
   useEffect(() => {
     setFeedbackHistory(loadFeedbackHistory());
   }, []);
-
-  // Restore pending seed after login redirect
-  const [pendingGenerate, setPendingGenerate] = useState(false);
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    try {
-      const raw = localStorage.getItem(PENDING_SEED_KEY);
-      if (!raw) return;
-      localStorage.removeItem(PENDING_SEED_KEY);
-      const pending = JSON.parse(raw) as { title: string; artist: string };
-      if (pending.title) {
-        const seed: SeedSong = {
-          id: crypto.randomUUID(),
-          user_id: "pending",
-          title: pending.title,
-          artist: pending.artist || "",
-          created_at: new Date().toISOString(),
-        };
-        setSeeds([seed]);
-        setPendingGenerate(true);
-      }
-    } catch {}
-  }, [isLoggedIn]);
-
-  // Auto-generate after restoring pending seed
-  useEffect(() => {
-    if (pendingGenerate && seeds.length > 0 && !generating) {
-      setPendingGenerate(false);
-      handleGenerate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingGenerate, seeds]);
 
   const playableIndices = recommendations
     .map((rec, i) => (rec.video_id ? i : -1))
@@ -176,18 +142,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
 
   const handleGenerate = async () => {
     if (seeds.length === 0) {
-      return;
-    }
-
-    if (!isLoggedIn) {
-      // Save seed so we can restore after login
-      try {
-        localStorage.setItem(
-          PENDING_SEED_KEY,
-          JSON.stringify({ title: seeds[0].title, artist: seeds[0].artist })
-        );
-      } catch {}
-      window.location.href = "/login";
       return;
     }
 
