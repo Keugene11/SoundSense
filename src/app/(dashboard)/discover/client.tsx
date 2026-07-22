@@ -243,7 +243,7 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Discover</h1>
         <p className="mt-1 text-muted-foreground">
-          Enter a song you like and we&apos;ll create a playlist for you.
+          Enter a song you like and we&apos;ll generate song recs for you.
         </p>
       </div>
 
@@ -293,12 +293,12 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
             {generating ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Generating playlist...
+                Generating song recs...
               </>
             ) : (
               <>
                 <Sparkles size={16} />
-                Generate Playlist
+                Generate Song Recs
               </>
             )}
           </Button>
@@ -310,12 +310,12 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
         </div>
       </div>
 
-      {/* Playlist */}
+      {/* Recommendations */}
       {hasPlaylist && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">
-              Your Playlist
+              Your Song Recs
               <span className="ml-2 text-sm font-normal text-muted-foreground">
                 {playableIndices.length} tracks
               </span>

@@ -9,8 +9,6 @@ import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/discover", label: "Discover" },
-  { href: "/library", label: "Library" },
-  { href: "/settings", label: "Settings" },
 ];
 
 interface NavSidebarProps {
