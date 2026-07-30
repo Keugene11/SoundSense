@@ -73,131 +73,95 @@ export async function POST(req: NextRequest) {
     const userId = await getSessionUserId();
     const body = await req.json();
 
-    let seeds: { title: string; artist: string }[];
+    const rawQuery = body.query && typeof body.query === "string" ? body.query.trim() : null;
+    const rawSeeds = Array.isArray(body.seeds) && body.seeds.length > 0 ? body.seeds.slice(0, 1) : null;
 
-    if (body.query && typeof body.query === "string") {
-      const resolved = await resolveSeed(body.query.trim());
-      seeds = [resolved];
-    } else if (Array.isArray(body.seeds) && body.seeds.length > 0) {
-      seeds = body.seeds.slice(0, 1);
-    } else {
+    if (!rawQuery && !rawSeeds) {
       return NextResponse.json({ error: "Provide a song name or YouTube URL" }, { status: 400 });
     }
 
     const liked: string[] = Array.isArray(body.liked) ? body.liked.slice(0, 50) : [];
     const disliked: string[] = Array.isArray(body.disliked) ? body.disliked.slice(0, 50) : [];
 
-    const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
-
-    // Phase 1: all external data in parallel, with timeouts so slow APIs don't block
-    const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists, genreTags] = await Promise.all([
-      Promise.all(
-        seeds.map(async (seed) => {
-          const lookup = await lookupSeedSong(seed.title, seed.artist);
-          if (lookup) {
-            return {
-              title: seed.title,
-              artist: seed.artist,
-              youtubeTitle: lookup.resolvedTitle,
-              youtubeArtist: lookup.resolvedArtist,
-            };
-          }
-          return { title: seed.title, artist: seed.artist };
-        })
-      ),
-      getCandidatesForSeeds(seeds).catch(() => [] as { title: string; artist: string; matchScore: number }[]),
-      Promise.race([
-        getSimilarArtistsTD(seedArtists),
-        new Promise<string[]>((r) => setTimeout(() => r([]), 4000)),
-      ]).catch(() => [] as string[]),
-      Promise.race([
-        getSimilarArtistsLB(seedArtists),
-        new Promise<string[]>((r) => setTimeout(() => r([]), 4000)),
-      ]).catch(() => [] as string[]),
-      Promise.race([
-        getGenreTagsForSeeds(seeds),
-        new Promise<string[]>((r) => setTimeout(() => r([]), 4000)),
-      ]).catch(() => [] as string[]),
-    ]);
-
-    const seedArtistLower = new Set(seedArtists.map((a) => a.toLowerCase()));
-    const seenArtists = new Set<string>();
-    const similarArtists: string[] = [];
-    for (const name of [...tdArtists, ...lbArtists]) {
-      const lower = name.toLowerCase();
-      if (!seenArtists.has(lower) && !seedArtistLower.has(lower)) {
-        seenArtists.add(lower);
-        similarArtists.push(name);
-      }
-    }
-
-    if (lastfmCandidates.length === 0 && similarArtists.length === 0 && seedArtists.length > 0) {
-      const fallbackResults = await Promise.all(
-        seedArtists.map(async (artist) => {
-          const [lfmSimilar, topTracks] = await Promise.all([
-            getSimilarArtistsLFM(artist, 15).catch(() => []),
-            getArtistTopTracks(artist, 10).catch(() => []),
-          ]);
-          return { lfmSimilar, topTracks };
-        })
-      );
-
-      for (const { lfmSimilar, topTracks } of fallbackResults) {
-        for (const name of lfmSimilar) {
-          const lower = name.toLowerCase();
-          if (!seenArtists.has(lower) && !seedArtistLower.has(lower)) {
-            seenArtists.add(lower);
-            similarArtists.push(name);
-          }
-        }
-        for (const t of topTracks) {
-          if (!seedArtistLower.has(t.artist.toLowerCase())) {
-            lastfmCandidates.push({ title: t.title, artist: t.artist, matchScore: 0.3, url: "" });
-          }
-        }
-      }
-    }
-
-    // Phase 2: AI generation
-    const aiRecs = await generateFromSeeds(
-      enrichedSeeds,
-      10,
-      { previouslyRecommended: disliked, recentListens: [], topArtists: [], preferences: null },
-      lastfmCandidates.length > 0 ? lastfmCandidates : undefined,
-      similarArtists.length > 0 ? similarArtists : undefined,
-      genreTags.length > 0 ? genreTags : undefined,
-      liked.length > 0 ? liked : undefined,
-      disliked.length > 0 ? disliked : undefined
-    );
-
-    // Phase 3: Stream each rec to the client as soon as it's verified
+    // Start streaming immediately — seed resolution fires first chunk as soon as it resolves
     const encoder = new TextEncoder();
     type DbRec = {
-      user_id: string;
-      title: string;
-      artist: string;
-      album: string | null;
-      video_id: string;
-      thumbnail_url: string | null;
-      reason: string;
-      confidence_score: number;
-      status: "pending";
+      user_id: string; title: string; artist: string; album: string | null;
+      video_id: string; thumbnail_url: string | null; reason: string;
+      confidence_score: number; status: "pending";
     };
     const dbRecs: DbRec[] = [];
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // First chunk: resolved seed so the UI can show the real song name
-          const resolvedSeed = enrichedSeeds[0];
+          // Step 1: resolve seed and send to client immediately (~1-2s, not 20s)
+          const seeds: { title: string; artist: string }[] = rawQuery
+            ? [await resolveSeed(rawQuery)]
+            : rawSeeds!;
+
           controller.enqueue(encoder.encode(JSON.stringify({
             _type: "seed",
-            title: resolvedSeed?.title ?? seeds[0]?.title ?? "",
-            artist: resolvedSeed?.artist ?? seeds[0]?.artist ?? "",
+            title: seeds[0]?.title ?? "",
+            artist: seeds[0]?.artist ?? "",
           }) + "\n"));
 
-          let sentCount = 0;
+          // Step 2: all external enrichment in parallel
+          const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
+          const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists, genreTags] = await Promise.all([
+            Promise.all(seeds.map(async (seed) => {
+              const lookup = await lookupSeedSong(seed.title, seed.artist);
+              return lookup
+                ? { title: seed.title, artist: seed.artist, youtubeTitle: lookup.resolvedTitle, youtubeArtist: lookup.resolvedArtist }
+                : { title: seed.title, artist: seed.artist };
+            })),
+            getCandidatesForSeeds(seeds).catch(() => [] as { title: string; artist: string; matchScore: number }[]),
+            Promise.race([getSimilarArtistsTD(seedArtists), new Promise<string[]>((r) => setTimeout(() => r([]), 4000))]).catch(() => [] as string[]),
+            Promise.race([getSimilarArtistsLB(seedArtists), new Promise<string[]>((r) => setTimeout(() => r([]), 4000))]).catch(() => [] as string[]),
+            Promise.race([getGenreTagsForSeeds(seeds), new Promise<string[]>((r) => setTimeout(() => r([]), 4000))]).catch(() => [] as string[]),
+          ]);
 
+          const seedArtistLower = new Set(seedArtists.map((a) => a.toLowerCase()));
+          const seenArtists = new Set<string>();
+          const similarArtists: string[] = [];
+          for (const name of [...tdArtists, ...lbArtists]) {
+            const lower = name.toLowerCase();
+            if (!seenArtists.has(lower) && !seedArtistLower.has(lower)) {
+              seenArtists.add(lower);
+              similarArtists.push(name);
+            }
+          }
+
+          if (lastfmCandidates.length === 0 && similarArtists.length === 0 && seedArtists.length > 0) {
+            const fallback = await Promise.all(seedArtists.map(async (artist) => ({
+              lfmSimilar: await getSimilarArtistsLFM(artist, 15).catch(() => []),
+              topTracks: await getArtistTopTracks(artist, 10).catch(() => []),
+            })));
+            for (const { lfmSimilar, topTracks } of fallback) {
+              for (const name of lfmSimilar) {
+                const lower = name.toLowerCase();
+                if (!seenArtists.has(lower) && !seedArtistLower.has(lower)) { seenArtists.add(lower); similarArtists.push(name); }
+              }
+              for (const t of topTracks) {
+                if (!seedArtistLower.has(t.artist.toLowerCase()))
+                  lastfmCandidates.push({ title: t.title, artist: t.artist, matchScore: 0.3, url: "" });
+              }
+            }
+          }
+
+          // Step 3: AI generation
+          const aiRecs = await generateFromSeeds(
+            enrichedSeeds, 10,
+            { previouslyRecommended: disliked, recentListens: [], topArtists: [], preferences: null },
+            lastfmCandidates.length > 0 ? lastfmCandidates : undefined,
+            similarArtists.length > 0 ? similarArtists : undefined,
+            genreTags.length > 0 ? genreTags : undefined,
+            liked.length > 0 ? liked : undefined,
+            disliked.length > 0 ? disliked : undefined,
+          );
+
+          // Step 4: verify + stream each track as soon as it's ready
+          let sentCount = 0;
           await Promise.all(
             aiRecs.map(async (rec) => {
               const searchQuery = `${rec.title} ${rec.artist}`;
@@ -261,10 +225,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Discover recommendations error:", error);
-    return NextResponse.json(
-      { error: "Failed to generate recommendations" },
-      { status: 500 }
-    );
+    console.error("Discover route error:", error);
+    return NextResponse.json({ error: "Failed to generate recommendations" }, { status: 500 });
   }
 }
