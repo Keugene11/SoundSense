@@ -72,6 +72,11 @@ export function PlaylistPlayer({
   const onPlayerReady = useCallback((handle: YouTubePlayerHandle) => {
     handleRef.current = handle;
     setPlayerReady(true);
+    // Always play immediately when a new track's player is ready.
+    // We can't rely on the isPlaying effect because the dying player's async
+    // onPause event may have set isPlaying=false after we set it to true,
+    // making setIsPlaying(true) a no-op that never re-triggers the effect.
+    handle.play();
     onTrackReady?.();
   }, [onTrackReady]);
 

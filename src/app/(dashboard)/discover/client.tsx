@@ -7,10 +7,9 @@ import { PlaylistPlayer } from "@/components/playlist-player";
 import { PlaylistTrackList, type TrackFeedback } from "@/components/playlist-track-list";
 
 import { Loader2, Sparkles, Music } from "lucide-react";
-import type { Recommendation, SeedSong } from "@/types/database";
+import type { Recommendation } from "@/types/database";
 
 interface DiscoverClientProps {
-  initialSeeds: SeedSong[];
   isLoggedIn: boolean;
 }
 
@@ -37,12 +36,11 @@ function saveFeedbackHistory(entries: FeedbackEntry[]) {
   } catch {}
 }
 
-export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps) {
-  const [seeds, setSeeds] = useState<SeedSong[]>(initialSeeds);
+export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
   const [input, setInput] = useState("");
+  const [currentSeed, setCurrentSeed] = useState("");
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [generating, setGenerating] = useState(false);
-  const [adding, setAdding] = useState(false);
   const [streamingMore, setStreamingMore] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
@@ -83,45 +81,12 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
     [recommendations]
   );
 
-  const addSeed = async () => {
-    const trimmed = input.trim();
-    if (!trimmed) return;
+  const handleGenerate = useCallback(async (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed || generating) return;
 
-    if (seeds.length > 0) {
-      for (const s of seeds) {
-        try {
-          await fetch("/api/seeds", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: s.id }),
-          });
-        } catch {}
-      }
-      setSeeds([]);
-    }
-
+    setCurrentSeed(trimmed);
     setInput("");
-    setAdding(true);
-
-    try {
-      const res = await fetch("/api/seeds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: trimmed }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      const seed = data.seeds ? data.seeds[0] : data.seed;
-      setSeeds([seed]);
-    } catch {
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  const handleGenerate = async () => {
-    if (seeds.length === 0) return;
-
     setGenerating(true);
     setStreamingMore(false);
     setRecommendations([]);
@@ -140,7 +105,7 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          seeds: seeds.map((s) => ({ title: s.title, artist: s.artist })),
+          query: trimmed,
           liked: liked.map((e) => `${e.title} by ${e.artist}`),
           disliked: disliked.map((e) => `${e.title} by ${e.artist}`),
         }),
@@ -186,7 +151,11 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
       setGenerating(false);
       setStreamingMore(false);
     }
-  };
+  }, [generating, feedbackHistory]);
+
+  const handleSubmit = useCallback(() => {
+    if (input.trim()) handleGenerate(input);
+  }, [input, handleGenerate]);
 
   const playIndex = useCallback(
     (index: number) => {
@@ -245,82 +214,69 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Discover</h1>
         <p className="mt-1 text-muted-foreground">
-          Enter a song you like and we&apos;ll generate song recs for you.
+          Enter a song you love and we&apos;ll build you a playlist.
         </p>
       </div>
 
       <div className="space-y-3">
-        {seeds.length > 0 && (
+        {currentSeed && (
           <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Generating based on</p>
-              <p className="truncate text-sm font-semibold mt-0.5">
-                {seeds[0].title}
-                {seeds[0].artist && (
-                  <span className="font-normal text-muted-foreground"> &middot; {seeds[0].artist}</span>
-                )}
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                {generating || streamingMore ? "Generating based on" : "Generated from"}
               </p>
+              <p className="truncate text-sm font-semibold mt-0.5">{currentSeed}</p>
             </div>
           </div>
         )}
+
         <div className="flex gap-2">
           <Input
-            placeholder={seeds.length > 0 ? "Try a different song..." : "Song name or YouTube link"}
+            placeholder={currentSeed ? "Try a different song..." : "Song name or YouTube link"}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                addSeed();
+                handleSubmit();
               }
             }}
-            disabled={adding}
+            disabled={generating}
           />
           <Button
-            variant="outline"
-            onClick={addSeed}
-            disabled={!input.trim() || adding}
-          >
-            {adding ? "Finding..." : seeds.length > 0 ? "Replace" : "Add"}
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={handleGenerate}
-            disabled={generating || seeds.length === 0}
-            className="gap-2"
+            onClick={handleSubmit}
+            disabled={!input.trim() || generating}
+            className="gap-2 shrink-0"
           >
             {generating ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Generating song recs...
+                Generating...
               </>
             ) : (
               <>
                 <Sparkles size={16} />
-                Generate Song Recs
+                Generate
               </>
             )}
           </Button>
-          {likedCount > 0 || dislikedCount > 0 ? (
-            <p className="text-xs text-muted-foreground">
-              Your taste profile: {likedCount} liked, {dislikedCount} disliked
-            </p>
-          ) : null}
         </div>
+
+        {(likedCount > 0 || dislikedCount > 0) && (
+          <p className="text-xs text-muted-foreground">
+            Taste profile: {likedCount} liked · {dislikedCount} disliked
+          </p>
+        )}
       </div>
 
       {hasPlaylist && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
-              Your Song Recs
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {playableIndices.length} tracks
-              </span>
-            </h2>
-          </div>
+          <h2 className="text-lg font-semibold">
+            Your Playlist
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              {playableIndices.length} tracks
+            </span>
+          </h2>
 
           <PlaylistTrackList
             tracks={recommendations}
