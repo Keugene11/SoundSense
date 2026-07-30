@@ -263,8 +263,8 @@ export function PlaylistPlayer({
           </div>
 
           {/* Right: Volume */}
-          <div className="hidden sm:flex items-center gap-2 justify-end">
-            <button onClick={toggleMute} className="p-1 text-muted-foreground hover:text-foreground transition-colors">
+          <div className="flex items-center gap-2 justify-end">
+            <button onClick={toggleMute} className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <VolumeIcon size={16} />
             </button>
             <input
@@ -273,7 +273,7 @@ export function PlaylistPlayer({
               max={100}
               value={effectiveVolume}
               onChange={handleVolumeChange}
-              className="w-24 h-1 accent-foreground cursor-pointer"
+              className="w-16 sm:w-24 h-1 accent-foreground cursor-pointer"
             />
           </div>
         </div>
