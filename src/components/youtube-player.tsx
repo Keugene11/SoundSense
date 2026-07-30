@@ -87,7 +87,13 @@ export function YouTubePlayer({ videoId, hidden, onEnded, onReady, onPlay, onPau
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YT.Player | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const callbackRefs = useRef({ onEnded, onReady, onPlay, onPause, onProgress });
+  const callbackRefs = useRef<{
+    onEnded?: () => void;
+    onReady?: (handle: YouTubePlayerHandle) => void;
+    onPlay?: () => void;
+    onPause?: () => void;
+    onProgress?: (currentTime: number, duration: number) => void;
+  }>({ onEnded, onReady, onPlay, onPause, onProgress });
 
   useEffect(() => {
     callbackRefs.current = { onEnded, onReady, onPlay, onPause, onProgress };
@@ -172,6 +178,9 @@ export function YouTubePlayer({ videoId, hidden, onEnded, onReady, onPlay, onPau
     onApiReady(initPlayer);
 
     return () => {
+      // Clear callbacks BEFORE destroying — prevents the dying player's onPause/onStateChange
+      // events from corrupting isPlaying state in the parent (causing the next track to pause immediately)
+      callbackRefs.current = { onEnded: undefined, onReady: undefined, onPlay: undefined, onPause: undefined, onProgress: undefined };
       stopProgressTracking();
       if (playerRef.current) {
         try { playerRef.current.destroy(); } catch {}
