@@ -9,8 +9,6 @@ import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/discover", label: "Discover" },
-  { href: "/library", label: "Library" },
-  { href: "/settings", label: "Settings" },
 ];
 
 interface NavSidebarProps {
@@ -53,16 +51,6 @@ export function NavSidebar({ userEmail, userAvatar, userName }: NavSidebarProps)
       </div>
 
       {/* User info */}
-      {!userEmail && (
-        <div className="mt-auto border-t border-border pt-4">
-          <Link
-            href="/login"
-            className="flex w-full items-center justify-center rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background transition-opacity hover:opacity-80"
-          >
-            Sign in
-          </Link>
-        </div>
-      )}
       {userEmail && (
         <div className="mt-auto border-t border-border pt-4">
           <div className="flex items-center gap-3">
