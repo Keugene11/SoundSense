@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { PlaylistPlayer } from "@/components/playlist-player";
 import { PlaylistTrackList, type TrackFeedback } from "@/components/playlist-track-list";
 
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Music } from "lucide-react";
 import type { Recommendation, SeedSong } from "@/types/database";
 
 interface DiscoverClientProps {
@@ -174,13 +174,12 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
     }
   };
 
+  const [streamingMore, setStreamingMore] = useState(false);
+
   const handleGenerate = async () => {
-    if (seeds.length === 0) {
-      return;
-    }
+    if (seeds.length === 0) return;
 
     if (!isLoggedIn) {
-      // Save seed so we can restore after login
       try {
         localStorage.setItem(
           PENDING_SEED_KEY,
@@ -192,13 +191,17 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
     }
 
     setGenerating(true);
+    setStreamingMore(false);
+    setRecommendations([]);
     setCurrentIndex(null);
     setIsPlaying(false);
     setFeedback({});
 
-    // Build feedback context from history
     const liked = feedbackHistory.filter((e) => e.feedback === "liked");
     const disliked = feedbackHistory.filter((e) => e.feedback === "disliked");
+
+    let indexCounter = 0;
+    let firstPlayed = false;
 
     try {
       const res = await fetch("/api/recommendations/discover", {
@@ -210,23 +213,47 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
           disliked: disliked.map((e) => `${e.title} by ${e.artist}`),
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
 
-      setRecommendations(data.recommendations);
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error((data as { error?: string }).error || "Failed to generate");
+      }
 
-      // Auto-play the first playable track
-      const firstPlayable = data.recommendations.findIndex(
-        (r: Recommendation) => r.video_id
-      );
-      if (firstPlayable !== -1) {
-        setCurrentIndex(firstPlayable);
-        setIsPlaying(true);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const rec = JSON.parse(line) as Recommendation;
+            const myIndex = indexCounter++;
+
+            setRecommendations((prev) => [...prev, rec]);
+
+            if (!firstPlayed && rec.video_id) {
+              firstPlayed = true;
+              setCurrentIndex(myIndex);
+              setIsPlaying(true);
+              setGenerating(false);
+              setStreamingMore(true);
+            }
+          } catch {}
+        }
       }
     } catch (error) {
       console.error(error);
     } finally {
       setGenerating(false);
+      setStreamingMore(false);
     }
   };
 
@@ -374,6 +401,13 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
             isPlaying={isPlaying}
             onTrackClick={playIndex}
           />
+
+          {streamingMore && (
+            <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
+              <Music size={12} className="animate-pulse" />
+              Finding more tracks…
+            </div>
+          )}
         </div>
       )}
 

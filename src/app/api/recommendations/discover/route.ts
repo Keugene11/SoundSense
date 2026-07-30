@@ -28,14 +28,12 @@ function parseYouTubeTitle(rawTitle: string, rawArtist: string) {
 }
 
 async function resolveSeed(query: string): Promise<{ title: string; artist: string }> {
-  // Try YouTube URL first
   const videoId = extractYouTubeVideoId(query);
   if (videoId) {
     const details = await getVideoDetails(videoId);
     if (details) {
       return parseYouTubeTitle(details.title, details.channelTitle);
     }
-    // Fallback to oEmbed
     try {
       const oembed = await fetch(
         `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
@@ -49,12 +47,10 @@ async function resolveSeed(query: string): Promise<{ title: string; artist: stri
     return { title: query, artist: "" };
   }
 
-  // Free text — parse "Song by Artist" pattern first
   const byMatch = query.match(/^(.+?)\s+(?:by|[-–—])\s+(.+)$/i);
   const parsedTitle = byMatch ? byMatch[1].trim() : query;
   const parsedArtist = byMatch ? byMatch[2].trim() : "";
 
-  // Use Last.fm to resolve to a real song
   const searchQuery = parsedArtist ? `${parsedTitle} ${parsedArtist}` : parsedTitle;
   const lastfmResults = await searchTrack(searchQuery, 5).catch(() => []);
   if (lastfmResults.length > 0) {
@@ -62,7 +58,6 @@ async function resolveSeed(query: string): Promise<{ title: string; artist: stri
     return { title: best.title, artist: best.artist };
   }
 
-  // Fallback to YouTube lookup
   const lookup = await lookupSeedSong(parsedTitle, parsedArtist);
   if (lookup) {
     return parseYouTubeTitle(lookup.resolvedTitle, lookup.resolvedArtist);
@@ -76,7 +71,6 @@ export async function POST(req: NextRequest) {
     const userId = await getSessionUserId();
     const body = await req.json();
 
-    // Accept either { query: "..." } or { seeds: [...] }
     let seeds: { title: string; artist: string }[];
 
     if (body.query && typeof body.query === "string") {
@@ -88,13 +82,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Provide a song name or YouTube URL" }, { status: 400 });
     }
 
-    // User feedback from previous sessions
     const liked: string[] = Array.isArray(body.liked) ? body.liked.slice(0, 50) : [];
     const disliked: string[] = Array.isArray(body.disliked) ? body.disliked.slice(0, 50) : [];
 
-    // Phase 1: Enrich seeds + get candidates in parallel
     const seedArtists = [...new Set(seeds.map((s) => s.artist).filter(Boolean))];
 
+    // Phase 1: all external data in parallel, with timeouts so slow APIs don't block
     const [enrichedSeeds, lastfmCandidates, tdArtists, lbArtists, genreTags] = await Promise.all([
       Promise.all(
         seeds.map(async (seed) => {
@@ -111,12 +104,20 @@ export async function POST(req: NextRequest) {
         })
       ),
       getCandidatesForSeeds(seeds).catch(() => [] as { title: string; artist: string; matchScore: number }[]),
-      getSimilarArtistsTD(seedArtists).catch(() => [] as string[]),
-      getSimilarArtistsLB(seedArtists).catch(() => [] as string[]),
-      getGenreTagsForSeeds(seeds).catch(() => [] as string[]),
+      Promise.race([
+        getSimilarArtistsTD(seedArtists),
+        new Promise<string[]>((r) => setTimeout(() => r([]), 4000)),
+      ]).catch(() => [] as string[]),
+      Promise.race([
+        getSimilarArtistsLB(seedArtists),
+        new Promise<string[]>((r) => setTimeout(() => r([]), 4000)),
+      ]).catch(() => [] as string[]),
+      Promise.race([
+        getGenreTagsForSeeds(seeds),
+        new Promise<string[]>((r) => setTimeout(() => r([]), 4000)),
+      ]).catch(() => [] as string[]),
     ]);
 
-    // Dedupe similar artists
     const seedArtistLower = new Set(seedArtists.map((a) => a.toLowerCase()));
     const seenArtists = new Set<string>();
     const similarArtists: string[] = [];
@@ -128,7 +129,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fallback: if no candidates and no similar artists, try Last.fm artist-level similarity
     if (lastfmCandidates.length === 0 && similarArtists.length === 0 && seedArtists.length > 0) {
       const fallbackResults = await Promise.all(
         seedArtists.map(async (artist) => {
@@ -148,7 +148,6 @@ export async function POST(req: NextRequest) {
             similarArtists.push(name);
           }
         }
-        // Add artist top tracks as candidates (with low match score)
         for (const t of topTracks) {
           if (!seedArtistLower.has(t.artist.toLowerCase())) {
             lastfmCandidates.push({ title: t.title, artist: t.artist, matchScore: 0.3, url: "" });
@@ -169,70 +168,89 @@ export async function POST(req: NextRequest) {
       disliked.length > 0 ? disliked : undefined
     );
 
-    // Phase 3: YouTube search + verification
-    const enrichedRecs = await Promise.all(
-      aiRecs.map(async (rec) => {
-        const searchQuery = `${rec.title} ${rec.artist}`;
+    // Phase 3: Stream each rec to the client as soon as it's verified
+    const encoder = new TextEncoder();
+    type DbRec = {
+      user_id: string;
+      title: string;
+      artist: string;
+      album: string | null;
+      video_id: string;
+      thumbnail_url: string | null;
+      reason: string;
+      confidence_score: number;
+      status: "pending";
+    };
+    const dbRecs: DbRec[] = [];
 
-        const [ytResult, lastfm] = await Promise.all([
-          searchYouTubeRace(searchQuery, rec.title, rec.artist),
-          verifyTrackExists(rec.artist, rec.title),
-        ]);
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          let sentCount = 0;
 
-        let ytScore = 0;
-        if (ytResult?.resultTitle) {
-          const recStr = `${rec.title} ${rec.artist}`;
-          ytScore = Math.max(
-            titleSimilarity(recStr, ytResult.resultTitle),
-            titleSimilarity(rec.title, ytResult.resultTitle)
+          await Promise.all(
+            aiRecs.map(async (rec) => {
+              const searchQuery = `${rec.title} ${rec.artist}`;
+              const [ytResult, lastfm] = await Promise.all([
+                searchYouTubeRace(searchQuery, rec.title, rec.artist),
+                verifyTrackExists(rec.artist, rec.title),
+              ]);
+
+              if (!ytResult?.videoId) return;
+
+              let ytScore = 0;
+              if (ytResult.resultTitle) {
+                const recStr = `${rec.title} ${rec.artist}`;
+                ytScore = Math.max(
+                  titleSimilarity(recStr, ytResult.resultTitle),
+                  titleSimilarity(rec.title, ytResult.resultTitle)
+                );
+              }
+              const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
+              const verificationScore = Math.max(ytScore, lastfmScore);
+
+              const verified = verificationScore >= 0.5;
+              // Include if verified, or if we still need tracks to fill the playlist
+              if (!verified && sentCount >= 5) return;
+
+              const row: DbRec = {
+                user_id: userId,
+                title: rec.title,
+                artist: rec.artist,
+                album: rec.album || null,
+                video_id: ytResult.videoId,
+                thumbnail_url: ytResult.thumbnail || null,
+                reason: rec.reason,
+                confidence_score: rec.confidence_score,
+                status: "pending",
+              };
+              dbRecs.push(row);
+              sentCount++;
+
+              const chunk = {
+                ...row,
+                id: `stream-${sentCount}-${Date.now()}`,
+                created_at: new Date().toISOString(),
+              };
+              controller.enqueue(encoder.encode(JSON.stringify(chunk) + "\n"));
+            })
           );
+        } finally {
+          // Save to DB in background — don't block the stream
+          if (dbRecs.length > 0) {
+            insertRecommendations(dbRecs).catch(console.error);
+          }
+          controller.close();
         }
-        const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
-        const verificationScore = Math.max(ytScore, lastfmScore);
+      },
+    });
 
-        return {
-          user_id: userId,
-          title: rec.title,
-          artist: rec.artist,
-          album: rec.album || null,
-          video_id: ytResult?.videoId || null,
-          thumbnail_url: ytResult?.thumbnail || null,
-          reason: rec.reason,
-          confidence_score: rec.confidence_score,
-          status: "pending" as const,
-          _verified: verificationScore >= 0.5,
-          _verificationScore: verificationScore,
-        };
-      })
-    );
-
-    // Filter to verified songs
-    const verifiedRecs = enrichedRecs
-      .filter((rec) => rec._verified && rec.video_id !== null)
-      .sort((a, b) => b._verificationScore - a._verificationScore || b.confidence_score - a.confidence_score)
-      .slice(0, 10)
-      .map(({ _verified, _verificationScore, ...rec }) => rec);
-
-    const finalRecs = verifiedRecs.length >= 5
-      ? verifiedRecs
-      : enrichedRecs
-          .filter((r) => r.video_id !== null)
-          .slice(0, 10)
-          .map(({ _verified, _verificationScore, ...rec }) => rec);
-
-    // Try to save to DB but don't fail if it errors
-    try {
-      const saved = await insertRecommendations(finalRecs);
-      return NextResponse.json({ recommendations: saved });
-    } catch {
-      // DB save failed — return unsaved recs with temp IDs
-      const unsaved = finalRecs.map((r, i) => ({
-        ...r,
-        id: `temp-${i}`,
-        created_at: new Date().toISOString(),
-      }));
-      return NextResponse.json({ recommendations: unsaved });
-    }
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson",
+        "Cache-Control": "no-cache",
+      },
+    });
   } catch (error) {
     console.error("Discover recommendations error:", error);
     return NextResponse.json(
