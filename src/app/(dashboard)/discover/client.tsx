@@ -33,7 +33,6 @@ function loadFeedbackHistory(): FeedbackEntry[] {
 
 function saveFeedbackHistory(entries: FeedbackEntry[]) {
   try {
-    // Keep last 100 entries
     localStorage.setItem(FEEDBACK_KEY, JSON.stringify(entries.slice(-100)));
   } catch {}
 }
@@ -44,16 +43,14 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [generating, setGenerating] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [streamingMore, setStreamingMore] = useState(false);
 
-  // Playlist state
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Feedback state: trackId -> liked/disliked/null
   const [feedback, setFeedback] = useState<Record<string, TrackFeedback>>({});
   const [feedbackHistory, setFeedbackHistory] = useState<FeedbackEntry[]>([]);
 
-  // Load feedback history from localStorage on mount
   useEffect(() => {
     setFeedbackHistory(loadFeedbackHistory());
   }, []);
@@ -65,13 +62,9 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
   const handleFeedback = useCallback(
     (trackId: string, fb: TrackFeedback) => {
       setFeedback((prev) => ({ ...prev, [trackId]: fb }));
-
-      // Find the track and update persistent history
       const track = recommendations.find((r) => r.id === trackId);
       if (!track) return;
-
       setFeedbackHistory((prev) => {
-        // Remove any existing entry for this song
         const filtered = prev.filter(
           (e) =>
             !(
@@ -79,7 +72,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
               e.artist.toLowerCase() === track.artist.toLowerCase()
             )
         );
-        // Add new entry if not null
         const updated =
           fb !== null
             ? [...filtered, { title: track.title, artist: track.artist, feedback: fb }]
@@ -121,44 +113,15 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
       if (!res.ok) throw new Error(data.error);
       const seed = data.seeds ? data.seeds[0] : data.seed;
       setSeeds([seed]);
-
     } catch {
     } finally {
       setAdding(false);
     }
   };
 
-  const removeSeed = async (id: string) => {
-    setSeeds((prev) => prev.filter((s) => s.id !== id));
-    try {
-      await fetch("/api/seeds", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-    } catch {
-    }
-  };
-
-  const [streamingMore, setStreamingMore] = useState(false);
-
   const handleGenerate = async () => {
     if (seeds.length === 0) return;
 
-<<<<<<< HEAD
-    if (!isLoggedIn) {
-      try {
-        localStorage.setItem(
-          PENDING_SEED_KEY,
-          JSON.stringify({ title: seeds[0].title, artist: seeds[0].artist })
-        );
-      } catch {}
-      window.location.href = "/login";
-      return;
-    }
-
-=======
->>>>>>> 40c05d7cca80ebab2fffa1f48ca174f0ae3abc42
     setGenerating(true);
     setStreamingMore(false);
     setRecommendations([]);
@@ -205,7 +168,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
           try {
             const rec = JSON.parse(line) as Recommendation;
             const myIndex = indexCounter++;
-
             setRecommendations((prev) => [...prev, rec]);
 
             if (!firstPlayed && rec.video_id) {
@@ -226,7 +188,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
     }
   };
 
-  // Playlist controls
   const playIndex = useCallback(
     (index: number) => {
       if (recommendations[index]?.video_id) {
@@ -255,9 +216,7 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
 
   const playPrev = useCallback(() => {
     if (currentIndex === null) return;
-    const prevPlayable = [...playableIndices]
-      .reverse()
-      .find((i) => i < currentIndex);
+    const prevPlayable = [...playableIndices].reverse().find((i) => i < currentIndex);
     if (prevPlayable !== undefined) {
       setCurrentIndex(prevPlayable);
       setIsPlaying(true);
@@ -279,9 +238,10 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
   const likedCount = feedbackHistory.filter((e) => e.feedback === "liked").length;
   const dislikedCount = feedbackHistory.filter((e) => e.feedback === "disliked").length;
 
+  void isLoggedIn;
+
   return (
     <div className={`space-y-6 ${hasPlaylist && currentIndex !== null ? "pb-24" : ""}`}>
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Discover</h1>
         <p className="mt-1 text-muted-foreground">
@@ -289,7 +249,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
         </p>
       </div>
 
-      {/* Seed input */}
       <div className="space-y-3">
         {seeds.length > 0 && (
           <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
@@ -344,15 +303,14 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
               </>
             )}
           </Button>
-          {isLoggedIn && (likedCount > 0 || dislikedCount > 0) && (
+          {likedCount > 0 || dislikedCount > 0 ? (
             <p className="text-xs text-muted-foreground">
               Your taste profile: {likedCount} liked, {dislikedCount} disliked
             </p>
-          )}
+          ) : null}
         </div>
       </div>
 
-      {/* Recommendations */}
       {hasPlaylist && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -380,7 +338,6 @@ export function DiscoverClient({ initialSeeds, isLoggedIn }: DiscoverClientProps
         </div>
       )}
 
-      {/* Bottom player bar */}
       {hasPlaylist && currentIndex !== null && (
         <PlaylistPlayer
           tracks={recommendations}
