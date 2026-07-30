@@ -152,7 +152,9 @@ export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
             if (!firstPlayed && rec.video_id) {
               firstPlayed = true;
               setCurrentIndex(myIndex);
-              setIsPlaying(true);
+              // Don't autoplay — browser blocks programmatic play 20+ seconds after user gesture.
+              // Show the track loaded and ready; user's first click on Play is a fresh gesture.
+              setIsPlaying(false);
               setGenerating(false);
               setStreamingMore(true);
             }
