@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { getSessionUserId } from "@/lib/session";
 import { generateFromSeeds } from "@/lib/anthropic/recommendations";
 import { getCandidatesForSeeds, verifyTrackExists, titleSimilarity, getGenreTagsForSeeds, searchTrack, getSimilarArtistsLFM, getArtistTopTracks } from "@/lib/lastfm";
@@ -186,14 +188,22 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // First chunk: resolved seed so the UI can show the real song name
+          const resolvedSeed = enrichedSeeds[0];
+          controller.enqueue(encoder.encode(JSON.stringify({
+            _type: "seed",
+            title: resolvedSeed?.title ?? seeds[0]?.title ?? "",
+            artist: resolvedSeed?.artist ?? seeds[0]?.artist ?? "",
+          }) + "\n"));
+
           let sentCount = 0;
 
           await Promise.all(
             aiRecs.map(async (rec) => {
               const searchQuery = `${rec.title} ${rec.artist}`;
               const [ytResult, lastfm] = await Promise.all([
-                searchYouTubeRace(searchQuery, rec.title, rec.artist),
-                verifyTrackExists(rec.artist, rec.title),
+                searchYouTubeRace(searchQuery, rec.title, rec.artist).catch(() => null),
+                verifyTrackExists(rec.artist, rec.title).catch(() => ({ exists: false, listeners: 0 })),
               ]);
 
               if (!ytResult?.videoId) return;
@@ -209,8 +219,7 @@ export async function POST(req: NextRequest) {
               const lastfmScore = lastfm.exists ? (lastfm.listeners > 100 ? 1.0 : 0.6) : 0;
               const verificationScore = Math.max(ytScore, lastfmScore);
 
-              const verified = verificationScore >= 0.5;
-              // Include if verified, or if we still need tracks to fill the playlist
+              const verified = verificationScore >= 0.35;
               if (!verified && sentCount >= 5) return;
 
               const row: DbRec = {
@@ -227,16 +236,14 @@ export async function POST(req: NextRequest) {
               dbRecs.push(row);
               sentCount++;
 
-              const chunk = {
+              controller.enqueue(encoder.encode(JSON.stringify({
                 ...row,
                 id: `stream-${sentCount}-${Date.now()}`,
                 created_at: new Date().toISOString(),
-              };
-              controller.enqueue(encoder.encode(JSON.stringify(chunk) + "\n"));
+              }) + "\n"));
             })
           );
         } finally {
-          // Save to DB in background — don't block the stream
           if (dbRecs.length > 0) {
             insertRecommendations(dbRecs).catch(console.error);
           }

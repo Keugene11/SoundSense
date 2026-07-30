@@ -39,9 +39,11 @@ function saveFeedbackHistory(entries: FeedbackEntry[]) {
 export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
   const [input, setInput] = useState("");
   const [currentSeed, setCurrentSeed] = useState("");
+  const [resolvedSeed, setResolvedSeed] = useState<{ title: string; artist: string } | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [generating, setGenerating] = useState(false);
   const [streamingMore, setStreamingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -86,6 +88,7 @@ export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
     if (!trimmed || generating) return;
 
     setCurrentSeed(trimmed);
+    setResolvedSeed(null);
     setInput("");
     setGenerating(true);
     setStreamingMore(false);
@@ -93,6 +96,7 @@ export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
     setCurrentIndex(null);
     setIsPlaying(false);
     setFeedback({});
+    setError(null);
 
     const liked = feedbackHistory.filter((e) => e.feedback === "liked");
     const disliked = feedbackHistory.filter((e) => e.feedback === "disliked");
@@ -113,7 +117,9 @@ export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
 
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({}));
-        throw new Error((data as { error?: string }).error || "Failed to generate");
+        const msg = (data as { error?: string }).error || "Failed to generate — try again";
+        setError(msg);
+        return;
       }
 
       const reader = res.body.getReader();
@@ -131,7 +137,15 @@ export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
         for (const line of lines) {
           if (!line.trim()) continue;
           try {
-            const rec = JSON.parse(line) as Recommendation;
+            const chunk = JSON.parse(line) as Record<string, unknown>;
+
+            // Resolved seed info — update the display name
+            if (chunk._type === "seed") {
+              setResolvedSeed({ title: chunk.title as string, artist: chunk.artist as string });
+              continue;
+            }
+
+            const rec = chunk as unknown as Recommendation;
             const myIndex = indexCounter++;
             setRecommendations((prev) => [...prev, rec]);
 
@@ -145,8 +159,13 @@ export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
           } catch {}
         }
       }
-    } catch (error) {
-      console.error(error);
+
+      if (indexCounter === 0) {
+        setError("Couldn't find playable songs for that track — try a different one");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong — try again");
     } finally {
       setGenerating(false);
       setStreamingMore(false);
@@ -225,9 +244,22 @@ export function DiscoverClient({ isLoggedIn }: DiscoverClientProps) {
               <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 {generating || streamingMore ? "Generating based on" : "Generated from"}
               </p>
-              <p className="truncate text-sm font-semibold mt-0.5">{currentSeed}</p>
+              {resolvedSeed ? (
+                <p className="truncate text-sm font-semibold mt-0.5">
+                  {resolvedSeed.title}
+                  {resolvedSeed.artist && (
+                    <span className="font-normal text-muted-foreground"> · {resolvedSeed.artist}</span>
+                  )}
+                </p>
+              ) : (
+                <p className="truncate text-sm font-semibold mt-0.5">{currentSeed}</p>
+              )}
             </div>
           </div>
+        )}
+
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
         )}
 
         <div className="flex gap-2">
